@@ -1,4 +1,4 @@
-export default function FeatureCard1(){
+export default function HowItWorksCard (){
     return(
         <section className="bg-white border-y">
         <div className="max-w-6xl mx-auto px-6 py-20">

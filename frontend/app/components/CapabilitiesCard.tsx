@@ -1,4 +1,4 @@
-export default function FeatureCard2(){
+export default function CapabilitiesCard(){
     return (
         <section className="max-w-6xl mx-auto px-6 py-20">
         <h3 className="text-3xl font-semibold mb-6">

@@ -2,8 +2,8 @@ import Link from "next/link";
 
 import Header from'./components/Header';
 import Hero from './components/Hero';
-import FeatureCard1 from './components/FeatureCard1';
-import FeatureCard2 from './components/FeatureCard2';
+import HowItWorksCard from './components/HowItWorksCard';
+import CapabilitiesCard from './components/CapabilitiesCard';
 import Footer from './components/Footer';
 
 
@@ -20,11 +20,11 @@ export default function Home() {
       <Hero />
 
       {/* How It Works */}
-      <FeatureCard1 />
+      <HowItWorksCard />
 
 
       {/* Capabilities */}
-      <FeatureCard2/>
+      <CapabilitiesCard/>
       
 
       {/* Footer */}
