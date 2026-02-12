@@ -1,8 +1,10 @@
+import { PageLayout } from "../community/PageLayout";
+
 export default function IdeasPage() {
   const ideas: any[] = []; // empty for now
 
   return (
-    <main className="min-h-screen bg-gray-50 px-6 py-16">
+    <PageLayout>
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
@@ -67,6 +69,6 @@ export default function IdeasPage() {
         )}
 
       </div>
-    </main>
+    </PageLayout>
   );
 }

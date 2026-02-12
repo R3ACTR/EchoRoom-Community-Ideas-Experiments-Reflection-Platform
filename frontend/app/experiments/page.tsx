@@ -1,3 +1,5 @@
+import { PageLayout } from "../community/PageLayout";
+
 export default function ExperimentsPage() {
 
   // Sample experiment data (replace later with backend data)
@@ -39,7 +41,7 @@ export default function ExperimentsPage() {
 
 
   return (
-    <main className="min-h-screen px-6 py-16 bg-gray-50">
+    <PageLayout>
 
       <div className="max-w-5xl mx-auto">
 
@@ -134,6 +136,6 @@ export default function ExperimentsPage() {
 
       </div>
 
-    </main>
+    </PageLayout>
   );
 }
