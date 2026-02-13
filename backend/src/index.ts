@@ -3,6 +3,8 @@ import ideasRoutes from "./routes/ideas.routes";
 import cors from "cors";
 import experimentsRoutes from "./routes/experiments.routes";
 import outcomesRoutes from "./routes/outcomes.routes";
+import reflectionsRoutes from "./routes/reflections.routes";
+
 
 
 
@@ -15,6 +17,7 @@ app.use(express.json());
 app.use("/ideas", ideasRoutes);
 app.use("/experiments", experimentsRoutes);
 app.use("/outcomes", outcomesRoutes);
+app.use("/reflections", reflectionsRoutes);
 
 
 app.get("/health", (_req: Request, res: Response) => {
