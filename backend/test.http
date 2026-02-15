@@ -1,0 +1,8 @@
+###
+POST http://localhost:5000/ideas
+Content-Type: application/json
+
+{
+  "title": "First Idea",
+  "description": "This idea was created using REST Client"
+}
