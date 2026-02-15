@@ -1,27 +1,19 @@
 import { Router, Request, Response } from "express";
 
+import {
+  createOutcome,
+  getAllOutcomes,
+  getOutcomesByExperimentId
+} from "../services/outcomes.service";
+
 const router = Router();
 
-// Outcome model (temporary in-memory)
-interface Outcome {
-  id: number;
-  experimentId: number;
-  result: string;
-  notes: string;
-  createdAt: Date;
-}
 
-// Temporary storage
-let outcomes: Outcome[] = [];
-let nextId = 1;
-
-
-/**
- * POST /outcomes
- * Create a new outcome
- */
+// POST /outcomes
 router.post("/", (req: Request, res: Response) => {
+
   try {
+
     const { experimentId, result, notes } = req.body;
 
     if (!experimentId || !result) {
@@ -31,60 +23,54 @@ router.post("/", (req: Request, res: Response) => {
       });
     }
 
-    const newOutcome: Outcome = {
-      id: nextId++,
+    const outcome = createOutcome(
       experimentId,
       result,
-      notes: notes || "",
-      createdAt: new Date(),
-    };
-
-    outcomes.push(newOutcome);
+      notes
+    );
 
     res.status(201).json({
       success: true,
-      data: newOutcome,
+      data: outcome,
     });
 
-  } catch (error) {
+  } catch {
+
     res.status(500).json({
       success: false,
       message: "Failed to create outcome",
     });
+
   }
+
 });
 
 
-/**
- * GET /outcomes
- * Get all outcomes
- */
+// GET /outcomes
 router.get("/", (_req: Request, res: Response) => {
+
+  const outcomes = getAllOutcomes();
+
   res.json({
     success: true,
     data: outcomes,
   });
+
 });
 
 
-/**
- * GET /outcomes/:experimentId
- * Get outcomes for a specific experiment
- */
+// GET /outcomes/:experimentId
 router.get("/:experimentId", (req: Request, res: Response) => {
 
   const experimentId = Number(req.params.experimentId);
 
-  const filtered = outcomes.filter(
-    outcome => outcome.experimentId === experimentId
-  );
+  const outcomes = getOutcomesByExperimentId(experimentId);
 
   res.json({
     success: true,
-    data: filtered,
+    data: outcomes,
   });
 
 });
-
 
 export default router;

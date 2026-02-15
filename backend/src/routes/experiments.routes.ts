@@ -1,44 +1,36 @@
 import { Router, Request, Response } from "express";
 
+import {
+  getAllExperiments,
+  getExperimentById,
+  createExperiment,
+  updateExperiment,
+  deleteExperiment,
+  ExperimentStatus
+} from "../services/experiments.service";
+
 const router = Router();
 
-/**
- * Experiment type definition
- */
-interface Experiment {
-  id: number;
-  title: string;
-  description: string;
-  status: "planned" | "in-progress" | "completed";
-  outcome?: string;
-  createdAt: Date;
-}
 
-/**
- * In-memory storage
- */
-let experiments: Experiment[] = [];
-let nextId = 1;
-
-
-/**
- * GET all experiments
- */
+// GET all experiments
 router.get("/", (req: Request, res: Response) => {
+
+  const experiments = getAllExperiments();
+
   res.json({
     success: true,
     data: experiments,
   });
+
 });
 
 
-/**
- * GET experiment by ID
- */
+// GET experiment by ID
 router.get("/:id", (req: Request, res: Response) => {
+
   const id = Number(req.params.id);
 
-  const experiment = experiments.find(e => e.id === id);
+  const experiment = getExperimentById(id);
 
   if (!experiment) {
     return res.status(404).json({
@@ -51,13 +43,13 @@ router.get("/:id", (req: Request, res: Response) => {
     success: true,
     data: experiment,
   });
+
 });
 
 
-/**
- * CREATE experiment
- */
+// CREATE experiment
 router.post("/", (req: Request, res: Response) => {
+
   const { title, description, status } = req.body;
 
   if (!title || !description || !status) {
@@ -67,74 +59,61 @@ router.post("/", (req: Request, res: Response) => {
     });
   }
 
-  const newExperiment: Experiment = {
-    id: nextId++,
+  const newExperiment = createExperiment(
     title,
     description,
-    status,
-    createdAt: new Date(),
-  };
-
-  experiments.push(newExperiment);
+    status as ExperimentStatus
+  );
 
   res.status(201).json({
     success: true,
     data: newExperiment,
   });
+
 });
 
 
-/**
- * UPDATE experiment
- */
+// UPDATE experiment
 router.put("/:id", (req: Request, res: Response) => {
+
   const id = Number(req.params.id);
 
-  const experiment = experiments.find(e => e.id === id);
+  const updatedExperiment = updateExperiment(id, req.body);
 
-  if (!experiment) {
+  if (!updatedExperiment) {
     return res.status(404).json({
       success: false,
       message: "Experiment not found",
     });
   }
-
-  const { title, description, status, outcome } = req.body;
-
-  if (title !== undefined) experiment.title = title;
-  if (description !== undefined) experiment.description = description;
-  if (status !== undefined) experiment.status = status;
-  if (outcome !== undefined) experiment.outcome = outcome;
 
   res.json({
     success: true,
-    data: experiment,
+    data: updatedExperiment,
   });
+
 });
 
 
-/**
- * DELETE experiment
- */
+// DELETE experiment
 router.delete("/:id", (req: Request, res: Response) => {
+
   const id = Number(req.params.id);
 
-  const index = experiments.findIndex(e => e.id === id);
+  const deleted = deleteExperiment(id);
 
-  if (index === -1) {
+  if (!deleted) {
     return res.status(404).json({
       success: false,
       message: "Experiment not found",
     });
   }
-
-  experiments.splice(index, 1);
 
   res.json({
     success: true,
     message: "Experiment deleted",
   });
-});
 
+});
 
 export default router;
