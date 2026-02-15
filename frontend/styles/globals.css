@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -14,7 +15,6 @@ body {
 body {
   margin: 0;
 }
-
 
 /* ========================= */
 /* GLOBAL DESIGN SYSTEM */
@@ -45,9 +45,7 @@ body {
   .section {
     @apply px-6 py-12;
   }
-
 }
-
 
 /* ========================= */
 /* GLOBAL TRANSITIONS */
@@ -60,7 +58,6 @@ body {
     border-color .45s cubic-bezier(.4,0,.2,1),
     transform .35s ease;
 }
-
 
 /* ========================= */
 /* BUTTON LIQUID ANIMATION */
@@ -75,7 +72,6 @@ body {
 button:hover div:first-child {
   animation: liquidFloat 2s ease-in-out infinite;
 }
-
 
 /* ========================= */
 /* FLOAT ANIMATIONS */
@@ -103,7 +99,6 @@ button:hover div:first-child {
 .animate-float2 { animation: float2 22s ease-in-out infinite; }
 .animate-float3 { animation: float3 26s ease-in-out infinite; }
 
-
 /* ========================= */
 /* MAIN BACKGROUND ANIMATION */
 /* ========================= */
@@ -119,7 +114,6 @@ button:hover div:first-child {
   50%{background-position:100% 50%}
   100%{background-position:0% 50%}
 }
-
 
 /* ========================= */
 /* READABLE MODE */
@@ -145,4 +139,74 @@ button:hover div:first-child {
 .readable h2,
 .readable h3{
   color:#000 !important;
+}
+
+/* ========================= */
+/* THEME TOKENS */
+/* ========================= */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+/* ========================= */
+/* ROOT THEME */
+/* ========================= */
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --secondary: oklch(0.97 0 0);
+  --border: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --secondary: oklch(0.269 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --ring: oklch(0.556 0 0);
+}
+
+/* ========================= */
+/* BASE LAYER */
+/* ========================= */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
 }

@@ -5,6 +5,9 @@ import { PageLayout } from "../community/PageLayout";
 import { apiFetch } from "../lib/api";
 import LoadingState from "../components/LoadingState";
 import ErrorState from "../components/ErrorState";
+import BackButton from "../components/BackButton";
+import QuestionMark from "@/components/ui/question-mark";
+
 
 interface Experiment {
   id: number;
@@ -128,10 +131,17 @@ export default function ExperimentsPage() {
 
         {/* Header */}
         <div className="mb-8">
+          <div className="mb-4">
+                        <BackButton />
+                      </div>
 
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
+          <div className="flex items-center gap-3 mb-3">
+          <QuestionMark className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
             Experiments
           </h1>
+        </div>
+
 
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl">
             Track and manage experiments to test ideas and learn quickly.

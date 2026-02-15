@@ -15,19 +15,37 @@ export default function Button({
   type = "button",
   className = "",
 }: ButtonProps) {
-  
-  const baseStyle =
-    "px-6 py-3 rounded-lg font-medium transition duration-200";
+  const baseStyle = `
+    group relative overflow-hidden
+    px-6 py-3
+    rounded-full
+     text-sm
+    transition-all duration-300 ease-out
+    transform
+    hover:-translate-y-1
+    hover:scale-[1.04]
+    active:translate-y-[2px]
+    active:scale-[0.97]
+    shadow-[0_8px_20px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.35)]
+    hover:shadow-[0_14px_34px_rgba(0,0,0,0.35),inset_0_1px_2px_rgba(255,255,255,0.45)]
+  `;
 
   const variants = {
-    primary:
-      "bg-black text-white hover:bg-gray-800",
+    primary: `
+      text-white
+      bg-gradient-to-br from-[#3A9AFF] via-[#2F7CF6] to-[#0992C2]
+    `,
 
-    secondary:
-      "bg-gray-200 text-black hover:bg-gray-300",
+    secondary: `
+      text-black
+      bg-gradient-to-br from-gray-200 via-gray-100 to-gray-300
+    `,
 
-    outline:
-      "border border-black text-black hover:bg-black hover:text-white",
+    outline: `
+      text-black
+      border border-black
+      bg-white/40 backdrop-blur
+    `,
   };
 
   return (
@@ -36,7 +54,31 @@ export default function Button({
       onClick={onClick}
       className={`${baseStyle} ${variants[variant]} ${className}`}
     >
-      {children}
+      {/* Gloss layer */}
+      <span
+        className="
+          pointer-events-none
+          absolute inset-0
+          rounded-xl
+          bg-gradient-to-t from-white/0 via-white/10 to-white/30
+          opacity-70
+        "
+      />
+
+      {/* Moving shine streak */}
+      <span
+        className="
+          pointer-events-none
+          absolute -left-24 top-0 h-full w-24
+          bg-white/30 blur-md rotate-12
+          transition-all duration-700
+          group-hover:left-full
+        "
+      />
+
+      <span className="relative z-10">
+        {children}
+      </span>
     </button>
   );
 }

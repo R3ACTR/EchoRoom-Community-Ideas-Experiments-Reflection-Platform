@@ -2,10 +2,19 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTheme } from "./components/ThemeProvider";
+
+import Button from "./components/ui/Button";
+import BulbSvg from "@/components/ui/bulb-svg";
+import QuestionMark from "@/components/ui/question-mark";
+import LibraryIcon from "@/components/ui/library-icon";
+import ChartHistogramIcon from "@/components/ui/chart-histogram-icon";
+import BrightnessDownIcon from "@/components/ui/brightness-down-icon";
+import MoonIcon from "@/components/ui/moon-icon";
 
 export default function HomePage() {
+  const { dark, toggleTheme } = useTheme();
   const [backendStatus, setBackendStatus] = useState("Checking backend...");
-  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:5000/health")
@@ -32,42 +41,42 @@ export default function HomePage() {
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
-            <Link href="/ideas" className="hover:text-blue-600 transition">
-              Ideas
-            </Link>
-
-            <Link href="/experiments" className="hover:text-blue-600 transition">
-              Experiments
-            </Link>
-
-            <Link href="/reflection" className="hover:text-blue-600 transition">
-              Reflection
-            </Link>
+            <Link href="/ideas" className="hover:text-blue-600 transition">Ideas</Link>
+            <Link href="/experiments" className="hover:text-blue-600 transition">Experiments</Link>
+            <Link href="/reflection" className="hover:text-blue-600 transition">Reflection</Link>
           </div>
 
           {/* Right side */}
           <div className="flex items-center gap-4">
 
-            {/* Signup */}
-            <Link
-              href="/signup"
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-md font-medium hover:shadow-lg transition"
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              className="flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 hover:bg-slate-200 dark:hover:bg-slate-800 hover:scale-105 active:scale-95"
             >
-              Sign Up
+              {dark ? (
+                <BrightnessDownIcon className="w-5 h-5" />
+              ) : (
+                <MoonIcon className="w-5 h-5" />
+              )}
+            </button>
+
+            {/* Signup */}
+            <Link href="/signup">
+              <button className="rounded-full px-5 py-2.5 text-sm text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:scale-105 transition-all">
+                Sign Up
+              </button>
             </Link>
 
             {/* Login */}
-            <Link
-              href="/login"
-              className="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition font-medium"
-            >
+            <Link href="/login" className="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition font-medium">
               Login
             </Link>
 
           </div>
         </div>
       </nav>
-
 
       {/* HERO */}
       <section className="relative max-w-5xl mx-auto text-center px-6 pt-20 pb-20">
@@ -94,36 +103,57 @@ export default function HomePage() {
           and meaningful learning — collaboratively and transparently.
         </p>
 
+        {/* Buttons */}
         <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
 
-          <Link
-            href="/ideas"
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 rounded-full font-semibold shadow-md hover:shadow-xl hover:scale-105 transition duration-200 inline-block"
-          >
-            Start Exploring →
+          <Link href="/ideas">
+            <Button variant="primary" className="rounded-full px-16 py-6 text-xl">
+              Start Exploring
+            </Button>
           </Link>
 
-          <Link
-            href="/about"
-            className="px-8 py-3 rounded-full font-semibold border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition inline-block"
-          >
-            Learn More
+          <Link href="/about">
+            <Button
+              variant="outline"
+              className="rounded-full px-16 py-6 text-xl bg-[#7EACB5] text-slate-900 dark:text-white hover:bg-[#6e9ca5]"
+            >
+              Learn More
+            </Button>
           </Link>
 
         </div>
       </section>
-
 
       {/* FEATURES */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <FeatureCard emoji="💡" title="Share Ideas" desc="Post and discuss ideas openly with your community to spark innovation." />
-          <FeatureCard emoji="🧪" title="Run Experiments" desc="Validate ideas through focused real-world experiments and tests." />
-          <FeatureCard emoji="📊" title="Track Outcomes" desc="Capture results and build collective knowledge from detailed outcomes." />
-          <FeatureCard emoji="🧠" title="Reflect & Learn" desc="Improve continuously through shared insights and reflection." />
+
+          <FeatureCard
+            emoji={<BulbSvg className="w-6 h-6" />}
+            title="Share Ideas"
+            desc="Post and discuss ideas openly with your community to spark innovation."
+          />
+
+          <FeatureCard
+            emoji={<QuestionMark className="w-6 h-6" />}
+            title="Run Experiments"
+            desc="Validate ideas through focused real-world experiments and tests."
+          />
+
+          <FeatureCard
+            emoji={<ChartHistogramIcon className="w-6 h-6" />}
+            title="Track Outcomes"
+            desc="Capture results and build collective knowledge from detailed outcomes."
+          />
+
+          <FeatureCard
+            emoji={<LibraryIcon className="w-6 h-6" />}
+            title="Reflect & Learn"
+            desc="Improve continuously through shared insights and reflection."
+          />
+
         </div>
       </section>
-
 
       {/* CTA */}
       <section className="bg-blue-600 py-16 text-center">
@@ -131,28 +161,27 @@ export default function HomePage() {
           <h2 className="text-3xl font-bold text-white">
             Start building and learning together
           </h2>
+
           <p className="text-blue-100 mt-4">
             Join EchoRoom and turn your ideas into meaningful experiments today.
-            No credit card required.
           </p>
-          <Link
-            href="/community"
-            className="mt-6 bg-white text-blue-600 px-8 py-3 rounded-full font-semibold shadow hover:bg-gray-100 inline-block"
-          >
-            Get Started
+
+          <Link href="/community" className="mt-10 inline-block">
+            <button className="px-12 py-4 rounded-full text-white bg-white/30 backdrop-blur-xl border border-white/40 shadow transition hover:scale-105">
+              Get Started
+            </button>
           </Link>
         </div>
       </section>
 
-
       {/* FOOTER */}
       <footer className="border-t border-slate-200 dark:border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col md:flex-row justify-between items-center md:items-start text-center md:text-left">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-slate-500">
             © 2026 EchoRoom — Built during Open Source Quest
           </p>
 
-          <div className="flex gap-4 sm:gap-6 text-sm text-slate-500 mt-4 md:mt-0 justify-center md:justify-start">
+          <div className="flex gap-6 text-sm text-slate-500 mt-4 md:mt-0">
             <Link href="/about" className="hover:text-blue-600">About</Link>
             <Link href="/community" className="hover:text-blue-600">Community</Link>
             <Link href="https://github.com/R3ACTR/EchoRoom-Community-Ideas-Experiments-Reflection-Platform" className="hover:text-blue-600">
@@ -166,19 +195,21 @@ export default function HomePage() {
   );
 }
 
+/* FEATURE CARD */
+
 function FeatureCard({
   emoji,
   title,
   desc,
 }: {
-  emoji: string;
+  emoji: React.ReactNode;
   title: string;
   desc: string;
 }) {
   return (
     <div className="group bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-2 transition duration-300">
 
-      <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-900/30 text-2xl mb-4 group-hover:scale-110 transition">
+      <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-900/30 mb-4 group-hover:scale-110 transition">
         {emoji}
       </div>
 

@@ -6,6 +6,8 @@ import { PageLayout } from "../community/PageLayout";
 import { apiFetch } from "../lib/api";
 import LoadingState from "../components/LoadingState";
 import ErrorState from "../components/ErrorState";
+import BackButton from "../components/BackButton";
+import RefreshIcon from "@/components/ui/refresh-icon";
 
 interface Reflection {
   id: number;
@@ -84,14 +86,17 @@ export default function ReflectionPage() {
 
       <main>
 
-        <div className="container py-16">
-
-          <div className="max-w-3xl mx-auto">
+        <div className="section">
 
             {/* Header */}
+            <div className="mb-4">
+                          <BackButton />
+                        </div>
             <div className="flex items-center gap-3 mb-6">
+              
 
-              <BookOpen className="h-8 w-8 text-purple-500 dark:text-purple-400" />
+             <RefreshIcon className="h-8 w-8 text-blue-600 dark:text-white" />
+
 
               <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
                 Reflection
@@ -187,7 +192,7 @@ export default function ReflectionPage() {
 
           </div>
 
-        </div>
+        
 
       </main>
 

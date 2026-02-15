@@ -5,6 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useTheme } from "../components/ThemeProvider";
+import BrightnessDownIcon from "@/components/ui/brightness-down-icon";
+import MoonIcon from "@/components/ui/moon-icon";
+
 
 const navLinks = [
   { to: "/ideas", label: "Ideas" },
@@ -46,7 +49,11 @@ return (
           className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           aria-label="Toggle theme"
         >
-          {dark ? "☀️" : "🌙"}
+          {dark ? (
+  <BrightnessDownIcon className="w-5 h-5" />
+) : (
+  <MoonIcon className="w-5 h-5" />
+)}
         </button>
 
         <Link href="/community" className="hidden md:inline-flex">

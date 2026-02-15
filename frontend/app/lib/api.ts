@@ -3,6 +3,7 @@ const API_BASE_URL = "http://localhost:5000";
 interface ApiResponse<T> {
   success: boolean;
   message?: string;
+  data?: T;
   ideas?: T;
   idea?: T;
   experiments?: T;
