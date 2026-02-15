@@ -47,3 +47,102 @@ body {
   }
 
 }
+
+
+/* ========================= */
+/* GLOBAL TRANSITIONS */
+/* ========================= */
+
+* {
+  transition:
+    background-color .45s cubic-bezier(.4,0,.2,1),
+    color .45s cubic-bezier(.4,0,.2,1),
+    border-color .45s cubic-bezier(.4,0,.2,1),
+    transform .35s ease;
+}
+
+
+/* ========================= */
+/* BUTTON LIQUID ANIMATION */
+/* ========================= */
+
+@keyframes liquidFloat {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-3px); }
+  100% { transform: translateY(0px); }
+}
+
+button:hover div:first-child {
+  animation: liquidFloat 2s ease-in-out infinite;
+}
+
+
+/* ========================= */
+/* FLOAT ANIMATIONS */
+/* ========================= */
+
+@keyframes float1 {
+  0% { transform: translate(0,0); }
+  50% { transform: translate(80px,120px); }
+  100% { transform: translate(0,0); }
+}
+
+@keyframes float2 {
+  0% { transform: translate(0,0); }
+  50% { transform: translate(-120px,-80px); }
+  100% { transform: translate(0,0); }
+}
+
+@keyframes float3 {
+  0% { transform: translate(0,0) scale(1); }
+  50% { transform: translate(60px,-100px) scale(1.2); }
+  100% { transform: translate(0,0) scale(1); }
+}
+
+.animate-float1 { animation: float1 18s ease-in-out infinite; }
+.animate-float2 { animation: float2 22s ease-in-out infinite; }
+.animate-float3 { animation: float3 26s ease-in-out infinite; }
+
+
+/* ========================= */
+/* MAIN BACKGROUND ANIMATION */
+/* ========================= */
+
+.animated-bg{
+  background: linear-gradient(-45deg,#0f172a,#1e3a8a,#312e81,#0f172a);
+  background-size: 400% 400%;
+  animation: gradientShift 18s ease infinite;
+}
+
+@keyframes gradientShift{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+
+/* ========================= */
+/* READABLE MODE */
+/* ========================= */
+
+.readable{
+  background:#ffffff !important;
+  color:#111 !important;
+}
+
+.readable *{
+  animation:none !important;
+  transition:none !important;
+}
+
+.readable p{
+  line-height:1.9;
+  letter-spacing:.3px;
+  max-width:70ch;
+}
+
+.readable h1,
+.readable h2,
+.readable h3{
+  color:#000 !important;
+}
