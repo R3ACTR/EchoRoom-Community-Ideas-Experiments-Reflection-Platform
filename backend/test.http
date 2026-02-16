@@ -1,0 +1,146 @@
+@baseUrl = http://localhost:5000
+
+### Health
+GET {{baseUrl}}/health
+
+### Ideas - Get all (initially empty)
+GET {{baseUrl}}/ideas
+
+### Ideas - Create
+POST {{baseUrl}}/ideas
+Content-Type: application/json
+
+{
+  "title": "Idea 1",
+  "description": "Ship test.http workflow"
+}
+
+### Ideas - Invalid create (missing description)
+POST {{baseUrl}}/ideas
+Content-Type: application/json
+
+{
+  "title": "Invalid idea"
+}
+
+### Ideas - Move status proposed -> experiment
+PATCH {{baseUrl}}/ideas/1/status
+Content-Type: application/json
+
+{
+  "status": "experiment"
+}
+
+### Ideas - Invalid transition (experiment -> reflection should fail)
+PATCH {{baseUrl}}/ideas/1/status
+Content-Type: application/json
+
+{
+  "status": "reflection"
+}
+
+### Ideas - Move status experiment -> outcome
+PATCH {{baseUrl}}/ideas/1/status
+Content-Type: application/json
+
+{
+  "status": "outcome"
+}
+
+### Ideas - Move status outcome -> reflection
+PATCH {{baseUrl}}/ideas/1/status
+Content-Type: application/json
+
+{
+  "status": "reflection"
+}
+
+### Experiments - Get all
+GET {{baseUrl}}/experiments
+
+### Experiments - Create
+POST {{baseUrl}}/experiments
+Content-Type: application/json
+
+{
+  "title": "Experiment 1",
+  "description": "Measure outcome quality",
+  "status": "planned"
+}
+
+### Experiments - Invalid create (missing status)
+POST {{baseUrl}}/experiments
+Content-Type: application/json
+
+{
+  "title": "Broken experiment",
+  "description": "Should fail"
+}
+
+### Experiments - Get by id
+GET {{baseUrl}}/experiments/1
+
+### Experiments - Update by id
+PUT {{baseUrl}}/experiments/1
+Content-Type: application/json
+
+{
+  "status": "completed",
+  "outcome": "Completed successfully"
+}
+
+### Experiments - Delete by id
+DELETE {{baseUrl}}/experiments/1
+
+### Experiments - Get deleted id (should be 404)
+GET {{baseUrl}}/experiments/1
+
+### Outcomes - Get all
+GET {{baseUrl}}/outcomes
+
+### Outcomes - Create
+POST {{baseUrl}}/outcomes
+Content-Type: application/json
+
+{
+  "experimentId": 1,
+  "result": "positive",
+  "notes": "Users engaged more"
+}
+
+### Outcomes - Invalid create (missing result)
+POST {{baseUrl}}/outcomes
+Content-Type: application/json
+
+{
+  "experimentId": 1
+}
+
+### Outcomes - Get by experiment id
+GET {{baseUrl}}/outcomes/1
+
+### Reflections - Get all
+GET {{baseUrl}}/reflections
+
+### Reflections - Create
+POST {{baseUrl}}/reflections
+Content-Type: application/json
+
+{
+  "outcomeId": 1,
+  "content": "The experiment validated the hypothesis."
+}
+
+### Reflections - Invalid create (missing content)
+POST {{baseUrl}}/reflections
+Content-Type: application/json
+
+{
+  "outcomeId": 1
+}
+
+### Reflections - Get by outcome id
+GET {{baseUrl}}/reflections/1
+
+### Not Found Route (should be 404 from notFoundMiddleware)
+GET {{baseUrl}}/does-not-exist

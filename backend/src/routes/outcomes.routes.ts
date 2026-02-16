@@ -1,5 +1,4 @@
 import { Router, Request, Response } from "express";
-import { experiments } from "./experiments.routes";
 
 import {
   createOutcome,
@@ -51,6 +50,7 @@ router.post("/", (req: Request, res: Response) => {
 
 // GET /outcomes
 router.get("/", (_req: Request, res: Response) => {
+  const outcomes = getAllOutcomes();
   return res.json({
     success: true,
     count: outcomes.length,

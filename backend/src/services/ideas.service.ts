@@ -1,4 +1,4 @@
-// backend/src/services/ideas.service.ts
+import { getNextIdeaId, ideas } from "../data/ideas.data";
 
 export type IdeaStatus = "proposed" | "experiment" | "outcome" | "reflection";
 
@@ -8,10 +8,6 @@ export interface Idea {
   description: string;
   status: IdeaStatus;
 }
-
-// in-memory storage
-let ideas: Idea[] = [];
-let nextId = 1;
 
 // allowed transitions
 const allowedTransitions: Record<IdeaStatus, IdeaStatus[]> = {
@@ -29,7 +25,7 @@ export const getAllIdeas = (): Idea[] => {
 // Create new idea
 export const createIdea = (title: string, description: string): Idea => {
   const newIdea: Idea = {
-    id: nextId++,
+    id: getNextIdeaId(),
     title,
     description,
     status: "proposed",
