@@ -7,8 +7,7 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
 import BackButton from "../components/BackButton";
 import BulbSvg from "@/components/ui/bulb-svg";
-
-
+import Link from "next/link";
 
 interface Idea {
   id: number;
@@ -16,71 +15,63 @@ interface Idea {
   description: string;
   status: string;
 }
+
 export default function IdeasPage() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
-const [loading, setLoading] = useState(true);
-const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-useEffect(() => {
-  const fetchIdeas = async () => {
-  try {
-    setLoading(true);
-    setError(null);
+  useEffect(() => {
+    const fetchIdeas = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-    const ideasData = await apiFetch<Idea[]>("/ideas");
+        const ideasData = await apiFetch<Idea[]>("/ideas");
+        setIdeas(ideasData);
 
-    setIdeas(ideasData);
+      } catch (err: any) {
+        setError(err.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  } catch (err: any) {
-    setError(err.message || "Something went wrong");
-  } finally {
-    setLoading(false);
+    fetchIdeas();
+  }, []);
+
+  if (loading) {
+    return (
+      <PageLayout>
+        <LoadingState message="Loading ideas..." />
+      </PageLayout>
+    );
   }
-};
 
-
-  fetchIdeas();
-}, []);
-
-
-if (loading) {
-  return (
-    <PageLayout>
-      <LoadingState message="Loading ideas..." />
-    </PageLayout>
-  );
-}
-
-
-if (error) {
-  return (
-    <PageLayout>
-      <ErrorState message={error} />
-    </PageLayout>
-  );
-}
-
-
+  if (error) {
+    return (
+      <PageLayout>
+        <ErrorState message={error} />
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout>
       <div className="section">
-      {/* <div className="mb-4 -mt-2">
-        <BackButton />
-      </div> */}
 
         {/* Header */}
         <div className="mb-8">
           <div className="mb-4">
-              <BackButton />
-            </div>
-          <div className="flex items-center gap-3 mb-3">
-          <BulbSvg className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-            Ideas in EchoRoom
-          </h1>
-        </div>
+            <BackButton />
+          </div>
 
+          <div className="flex items-center gap-3 mb-3">
+            <BulbSvg className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+              Ideas in EchoRoom
+            </h1>
+          </div>
 
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl">
             Ideas are the starting point of learning. Communities can share ideas,
@@ -93,7 +84,6 @@ if (error) {
 
           /* Empty State */
           <div className="card text-center py-12">
-
             <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-3">
               No ideas yet
             </h2>
@@ -106,7 +96,6 @@ if (error) {
             <button className="btn-primary">
               Create Idea
             </button>
-
           </div>
 
         ) : (
@@ -115,26 +104,26 @@ if (error) {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
             {ideas.map((idea) => (
-  <div key={idea.id} className="card">
+              <Link
+                key={idea.id}
+                href={`/ideas/${idea.id}`}
+                className="card block hover:scale-[1.02] transition"
+              >
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  {idea.title}
+                </h3>
 
-    <h3 className="text-xl font-semibold text-gray-900 mb-2">
-  {idea.title}
-</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  {idea.description}
+                </p>
 
-<p className="text-gray-600 text-sm mb-4">
-  {idea.description}
-</p>
-
-<div className="text-sm text-gray-400">
-  Status: {idea.status}
-</div>
-
-
-  </div>
-))}
+                <div className="text-sm text-gray-400">
+                  Status: {idea.status}
+                </div>
+              </Link>
+            ))}
 
           </div>
-
         )}
 
       </div>
