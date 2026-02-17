@@ -4,7 +4,10 @@ import {
   getAllIdeas,
   IdeaStatus,
   updateIdeaStatus,
+  deleteIdea
 } from "../services/ideas.service";
+
+
 
 function isValidString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
@@ -85,4 +88,37 @@ export const patchIdeaStatus = (req: Request, res: Response): void => {
       message,
     });
   }
+};
+
+export const deleteIdeaById = (req: Request, res: Response): void => {
+  const id = Number(req.params.id);
+
+  console.log("DELETE request for ID:", id);
+  
+
+  if (Number.isNaN(id)) {
+    res.status(400).json({
+      success: false,
+      message: "Invalid idea ID",
+    });
+    return;
+  }
+
+  const deleted = deleteIdea(id);
+
+  console.log("Deleted:", deleted);
+  console.log("DELETE HIT:", id);
+
+  if (!deleted) {
+    res.status(404).json({
+      success: false,
+      message: "Idea not found",
+    });
+    return;
+  }
+
+  res.json({
+    success: true,
+    message: "Idea deleted",
+  });
 };

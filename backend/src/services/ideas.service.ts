@@ -52,3 +52,12 @@ export const updateIdeaStatus = (id: number, status: IdeaStatus): Idea | null =>
 
   return idea;
 };
+
+export const deleteIdea = (id: number): boolean => {
+  const index = ideas.findIndex(i => i.id === Number(id));
+
+  if (index === -1) return false;
+
+  ideas.splice(index, 1);
+  return true;
+};

@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
 import BackButton from "../components/BackButton";
 import BulbSvg from "@/components/ui/bulb-svg";
+import { useRouter } from "next/navigation";
+import TrashIcon from "@/components/ui/trash-icon";
 
 
 
@@ -20,6 +22,8 @@ export default function IdeasPage() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
 const [loading, setLoading] = useState(true);
 const [error, setError] = useState<string | null>(null);
+const router = useRouter();
+
 
 useEffect(() => {
   const fetchIdeas = async () => {
@@ -74,12 +78,22 @@ if (error) {
           <div className="mb-4">
               <BackButton />
             </div>
-          <div className="flex items-center gap-3 mb-3">
-          <BulbSvg className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-            Ideas in EchoRoom
-          </h1>
-        </div>
+          <div className="flex items-center justify-between mb-3">
+  <div className="flex items-center gap-3">
+    <BulbSvg className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+    <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+      Ideas in EchoRoom
+    </h1>
+  </div>
+
+  <button
+    onClick={() => router.push("/ideas/create")}
+    className="btn-primary"
+  >
+    + Create Idea
+  </button>
+</div>
+
 
 
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl">
@@ -103,9 +117,13 @@ if (error) {
               Be the first to create one.
             </p>
 
-            <button className="btn-primary">
-              Create Idea
-            </button>
+            <button
+  className="btn-primary"
+  onClick={() => router.push("/ideas/create")}
+>
+  Create Idea
+</button>
+
 
           </div>
 
@@ -115,23 +133,54 @@ if (error) {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
             {ideas.map((idea) => (
-  <div key={idea.id} className="card">
+  <div key={idea.id} className="card relative group !overflow-visible">
+        {/* DELETE BUTTON */}
+     <button
+  onClick={async () => {
+    if (!confirm("Delete this idea?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/ideas/${idea.id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Delete failed");
+      }
+
+      setIdeas(prev => prev.filter(i => i.id !== idea.id));
+    } catch (err: any) {
+      alert(err.message || "Failed to delete idea");
+    }
+  }}
+  className="absolute top-5 right-5 p-2 text-red-400 hover:text-red-600 transition"
+
+>
+  <TrashIcon className="w-6 h-6" />
+</button>
 
     <h3 className="text-xl font-semibold text-gray-900 mb-2">
-  {idea.title}
-</h3>
+      {idea.title}
+    </h3>
 
-<p className="text-gray-600 text-sm mb-4">
-  {idea.description}
-</p>
+    <p className="text-gray-600 text-sm mb-4">
+      {idea.description}
+    </p>
 
-<div className="text-sm text-gray-400">
-  Status: {idea.status}
-</div>
+    <div className="text-sm text-gray-400">
+      Status: {idea.status}
+    </div>
 
+
+
+
+    
 
   </div>
 ))}
+
 
           </div>
 
