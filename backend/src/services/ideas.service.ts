@@ -7,7 +7,10 @@ export interface Idea {
   title: string;
   description: string;
   status: IdeaStatus;
+  createdAt: string;
+  updatedAt: string;
 }
+
 
 // allowed transitions
 const allowedTransitions: Record<IdeaStatus, IdeaStatus[]> = {
@@ -24,17 +27,21 @@ export const getAllIdeas = (): Idea[] => {
 
 // Create new idea
 export const createIdea = (title: string, description: string): Idea => {
+  const now = new Date().toISOString();
+
   const newIdea: Idea = {
     id: getNextIdeaId(),
     title,
     description,
     status: "proposed",
+    createdAt: now,
+    updatedAt: now,
   };
 
   ideas.push(newIdea);
-
   return newIdea;
 };
+
 
 // Update idea status
 export const updateIdeaStatus = (id: number, status: IdeaStatus): Idea | null => {
@@ -49,15 +56,20 @@ export const updateIdeaStatus = (id: number, status: IdeaStatus): Idea | null =>
   }
 
   idea.status = status;
+  idea.updatedAt = new Date().toISOString();
 
   return idea;
 };
 
 export const deleteIdea = (id: number): boolean => {
-  const index = ideas.findIndex(i => i.id === Number(id));
+  const index = ideas.findIndex(i => i.id === id);
+
 
   if (index === -1) return false;
 
   ideas.splice(index, 1);
   return true;
+};
+export const getIdeaById = (id: number): Idea | null => {
+  return ideas.find(i => i.id === id) || null;
 };

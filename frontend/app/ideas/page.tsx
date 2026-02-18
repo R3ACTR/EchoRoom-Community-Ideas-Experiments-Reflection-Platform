@@ -25,6 +25,7 @@ export default function IdeasPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteIdea, setDeleteIdea] = useState<Idea | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const router = useRouter();
 
   // Search and Filter State
@@ -55,6 +56,40 @@ export default function IdeasPage() {
     const matchesStatus = statusFilter === "All" || idea.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+  /* close modal on ESC */
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDeleteIdea(null);
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, []);
+
+  const handleDelete = async () => {
+    if (!deleteIdea || deleting) return;
+
+    try {
+      setDeleting(true);
+
+      const res = await fetch(
+        `http://localhost:5000/ideas/${deleteIdea.id}`,
+        { method: "DELETE" }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Delete failed");
+      }
+
+      setIdeas(prev => prev.filter(i => i.id !== deleteIdea.id));
+      setDeleteIdea(null);
+    } catch (err: any) {
+      alert(err.message || "Failed to delete idea");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -94,6 +129,7 @@ export default function IdeasPage() {
           </div>
 
           <p className="text-lg  max-w-2xl text-black dark:text-white mb-8">
+          <p className="text-lg max-w-2xl text-black dark:text-white">
             Ideas are the starting point of learning. Communities can share ideas,
             explore them through experiments, and reflect on outcomes.
           </p>
@@ -135,7 +171,6 @@ export default function IdeasPage() {
           </div>
         </div>
 
-        {/* EMPTY STATE */}
         {ideas.length === 0 ? (
           <div className="flex justify-center mt-14">
             <MagicCard
@@ -154,10 +189,7 @@ export default function IdeasPage() {
                   Be the first to share something and spark discussion.
                 </p>
 
-                <Button
-                  variant="primary"
-                  onClick={() => router.push("/ideas/create")}
-                >
+                <Button onClick={() => router.push("/ideas/create")}>
                   + Create First Idea
                 </Button>
               </div>
@@ -183,7 +215,6 @@ export default function IdeasPage() {
             </button>
           </div>
         ) : (
-          /* IDEAS GRID */
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredIdeas.map((idea) => (
               <MagicCard
@@ -217,7 +248,6 @@ export default function IdeasPage() {
         )}
       </div>
 
-      {/* DELETE MODAL */}
       {deleteIdea && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <MagicCard
@@ -234,15 +264,21 @@ export default function IdeasPage() {
                   "{deleteIdea.title}" will be permanently removed.
                 </p>
               </div>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => !deleting && setDeleteIdea(null)}
+        >
+          <div onClick={(e) => e.stopPropagation()}>
+            <MagicCard
+              className="p-[1px] rounded-2xl"
+              gradientColor="rgba(59,130,246,0.6)"
+            >
+              <div className="bg-white/10 dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl px-7 py-7 w-[380px]">
 
-              <div className="flex gap-4">
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  onClick={() => setDeleteIdea(null)}
-                >
-                  Cancel
-                </Button>
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold text-black dark:text-white">
+                    Delete Idea
+                  </h2>
 
                 <Button
                   variant="primary"
@@ -269,9 +305,29 @@ export default function IdeasPage() {
                 >
                   Delete
                 </Button>
+                  <p className="text-slate-600 dark:text-slate-200 text-sm mt-2 leading-relaxed">
+                    "{deleteIdea.title}" will be permanently removed.
+                  </p>
+                </div>
+
+                <div className="flex gap-4">
+                  <Button
+                    className={`w-full ${deleting ? "opacity-50 pointer-events-none" : ""}`}
+                    onClick={() => setDeleteIdea(null)}
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button
+                    className={`w-full ${deleting ? "opacity-50 pointer-events-none" : ""}`}
+                    onClick={handleDelete}
+                  >
+                    {deleting ? "Deleting..." : "Delete"}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </MagicCard>
+            </MagicCard>
+          </div>
         </div>
       )}
     </PageLayout>
