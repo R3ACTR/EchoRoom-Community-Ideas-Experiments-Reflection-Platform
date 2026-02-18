@@ -148,11 +148,14 @@ export default function DraftsPage() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {drafts.map((draft) => (
-              <MagicCard
+              <div
                 key={draft.id}
-                className="p-[1px] rounded-xl relative group cursor-pointer"
-                gradientColor="rgba(107,114,128,0.6)"
+                className="cursor-pointer"
                 onClick={() => router.push(`/ideas/drafts/${draft.id}`)}
+              >
+              <MagicCard
+                className="p-[1px] rounded-xl relative group"
+                gradientColor="rgba(107,114,128,0.6)"
               >
                 <div className="relative p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10">
                   
@@ -179,6 +182,7 @@ export default function DraftsPage() {
                   </div>
                 </div>
               </MagicCard>
+              </div>
             ))}
           </div>
         )}

@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { PageLayout } from "../../community/PageLayout";
-import LoadingState from "../../components/LoadingState";
-import ErrorState from "../../components/ErrorState";
+import { PageLayout } from "../../../community/PageLayout";
+import LoadingState from "../../../components/LoadingState";
+import ErrorState from "../../../components/ErrorState";
+import { RetroGrid } from "@/components/ui/retro-grid";
+import { MagicCard } from "@/components/ui/magic-card";
+import { Button } from "@/components/ui/button";
 
 const API_BASE_URL = "http://localhost:5000";
 

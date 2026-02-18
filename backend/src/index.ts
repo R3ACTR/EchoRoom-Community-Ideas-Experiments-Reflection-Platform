@@ -37,27 +37,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
-
-
-process.on("SIGINT", async () => {
-  try {
-    if (prisma && typeof prisma.$disconnect === "function") {
-      await prisma.$disconnect();
-    }
-  } catch (err) {
-    console.error("Error during Prisma disconnect:", err);
-  }
-  process.exit(0);
-});
-
-process.on("SIGTERM", async () => {
-  try {
-    if (prisma && typeof prisma.$disconnect === "function") {
-      await prisma.$disconnect();
-    }
-  } catch (err) {
-    console.error("Error during Prisma disconnect:", err);
-  }
-  process.exit(0);
-});

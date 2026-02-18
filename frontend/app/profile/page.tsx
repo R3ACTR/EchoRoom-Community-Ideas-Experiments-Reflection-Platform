@@ -62,7 +62,12 @@ export default function ProfilePage() {
         localStorage.setItem("users", JSON.stringify(users));
       }
 
-      const updatedUser = { ...user, name: formData.name, email: formData.email };
+      const updatedUser: UserData = { 
+        ...user!, 
+        name: formData.name, 
+        email: formData.email,
+        role: user?.role || "user"
+      };
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
       setIsEditing(false);
