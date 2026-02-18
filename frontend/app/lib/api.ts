@@ -8,6 +8,7 @@ interface ApiResponse<T> {
   idea?: T;
   experiments?: T;
   reflections?: T;
+  outcomes?: T;
 }
 
 export async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
@@ -38,7 +39,8 @@ export async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise
       data.ideas ??
       data.idea ??
       data.experiments ??
-      data.reflections;
+      data.reflections ??
+      data.outcomes;
 
 
     if (!result) {
