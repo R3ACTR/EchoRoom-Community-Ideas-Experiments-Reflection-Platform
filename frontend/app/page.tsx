@@ -2,287 +2,246 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import Button from "./components/ui/Button";
+
 import BulbSvg from "@/components/ui/bulb-svg";
 import QuestionMark from "@/components/ui/question-mark";
 import LibraryIcon from "@/components/ui/library-icon";
 import ChartHistogramIcon from "@/components/ui/chart-histogram-icon";
-import { Ripple } from "@/components/ui/ripple";
-import { MorphingText } from "@/components/ui/morphing-text"
-import { TypingAnimation } from "@/components/ui/typing-animation"
+import RadioIcon from "@/components/ui/radio-icon";
+
 import WifiIcon from "@/components/ui/wifi-icon";
 import WifiOffIcon from "@/components/ui/wifi-off-icon";
 
+import { Ripple } from "@/components/ui/ripple";
+import { MorphingText } from "@/components/ui/morphing-text";
+import { TypingAnimation } from "@/components/ui/typing-animation";
+
+import { Dock, DockIcon } from "@/components/ui/dock";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
+import { MagicCard } from "@/components/ui/magic-card";
 
 export default function HomePage() {
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
 
   useEffect(() => {
-  fetch("http://localhost:5000/health")
-    .then(() => {
-      setBackendOnline(true);
-    })
-    .catch(() => {
-      setBackendOnline(false);
-    });
-}, []);
+    fetch("http://localhost:5000/health")
+      .then(() => setBackendOnline(true))
+      .catch(() => setBackendOnline(false));
+  }, []);
 
-
-return (
-
+  return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors">
 
+      {/* NAVBAR */}
+      <nav className="sticky top-0 z-50 backdrop-blur-lg bg-white/70 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center relative">
 
-{/* HERO */}
+          {/* Logo */}
+          <div className="flex items-center gap-2 text-2xl font-extrabold">
+            <RadioIcon className="w-6 h-6 text-slate-800 dark:text-white" />
+            <span className="text-slate-900 dark:text-white hover:text-blue-500 transition-colors">
+              EchoRoom
+            </span>
+          </div>
 
-<section className="relative z-10 max-w-5xl mx-auto text-center px-6 pt-20 pb-32">
+          {/* Navigation Dock */}
+          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2">
+            <NavbarDock />
+          </div>
 
-<div className="absolute inset-0 h-[600px] w-full overflow-hidden">
-  <Ripple />
-</div>
+          {/* Right Side */}
+          <div className="flex items-center gap-4 ml-auto">
 
+            <AnimatedThemeToggler className="flex items-center justify-center w-11 h-11 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition" />
 
-  {/* Badge */}
-  <div className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-1.5 rounded-full text-sm font-medium mb-6">
-    Community-Driven Learning Platform
-  </div>
+            <Link href="/signup">
+              <Button
+                variant="primary"
+                className="rounded-full px-6 py-2.5 text-sm"
+              >
+                Sign Up
+              </Button>
+            </Link>
 
-  {/* Heading */}
-  <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-  Turn Ideas into
-</h1>
+            <Link
+              href="/login"
+              className="text-slate-600 dark:text-slate-300 hover:text-blue-600"
+            >
+              Login
+            </Link>
 
-<div className="mt-6 text-blue-600 dark:text-blue-400">
+          </div>
 
-  <MorphingText
-  texts={[
-    "Experiments",
-    "Insights",
-    "Knowledge",
-    "Impact",
-  ]}
-  className="h-[80px] md:h-[100px] lg:h-[110px]"
-/>
-
-</div>
-
-
-
-  {/* Backend status */}
-  <div className="mt-2 flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md w-fit mx-auto">
-  {backendOnline === null ? (
-  <span className="text-xs text-slate-400">Checking...</span>
-) : backendOnline ? (
-  <>
-    <WifiIcon className="w-4 h-4 text-emerald-400 animate-pulse" />
-    <span className="text-xs font-medium text-emerald-400">
-      Backend Online
-    </span>
-  </>
-) : (
-  <>
-    <WifiOffIcon className="w-4 h-4 text-rose-400" />
-    <span className="text-xs font-medium text-rose-400">
-      Backend Offline
-    </span>
-  </>
-)}
-
-</div>
+        </div>
+      </nav>
 
 
-  {/* Description */}
-  <div className="mt-6 text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-  <TypingAnimation
-    words={[
-      "Where ideas become experiments.",
-      "Experiments become insights.",
-      "Insights become knowledge.",
-      "Knowledge becomes impact."
-    ]}
-    loop
-    className="text-slate-600 dark:text-slate-300"
-  />
-</div>
+      {/* HERO */}
+      <section className="relative z-10 max-w-5xl mx-auto text-center px-6 pt-20 pb-32">
 
+        <div className="absolute inset-0 h-[600px] w-full overflow-hidden">
+          <Ripple />
+        </div>
 
-  {/* Buttons */}
-  <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-1.5 rounded-full text-sm font-medium mb-6">
+          Community-Driven Learning Platform
+        </div>
 
-    <Link href="/ideas">
-  <Button
-  variant="primary"
-  className="
-    rounded-full
-    px-16 py-6
-    text-xl
-    font-normal
-    tracking-tight
-    
-  "
->
-  Start Exploring 
-</Button>
+        <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white">
+          Turn Ideas into
+        </h1>
 
-</Link>
+        <div className="mt-6 text-blue-600 dark:text-blue-400">
+          <MorphingText
+            texts={["Experiments", "Insights", "Knowledge", "Impact"]}
+            className="h-[80px] md:h-[100px]"
+          />
+        </div>
 
+        {/* Backend status */}
+        <div className="mt-4 flex items-center justify-center gap-2">
 
-<Link href="/about">
-  <Button
-  variant="outline"
-  className="
-    rounded-full
-    px-16 py-6
-    text-xl
-    font-normal
-    tracking-tight
+          {backendOnline === null && (
+            <span className="text-sm text-gray-400">Checking backend...</span>
+          )}
 
-    bg-[#7EACB5]
-    text-slate-900
-    dark:text-white
+          {backendOnline === true && (
+            <>
+              <WifiIcon className="w-4 h-4 text-green-500" />
+              <span className="text-green-500 text-sm">Backend Online</span>
+            </>
+          )}
 
-    hover:bg-[#6e9ca5]
+          {backendOnline === false && (
+            <>
+              <WifiOffIcon className="w-4 h-4 text-red-500" />
+              <span className="text-red-500 text-sm">Backend Offline</span>
+            </>
+          )}
 
-    border border-slate-300
-    dark:border-white/20
-  "
->
-  Learn More
-</Button>
+        </div>
 
+        <div className="mt-6 text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+          <TypingAnimation
+            words={[
+              "Where ideas become experiments.",
+              "Experiments become insights.",
+              "Insights become knowledge.",
+              "Knowledge becomes impact.",
+            ]}
+            loop
+          />
+        </div>
 
+        <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
 
-</Link>
+          <Link href="/ideas">
+            <Button
+              variant="primary"
+              className="rounded-full px-16 py-6 text-xl"
+            >
+              Start Exploring
+            </Button>
+          </Link>
 
+          <Link href="/about">
+            <Button
+              variant="outline"
+              className="rounded-full px-16 py-6 text-xl"
+            >
+              Learn More
+            </Button>
+          </Link>
 
+        </div>
 
-
-  </div>
-
-</section>
+      </section>
 
 
       {/* FEATURES */}
-     <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-16 sm:pb-24">
+      <section className="max-w-7xl mx-auto px-6 pb-20 grid grid-cols-1 md:grid-cols-4 gap-6">
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <FeatureCard
-            emoji={<BulbSvg className="w-6 h-6" />}
-            title="Share Ideas"
-            desc="Post and discuss ideas openly with your community to spark innovation."
-          />
-          <FeatureCard
-            emoji={<QuestionMark className="w-6 h-6" />}
-            title="Run Experiments"
-            desc="Validate ideas through focused real-world experiments and tests."
-          />
-          <FeatureCard
-            emoji={<ChartHistogramIcon className="w-6 h-6" />}
-            title="Track Outcomes"
-            desc="Capture results and build collective knowledge from detailed outcomes."
-          />
-          <FeatureCard
-            emoji={<LibraryIcon className="w-6 h-6" />}
-            title="Reflect & Learn"
-            desc="Improve continuously through shared insights and reflection."
-          />
-        </div>
+        <FeatureCard
+          emoji={<BulbSvg className="w-6 h-6" />}
+          title="Share Ideas"
+          desc="Post and discuss ideas openly"
+        />
+
+        <FeatureCard
+          emoji={<QuestionMark className="w-6 h-6" />}
+          title="Run Experiments"
+          desc="Validate ideas through experiments"
+        />
+
+        <FeatureCard
+          emoji={<ChartHistogramIcon className="w-6 h-6" />}
+          title="Track Outcomes"
+          desc="Capture results and learn"
+        />
+
+        <FeatureCard
+          emoji={<LibraryIcon className="w-6 h-6" />}
+          title="Reflect"
+          desc="Improve continuously"
+        />
+
       </section>
 
-      {/* CTA */}
-      <section className="bg-blue-600 py-16 text-center">
-        <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-white">
-            Start building and learning together
-          </h2>
-          <p className="text-blue-100 mt-4">
-            Join EchoRoom and turn your ideas into meaningful experiments today.
-            No credit card required.
-          </p>
-         <Link href="/community" className="mt-10 inline-block">
 
-  <button
-    className="
-      px-12 py-4
-      rounded-full
-      font-normal
-      text-lg
-      text-slate-700
-      text-white
-      bg-white/30
-      backdrop-blur-xl
-      
-      border border-white/40
-      
-      shadow-[0_8px_30px_rgba(0,0,0,0.12)]
-      
-      transition-all duration-300
-      
-      hover:shadow-[0_12px_40px_rgba(0,0,0,0.18)]
-      hover:scale-[1.04]
-      active:scale-[0.97]
-    "
-  >
-    Get Started
-  </button>
-</Link>
-
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="border-t border-slate-200 dark:border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col md:flex-row justify-between items-center md:items-start text-center md:text-left">
-          <p className="text-sm text-slate-500">
-            © 2026 EchoRoom — Built during Open Source Quest
-          </p>
-          <div className="flex gap-4 sm:gap-6 text-sm text-slate-500 mt-4 md:mt-0 justify-center md:justify-start">
-            <Link href="/about" className="hover:text-blue-600">
-              About
-            </Link>
-            <Link href="/community" className="hover:text-blue-600">
-              Community
-            </Link>
-            <Link
-              href="https://github.com/R3ACTR/EchoRoom-Community-Ideas-Experiments-Reflection-Platform"
-              className="hover:text-blue-600"
-            >
-              GitHub
-            </Link>
-          </div>
-        </div>
-      </footer>
     </main>
   );
 }
+
 
 function FeatureCard({
   emoji,
   title,
   desc,
-}: {
-  emoji: React.ReactNode;
-  title: string;
-  desc: string;
-}) {
+}: any) {
   return (
-    <div className="group bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-2 transition duration-300">
+    <MagicCard className="p-[1px] rounded-xl">
 
-      {/* Icon container */}
-      <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-900/30 text-2xl mb-4 group-hover:scale-110 transition">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl">
+
         {emoji}
+
+        <h3 className="font-semibold mt-3">
+          {title}
+        </h3>
+
+        <p className="text-sm text-gray-500 mt-2">
+          {desc}
+        </p>
+
       </div>
 
-      {/* Title */}
-      <h3 className="font-semibold text-lg text-slate-800 dark:text-white">
-        {title}
-      </h3>
+    </MagicCard>
+  );
+}
 
-      {/* Description */}
-      <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
-        {desc}
-      </p>
 
-    </div>
+function NavbarDock() {
+
+  const router = useRouter();
+
+  return (
+    <Dock>
+
+      <DockIcon onClick={() => router.push("/ideas")}>
+        <BulbSvg className="w-5 h-5" />
+      </DockIcon>
+
+      <DockIcon onClick={() => router.push("/experiments")}>
+        <ChartHistogramIcon className="w-5 h-5" />
+      </DockIcon>
+
+      <DockIcon onClick={() => router.push("/reflection")}>
+        <LibraryIcon className="w-5 h-5" />
+      </DockIcon>
+
+    </Dock>
   );
 }

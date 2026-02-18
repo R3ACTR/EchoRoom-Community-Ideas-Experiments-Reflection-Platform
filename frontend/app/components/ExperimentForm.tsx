@@ -6,10 +6,13 @@ import { CalendarIcon, ArrowRight } from "lucide-react";
 import Container from "./ui/Container";
 import ReactMarkdown from "react-markdown";
 
+import { useExperiments } from "../context/ExperimentsContext";
+
 export function ExperimentForm() {
     const [preview, setPreview] = useState(false);
 
     const router = useRouter();
+    const { addExperiment } = useExperiments();
     const [formData, setFormData] = useState({
         title: "",
         hypothesis: "",
@@ -38,13 +41,17 @@ export function ExperimentForm() {
         e.preventDefault();
         setIsSubmitting(true);
 
-        console.log("Submitting Experiment Data:", formData);
 
-        setTimeout(() => {
-            alert("Experiment created successfully!");
+
+            // Simulate a short delay for UX
+            setTimeout(() => {
+                setIsSubmitting(false);
+                router.push("/experiments");
+            }, 500);
+        } catch (error) {
+            console.error("Failed to create experiment:", error);
             setIsSubmitting(false);
-            router.push("/experiments");
-        }, 1000);
+        }
     };
 
     return (
@@ -77,46 +84,51 @@ export function ExperimentForm() {
                     />
                 </div>
 
-               {/* Hypothesis */}
-<div>
-    <div className="flex items-center justify-between mb-1">
-        <label
-            htmlFor="hypothesis"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-        >
-            Hypothesis
-        </label>
+                {/* Hypothesis */}
+                <div>
+                    <div className="flex items-center justify-between mb-1">
+                        <label
+                            htmlFor="hypothesis"
+                            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >
+                            Hypothesis
+                        </label>
 
-        <button
-            type="button"
-            onClick={() => setPreview((p) => !p)}
-            className="text-xs px-3 py-1 rounded-md border bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600"
-        >
-            {preview ? "Write" : "Preview"}
-        </button>
-    </div>
+                        <button
+                            type="button"
+                            onClick={() => setPreview((p) => !p)}
+                            className="text-xs px-3 py-1 rounded-md border bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600"
+                        >
+                            {preview ? "Write" : "Preview"}
+                        </button>
+                    </div>
 
-    {preview ? (
-        <div className="w-full px-4 py-3 border rounded-lg bg-white dark:bg-slate-800 dark:border-slate-700 prose max-w-none min-h-[120px]">
-            <ReactMarkdown>
-                {formData.hypothesis || "Nothing to preview..."}
-            </ReactMarkdown>
-        </div>
-    ) : (
-        <textarea
-            id="hypothesis"
-            name="hypothesis"
-            required
-            rows={4}
-            value={formData.hypothesis}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-800 dark:border-slate-700"
-            placeholder="Supports Markdown: **bold**, # heading, - list"
+                    {preview ? (
+                        <div className="w-full px-4 py-3 border rounded-lg bg-white dark:bg-slate-800 dark:border-slate-700 prose max-w-none min-h-[120px]">
+                            <ReactMarkdown>
+                                {formData.hypothesis || "Nothing to preview..."}
+                            </ReactMarkdown>
+                        </div>
+                    ) : (
+                        <>
+                            <textarea
+                                id="hypothesis"
+                                name="hypothesis"
+                                required
+                                rows={4}
+                                value={formData.hypothesis}
+                                onChange={handleChange}
+                                maxLength={300}
+                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-800 dark:border-slate-700"
+                                placeholder="Supports Markdown: **bold**, # heading, - list"
+                            />
 
-        />
-    )}
-</div>
-
+                            <p className="text-xs text-right mt-1 text-gray-500">
+                                {formData.hypothesis.length}/300 characters
+                            </p>
+                        </>
+                    )}
+                </div>
 
                 {/* Dates Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

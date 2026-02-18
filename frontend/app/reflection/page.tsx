@@ -8,6 +8,8 @@ import LoadingState from "../components/LoadingState";
 import ErrorState from "../components/ErrorState";
 import BackButton from "../components/BackButton";
 import RefreshIcon from "@/components/ui/refresh-icon";
+import LibraryIcon from "@/components/ui/library-icon";
+import { MagicCard } from "@/components/ui/magic-card";
 
 interface Reflection {
   id: number;
@@ -148,7 +150,7 @@ export default function ReflectionPage() {
             <div className="flex items-center gap-3 mb-6">
               
 
-             <RefreshIcon className="h-8 w-8 text-blue-600 dark:text-white" />
+             <LibraryIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
 
 
               <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
@@ -165,17 +167,27 @@ export default function ReflectionPage() {
             {/* Empty state */}
             {reflections.length === 0 ? (
 
-              <div className="card text-center py-12">
+  <div className="flex justify-center mt-14">
+    <MagicCard
+      className="p-[1px] rounded-xl w-full"
+      gradientColor="rgba(59,130,246,0.6)"
+    >
+      <div className="bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 px-10 py-12 text-center">
 
-                <h2 className="text-xl font-semibold">
-                  No reflections yet
-                </h2>
+        <LibraryIcon className="w-10 h-10 mx-auto mb-5 text-blue-400 opacity-80" />
 
-                <p className="text-gray-500 mt-2">
-                  Reflections will appear here once added.
-                </p>
+        <h3 className="text-xl font-semibold text-black dark:text-white mb-2">
+          No reflections yet
+        </h3>
 
-              </div>
+        <p className="text-slate-500 text-sm leading-relaxed">
+          Reflections will appear here once outcomes are reviewed and learning is recorded.
+        </p>
+
+      </div>
+    </MagicCard>
+  </div>
+
 
             ) : (
 

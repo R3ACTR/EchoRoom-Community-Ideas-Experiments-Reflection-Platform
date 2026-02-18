@@ -9,7 +9,8 @@ import outcomesRoutes from "./routes/outcomes.routes";
 import reflectionsRoutes from "./routes/reflections.routes";
 import authRoutes from "./routes/auth.routes";
 
-import prisma from "./lib/prisma";
+// import prisma from "./lib/prisma";
+console.log("INDEX TS SERVER STARTED");
 
 const app = express();
 
@@ -33,18 +34,30 @@ app.use((err: any, _req: Request, res: Response, _next: any) => {
 
 const PORT = process.env.PORT || 5000;
 
-const startServer = async () => {
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
+
+
+
+process.on("SIGINT", async () => {
   try {
-    await prisma.$connect();
-    console.log("Database connected successfully");
-    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
-  } catch (error) {
-    console.error("Failed to connect to database:", error);
-    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT} (without database)`));
+    if (prisma && typeof prisma.$disconnect === "function") {
+      await prisma.$disconnect();
+    }
+  } catch (err) {
+    console.error("Error during Prisma disconnect:", err);
   }
-};
+  process.exit(0);
+});
 
-startServer();
-
-process.on("SIGINT", async () => { await prisma.$disconnect(); process.exit(0); });
-process.on("SIGTERM", async () => { await prisma.$disconnect(); process.exit(0); });
+process.on("SIGTERM", async () => {
+  try {
+    if (prisma && typeof prisma.$disconnect === "function") {
+      await prisma.$disconnect();
+    }
+  } catch (err) {
+    console.error("Error during Prisma disconnect:", err);
+  }
+  process.exit(0);
+});

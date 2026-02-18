@@ -2,10 +2,18 @@ import { NextFunction, Request, Response } from "express";
 import {
   createExperiment,
   deleteExperiment,
+  getProgressForExperimentStatus,
   getAllExperiments,
   getExperimentById,
+  isExperimentStatus,
   updateExperiment,
+  Experiment,
 } from "../services/experiments.service";
+
+const toExperimentResponse = (experiment: Experiment) => ({
+  ...experiment,
+  progress: getProgressForExperimentStatus(experiment.status),
+});
 
 export const getExperiments = (
   _req: Request,
@@ -16,7 +24,7 @@ export const getExperiments = (
     const experiments = getAllExperiments();
     res.json({
       success: true,
-      data: experiments,
+      data: experiments.map(toExperimentResponse),
     });
   } catch (error) {
     next(error);
@@ -49,7 +57,7 @@ export const getExperiment = (
 
     res.json({
       success: true,
-      data: experiment,
+      data: toExperimentResponse(experiment),
     });
   } catch (error) {
     next(error);
@@ -72,16 +80,23 @@ export const postExperiment = (
       return;
     }
 
+    if (!isExperimentStatus(status)) {
+      res.status(400).json({
+        success: false,
+        message: "status must be one of: planned, in-progress, completed",
+      });
+      return;
+    }
+
     const experiment = createExperiment(
       String(title),
       String(description),
-      status,
-      ""
+      status
     );
 
     res.status(201).json({
       success: true,
-      data: experiment,
+      data: toExperimentResponse(experiment),
     });
   } catch (error) {
     next(error);
@@ -103,6 +118,17 @@ export const putExperiment = (
       return;
     }
 
+    if (
+      Object.prototype.hasOwnProperty.call(req.body, "status") &&
+      !isExperimentStatus(req.body.status)
+    ) {
+      res.status(400).json({
+        success: false,
+        message: "status must be one of: planned, in-progress, completed",
+      });
+      return;
+    }
+
     const updatedExperiment = updateExperiment(id, req.body);
     if (!updatedExperiment) {
       res.status(404).json({
@@ -114,7 +140,7 @@ export const putExperiment = (
 
     res.json({
       success: true,
-      data: updatedExperiment,
+      data: toExperimentResponse(updatedExperiment),
     });
   } catch (error) {
     next(error);
