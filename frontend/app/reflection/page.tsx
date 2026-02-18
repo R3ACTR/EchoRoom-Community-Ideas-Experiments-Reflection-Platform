@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BookOpen, MessageSquare } from "lucide-react";
+import { BookOpen, MessageSquare, Plus, X } from "lucide-react";
 import { PageLayout } from "../community/PageLayout";
 import { apiFetch } from "../lib/api";
 import LoadingState from "../components/LoadingState";
@@ -69,8 +69,17 @@ const mapReflectionToViewModel = (
 export default function ReflectionPage() {
 
   const [reflections, setReflections] = useState<Reflection[]>([]);
+  const [outcomes, setOutcomes] = useState<OutcomeApiResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Creation State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newReflection, setNewReflection] = useState({
+    outcomeId: "",
+    content: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
 
@@ -85,6 +94,8 @@ export default function ReflectionPage() {
           apiFetch<ReflectionApiResponse[]>("/reflections"),
           apiFetch<OutcomeApiResponse[]>("/outcomes"),
         ]);
+
+        setOutcomes(outcomesData);
 
         const outcomeMap = new Map<number, string>(
           outcomesData.map((outcome) => [outcome.id, outcome.result])
@@ -109,8 +120,50 @@ export default function ReflectionPage() {
     };
 
     fetchReflections();
-
   }, []);
+
+  const handleCreateReflection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newReflection.outcomeId || !newReflection.content) return;
+
+    setIsSubmitting(true);
+    try {
+      await apiFetch("/reflections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          outcomeId: Number(newReflection.outcomeId),
+          content: newReflection.content,
+        }),
+      });
+
+      // Refresh data
+      const [reflectionsData, outcomesData] = await Promise.all([
+        apiFetch<ReflectionApiResponse[]>("/reflections"),
+        apiFetch<OutcomeApiResponse[]>("/outcomes"),
+      ]);
+
+      setOutcomes(outcomesData);
+
+      const outcomeMap = new Map<number, string>(
+        outcomesData.map((outcome) => [outcome.id, outcome.result])
+      );
+
+      const mappedReflections = reflectionsData.map((reflection) =>
+        mapReflectionToViewModel(reflection, outcomeMap)
+      );
+
+      setReflections(mappedReflections);
+
+      // Reset and close
+      setNewReflection({ outcomeId: "", content: "" });
+      setIsModalOpen(false);
+    } catch (err: any) {
+      alert(err.message || "Failed to create reflection");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
 
   // Error state
@@ -141,113 +194,196 @@ export default function ReflectionPage() {
 
         <div className="section">
 
-            {/* Header */}
-            <div className="mb-4">
-                          <BackButton />
-                        </div>
-            <div className="flex items-center gap-3 mb-6">
-              
+          {/* Header */}
+          <div className="mb-4">
+            <BackButton />
+          </div>
+          <div className="flex items-center gap-3 mb-6">
+            <RefreshIcon className="h-8 w-8 text-blue-600 dark:text-white" />
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+              Reflection
+            </h1>
+          </div>
 
-             <RefreshIcon className="h-8 w-8 text-blue-600 dark:text-white" />
+          <div className="flex justify-between items-center mb-10">
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              Reflection is where learning becomes meaningful.
+            </p>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="btn-primary flex items-center gap-2"
+            >
+              <Plus size={20} />
+              Create Reflection
+            </button>
+          </div>
 
 
-              <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-                Reflection
-              </h1>
+          {/* Empty state */}
+          {reflections.length === 0 ? (
+
+            <div className="card text-center py-12">
+
+              <h2 className="text-xl font-semibold">
+                No reflections yet
+              </h2>
+
+              <p className="text-gray-500 mt-2 mb-6">
+                Reflections will appear here once added.
+              </p>
+
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="btn-primary"
+              >
+                Add First Reflection
+              </button>
 
             </div>
 
-            <p className="text-lg text-gray-600 dark:text-gray-300 mb-10">
-              Reflection is where learning becomes meaningful.
-            </p>
+          ) : (
 
+            <div className="space-y-6">
 
-            {/* Empty state */}
-            {reflections.length === 0 ? (
+              {reflections.map((ref) => (
 
-              <div className="card text-center py-12">
+                <div
+                  key={ref.id}
+                  className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-6"
+                >
 
-                <h2 className="text-xl font-semibold">
-                  No reflections yet
-                </h2>
+                  {/* Title + outcome */}
+                  <div className="flex items-start justify-between mb-3">
 
-                <p className="text-gray-500 mt-2">
-                  Reflections will appear here once added.
-                </p>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                      {ref.title}
+                    </h3>
 
-              </div>
-
-            ) : (
-
-              <div className="space-y-6">
-
-                {reflections.map((ref) => (
-
-                  <div
-                    key={ref.id}
-                    className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-6"
-                  >
-
-                    {/* Title + outcome */}
-                    <div className="flex items-start justify-between mb-3">
-
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                        {ref.title}
-                      </h3>
-
-                      <span
-                        className={`text-xs font-medium px-3 py-1 rounded-full ${
-                          outcomeColors[ref.outcome] || ""
+                    <span
+                      className={`text-xs font-medium px-3 py-1 rounded-full ${outcomeColors[ref.outcome] || ""
                         }`}
-                      >
-                        {ref.outcome}
-                      </span>
+                    >
+                      {ref.outcome}
+                    </span>
 
-                    </div>
-
-
-                    {/* Learning */}
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg p-4 mb-4">
-
-                      <div className="flex items-start gap-2">
-
-                        <MessageSquare className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-
-                        <p className="text-sm italic">
-                          "{ref.learning}"
-                        </p>
-
-                      </div>
-
-                    </div>
+                  </div>
 
 
-                    {/* Author + date */}
-                    <div className="flex justify-between text-xs text-gray-500">
+                  {/* Learning */}
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg p-4 mb-4">
 
-                      <span>
-                        By {ref.author}
-                      </span>
+                    <div className="flex items-start gap-2">
 
-                      <span>
-                        {ref.date}
-                      </span>
+                      <MessageSquare className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+
+                      <p className="text-sm italic">
+                        "{ref.learning}"
+                      </p>
 
                     </div>
 
                   </div>
 
-                ))}
 
-              </div>
+                  {/* Author + date */}
+                  <div className="flex justify-between text-xs text-gray-500">
 
-            )}
+                    <span>
+                      By {ref.author}
+                    </span>
 
-          </div>
+                    <span>
+                      {ref.date}
+                    </span>
 
-        
+                  </div>
+
+                </div>
+
+              ))}
+
+            </div>
+
+          )}
+
+        </div>
+
+
 
       </main>
+
+      {/* Create Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl max-w-lg w-full p-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold dark:text-white">New Reflection</h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateReflection} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1 dark:text-gray-200">
+                  Related Outcome
+                </label>
+                <select
+                  required
+                  value={newReflection.outcomeId}
+                  onChange={(e) =>
+                    setNewReflection({ ...newReflection, outcomeId: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border rounded-lg appearance-none bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select an outcome...</option>
+                  {outcomes.map((outcome) => (
+                    <option key={outcome.id} value={outcome.id}>
+                      {outcome.result} (ID: {outcome.id})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1 dark:text-gray-200">
+                  Key Learning
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  value={newReflection.content}
+                  onChange={(e) =>
+                    setNewReflection({ ...newReflection, content: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  placeholder="What did you learn from this outcome?"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn-primary"
+                >
+                  {isSubmitting ? "Saving..." : "Save Reflection"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </PageLayout>
 

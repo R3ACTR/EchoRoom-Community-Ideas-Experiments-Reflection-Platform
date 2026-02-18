@@ -10,9 +10,9 @@ interface ApiResponse<T> {
   reflections?: T;
 }
 
-export async function apiFetch<T>(endpoint: string): Promise<T> {
+export async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
   try {
-    const res = await fetch(`${API_BASE_URL}${endpoint}`);
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, init);
 
     let data: ApiResponse<T>;
 
@@ -34,11 +34,11 @@ export async function apiFetch<T>(endpoint: string): Promise<T> {
 
     // return the first data field found
     const result =
-  data.data ??
-  data.ideas ??
-  data.idea ??
-  data.experiments ??
-  data.reflections;
+      data.data ??
+      data.ideas ??
+      data.idea ??
+      data.experiments ??
+      data.reflections;
 
 
     if (!result) {
