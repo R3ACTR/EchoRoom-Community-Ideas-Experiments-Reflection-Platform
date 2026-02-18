@@ -8,6 +8,8 @@ import LoadingState from "../components/LoadingState";
 import ErrorState from "../components/ErrorState";
 import BackButton from "../components/BackButton";
 import RefreshIcon from "@/components/ui/refresh-icon";
+import LibraryIcon from "@/components/ui/library-icon";
+import { MagicCard } from "@/components/ui/magic-card";
 
 interface Reflection {
   id: number;
@@ -218,92 +220,72 @@ export default function ReflectionPage() {
             </button>
           </div>
 
-
           {/* Empty state */}
           {reflections.length === 0 ? (
-
-            <div className="card text-center py-12">
-
-              <h2 className="text-xl font-semibold">
-                No reflections yet
-              </h2>
-
-              <p className="text-gray-500 mt-2 mb-6">
-                Reflections will appear here once added.
-              </p>
-
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="btn-primary"
+            <div className="flex justify-center mt-14">
+              <MagicCard
+                className="p-[1px] rounded-xl w-full max-w-2xl"
+                gradientColor="rgba(59,130,246,0.6)"
               >
-                Add First Reflection
-              </button>
-
+                <div className="bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 px-10 py-12 text-center">
+                  <LibraryIcon className="w-10 h-10 mx-auto mb-5 text-blue-400 opacity-80" />
+                  <h3 className="text-xl font-semibold text-black dark:text-white mb-2">
+                    No reflections yet
+                  </h3>
+                  <p className="text-slate-500 text-sm leading-relaxed mb-6">
+                    Reflections will appear here once outcomes are reviewed and learning is recorded.
+                  </p>
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="btn-primary"
+                  >
+                    Add First Reflection
+                  </button>
+                </div>
+              </MagicCard>
             </div>
-
           ) : (
-
             <div className="space-y-6">
-
               {reflections.map((ref) => (
-
                 <div
                   key={ref.id}
                   className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-6"
                 >
-
                   {/* Title + outcome */}
                   <div className="flex items-start justify-between mb-3">
-
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                       {ref.title}
                     </h3>
-
                     <span
                       className={`text-xs font-medium px-3 py-1 rounded-full ${outcomeColors[ref.outcome] || ""
                         }`}
                     >
                       {ref.outcome}
                     </span>
-
                   </div>
-
 
                   {/* Learning */}
                   <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg p-4 mb-4">
-
                     <div className="flex items-start gap-2">
-
                       <MessageSquare className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-
                       <p className="text-sm italic">
                         "{ref.learning}"
                       </p>
-
                     </div>
-
                   </div>
-
 
                   {/* Author + date */}
                   <div className="flex justify-between text-xs text-gray-500">
-
                     <span>
                       By {ref.author}
                     </span>
-
                     <span>
                       {ref.date}
                     </span>
-
                   </div>
-
                 </div>
-
               ))}
-
             </div>
-
           )}
 
         </div>

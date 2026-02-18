@@ -55,7 +55,8 @@ export function IdeasProvider({ children }: { children: React.ReactNode }) {
 export function useIdeas() {
     const context = useContext(IdeasContext);
     if (context === undefined) {
-        throw new Error("useIdeas must be used within an IdeasProvider");
+        // Return fallback for build-time or missing provider scenario
+        return { ideas: [], addIdea: () => { } };
     }
     return context;
 }

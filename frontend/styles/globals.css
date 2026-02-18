@@ -16,6 +16,10 @@ body {
 body {
   margin: 0;
 }
+* {
+  cursor: none !important;
+}
+
 
 /* ========================= */
 /* GLOBAL DESIGN SYSTEM */
@@ -231,4 +235,9 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+::view-transition-old(root), ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
 }

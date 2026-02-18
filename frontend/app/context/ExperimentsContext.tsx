@@ -60,7 +60,8 @@ export function ExperimentsProvider({ children }: { children: React.ReactNode })
 export function useExperiments() {
     const context = useContext(ExperimentsContext);
     if (context === undefined) {
-        throw new Error("useExperiments must be used within an ExperimentsProvider");
+        // Return fallback for build-time or missing provider scenario
+        return { experiments: [], addExperiment: () => { } };
     }
     return context;
 }

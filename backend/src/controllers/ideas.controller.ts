@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import {
   createIdea,
   getAllIdeas,
+  getIdeaById,
   IdeaStatus,
   updateIdeaStatus,
   deleteIdea
@@ -121,4 +122,31 @@ export const deleteIdeaById = (req: Request, res: Response): void => {
     success: true,
     message: "Idea deleted",
   });
+};
+export const getIdeaByIdHandler = (req: Request, res: Response): void => {
+  const id = Number(req.params.id);
+
+  if (Number.isNaN(id)) {
+    res.status(400).json({
+      success: false,
+      message: "Invalid idea ID",
+    });
+    return;
+  }
+
+  const idea = getIdeaById(id);
+
+  if (!idea) {
+    res.status(404).json({
+      success: false,
+      message: "Idea not found",
+    });
+    return;
+  }
+
+  res.json({
+  success: true,
+  idea,
+});
+
 };

@@ -2,270 +2,151 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useTheme } from "./components/ThemeProvider";
 import Button from "./components/ui/Button";
 import BulbSvg from "@/components/ui/bulb-svg";
 import QuestionMark from "@/components/ui/question-mark";
 import LibraryIcon from "@/components/ui/library-icon";
 import ChartHistogramIcon from "@/components/ui/chart-histogram-icon";
-import BrightnessDownIcon from "@/components/ui/brightness-down-icon";
-import MoonIcon from "@/components/ui/moon-icon";
 import RadioIcon from "@/components/ui/radio-icon";
 import { Ripple } from "@/components/ui/ripple";
-import { MorphingText } from "@/components/ui/morphing-text"
-import { TypingAnimation } from "@/components/ui/typing-animation"
+import { MorphingText } from "@/components/ui/morphing-text";
+import { TypingAnimation } from "@/components/ui/typing-animation";
 import WifiIcon from "@/components/ui/wifi-icon";
 import WifiOffIcon from "@/components/ui/wifi-off-icon";
 import { Dock, DockIcon } from "@/components/ui/dock";
 import { useRouter } from "next/navigation";
-
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
+import { MagicCard } from "@/components/ui/magic-card";
 
 export default function HomePage() {
-  const { dark, toggleTheme } = useTheme();
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
 
-  const [menuOpen, setMenuOpen] = useState(false);
-
   useEffect(() => {
-  fetch("http://localhost:5000/health")
-    .then(() => {
-      setBackendOnline(true);
-    })
-    .catch(() => {
-      setBackendOnline(false);
-    });
-}, []);
+    fetch("http://localhost:5000/health")
+      .then(() => setBackendOnline(true))
+      .catch(() => setBackendOnline(false));
+  }, []);
 
-
-return (
-
+  return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors">
+      
       {/* NAVBAR */}
-      {/* NAVBAR */}
-<nav className="sticky top-0 z-50 backdrop-blur-lg bg-white/70 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-800">
+      <nav className="sticky top-0 z-50 backdrop-blur-lg bg-white/70 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center relative">
 
-  <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center gap-2 text-2xl font-extrabold">
+            <RadioIcon className="w-6 h-6 text-slate-800 dark:text-white" />
+            <span className="text-slate-900 dark:text-white hover:text-blue-500 transition-colors">
+              EchoRoom
+            </span>
+          </div>
 
-    {/* Logo */}
-   <div className="flex items-center gap-2 text-2xl font-extrabold">
-  <RadioIcon
-    className={`w-6 h-6 ${
-      dark ? "text-white" : "text-slate-800"
-    }`}
-  />
+          {/* Navigation Dock */}
+          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2">
+            <NavbarDock />
+          </div>
 
-  <span
-  className={`
-    ${dark ? "text-white" : "text-slate-900"}
-    transition-colors
-    hover:text-blue-500
-  `}
->
-  EchoRoom
-</span>
+          {/* Right Side */}
+          <div className="flex items-center gap-4 ml-auto">
+            <AnimatedThemeToggler className="flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 hover:bg-slate-200 dark:hover:bg-slate-800 hover:scale-105 active:scale-95" />
 
-</div>
+            <Link href="/signup">
+              <Button
+                variant="primary"
+                className="rounded-full px-6 py-2.5 text-sm font-normal tracking-tight"
+              >
+                Sign Up
+              </Button>
+            </Link>
 
+            <Link
+              href="/login"
+              className="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition font-medium"
+            >
+              Login
+            </Link>
+          </div>
+        </div>
+      </nav>
 
+      {/* HERO */}
+      <section className="relative z-10 max-w-5xl mx-auto text-center px-6 pt-20 pb-32">
+        <div className="absolute inset-0 h-[600px] w-full overflow-hidden">
+          <Ripple />
+        </div>
 
-    {/* Navigation Links */}
-    <div className="hidden md:flex items-center">
-  <NavbarDock dark={dark} />
-</div>
+        <div className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-1.5 rounded-full text-sm font-medium mb-6">
+          Community-Driven Learning Platform
+        </div>
 
+        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+          Turn Ideas into
+        </h1>
 
-    {/* Right side */}
-    <div className="flex items-center gap-4">
+        <div className="mt-6 text-blue-600 dark:text-blue-400">
+          <MorphingText
+            texts={["Experiments", "Insights", "Knowledge", "Impact"]}
+            className="h-[80px] md:h-[100px] lg:h-[110px]"
+          />
+        </div>
 
-      {/* Theme Toggle */}
-      <button
-  onClick={toggleTheme}
-  aria-label="Toggle theme"
-  className="
-  flex items-center justify-center
-  w-11 h-11
-  rounded-full
-  transition-all duration-300
-  hover:bg-slate-200
-  dark:hover:bg-slate-800
-  hover:scale-105
-  active:scale-95
-"
+        {/* Backend Status */}
+        <div className="mt-2 flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md w-fit mx-auto">
+          {backendOnline === null ? (
+            <span className="text-xs text-slate-400">Checking...</span>
+          ) : backendOnline ? (
+            <>
+              <WifiIcon className="w-4 h-4 text-emerald-400 animate-pulse" />
+              <span className="text-xs font-medium text-emerald-400">
+                Backend Online
+              </span>
+            </>
+          ) : (
+            <>
+              <WifiOffIcon className="w-4 h-4 text-rose-400" />
+              <span className="text-xs font-medium text-rose-400">
+                Backend Offline
+              </span>
+            </>
+          )}
+        </div>
 
->
-  {dark ? (
-  <BrightnessDownIcon className="w-5 h-5" />
-) : (
-  <MoonIcon className="w-5 h-5" />
-)}
+        <div className="mt-6 text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+          <TypingAnimation
+            words={[
+              "Where ideas become experiments.",
+              "Experiments become insights.",
+              "Insights become knowledge.",
+              "Knowledge becomes impact.",
+            ]}
+            loop
+          />
+        </div>
 
-</button>
+        <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+          <Link href="/ideas">
+            <Button
+              variant="primary"
+              className="rounded-full px-16 py-6 text-xl font-normal tracking-tight"
+            >
+              Start Exploring
+            </Button>
+          </Link>
 
-
-     {/* Signup Link */}
-    <Link href="/signup">
-  <Button
-    variant="primary"
-    className="
-      rounded-full
-      px-6 py-2.5
-      text-sm
-      font-normal
-      tracking-tight
-    "
-  >
-    Sign Up
-  </Button>
-</Link>
-
-
-
-      {/* Login Link */}
-      <Link
-        href="/login"
-        className="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition font-medium"
-      >
-        Login
-      </Link>
-
-    </div>
-
-  </div>
-
-</nav>
-
-
-{/* HERO */}
-
-<section className="relative z-10 max-w-5xl mx-auto text-center px-6 pt-20 pb-32">
-
-<div className="absolute inset-0 h-[600px] w-full overflow-hidden">
-  <Ripple />
-</div>
-
-
-  {/* Badge */}
-  <div className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-1.5 rounded-full text-sm font-medium mb-6">
-    Community-Driven Learning Platform
-  </div>
-
-  {/* Heading */}
-  <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-  Turn Ideas into
-</h1>
-
-<div className="mt-6 text-blue-600 dark:text-blue-400">
-
-  <MorphingText
-  texts={[
-    "Experiments",
-    "Insights",
-    "Knowledge",
-    "Impact",
-  ]}
-  className="h-[80px] md:h-[100px] lg:h-[110px]"
-/>
-
-</div>
-
-
-
-  {/* Backend status */}
-  <div className="mt-2 flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md w-fit mx-auto">
-  {backendOnline === null ? (
-  <span className="text-xs text-slate-400">Checking...</span>
-) : backendOnline ? (
-  <>
-    <WifiIcon className="w-4 h-4 text-emerald-400 animate-pulse" />
-    <span className="text-xs font-medium text-emerald-400">
-      Backend Online
-    </span>
-  </>
-) : (
-  <>
-    <WifiOffIcon className="w-4 h-4 text-rose-400" />
-    <span className="text-xs font-medium text-rose-400">
-      Backend Offline
-    </span>
-  </>
-)}
-
-</div>
-
-
-  {/* Description */}
-  <div className="mt-6 text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-  <TypingAnimation
-    words={[
-      "Where ideas become experiments.",
-      "Experiments become insights.",
-      "Insights become knowledge.",
-      "Knowledge becomes impact."
-    ]}
-    loop
-    className="text-slate-600 dark:text-slate-300"
-  />
-</div>
-
-
-  {/* Buttons */}
-  <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-
-    <Link href="/ideas">
-  <Button
-  variant="primary"
-  className="
-    rounded-full
-    px-16 py-6
-    text-xl
-    font-normal
-    tracking-tight
-    
-  "
->
-  Start Exploring 
-</Button>
-
-</Link>
-
-
-<Link href="/about">
-  <Button
-  variant="outline"
-  className="
-    rounded-full
-    px-16 py-6
-    text-xl
-    font-normal
-    tracking-tight
-
-    bg-[#7EACB5]
-    text-slate-900
-    dark:text-white
-
-    hover:bg-[#6e9ca5]
-
-    border border-slate-300
-    dark:border-white/20
-  "
->
-  Learn More
-</Button>
-
-
-</Link>
-
-
-
-
-  </div>
-
-</section>
-
+          <Link href="/about">
+            <Button
+              variant="outline"
+              className="rounded-full px-16 py-6 text-xl font-normal tracking-tight bg-[#7EACB5] text-slate-900 dark:text-white hover:bg-[#6e9ca5] border border-slate-300 dark:border-white/20"
+            >
+              Learn More
+            </Button>
+          </Link>
+        </div>
+      </section>
 
       {/* FEATURES */}
-     <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-16 sm:pb-24">
-
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-16 sm:pb-24">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <FeatureCard
             emoji={<BulbSvg className="w-6 h-6" />}
@@ -289,9 +170,7 @@ return (
           />
         </div>
       </section>
-
-      {/* CTA */}
-      <section className="bg-blue-600 py-16 text-center">
+       <section className="bg-blue-600 py-16 text-center">
         <div className="max-w-3xl mx-auto px-6">
           <h2 className="text-3xl font-bold text-white">
             Start building and learning together
@@ -322,8 +201,7 @@ return (
       hover:shadow-[0_12px_40px_rgba(0,0,0,0.18)]
       hover:scale-[1.04]
       active:scale-[0.97]
-    "
-  >
+    " >
     Get Started
   </button>
 </Link>
@@ -337,7 +215,7 @@ return (
           <p className="text-sm text-slate-500">
             © 2026 EchoRoom — Built during Open Source Quest
           </p>
-          <div className="flex gap-4 sm:gap-6 text-sm text-slate-500 mt-4 md:mt-0 justify-center md:justify-start">
+          <div className="flex gap-4 sm:gap-6 text-sm text-slate-500 mt-4 md:mt-0">
             <Link href="/about" className="hover:text-blue-600">
               About
             </Link>
@@ -367,72 +245,58 @@ function FeatureCard({
   desc: string;
 }) {
   return (
-    <div className="group bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-2 transition duration-300">
+    <MagicCard
+  className="
+    p-[1px]
+    rounded-2xl
+    transition
+    duration-300
+    hover:-translate-y-2
+    hover:shadow-2xl
+  "
+  gradientColor="rgba(59,130,246,0.6)"
+>
+  <div className="
+    group
+    bg-white dark:bg-slate-800
+    p-6
+    rounded-2xl
+    border border-slate-200 dark:border-slate-700
+  ">
 
-      {/* Icon container */}
-      <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-900/30 text-2xl mb-4 group-hover:scale-110 transition">
-        {emoji}
+        <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-900/30 mb-4 group-hover:scale-110 transition">
+          {emoji}
+        </div>
+
+        <h3 className="font-semibold text-lg text-slate-800 dark:text-white">
+          {title}
+        </h3>
+
+        <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+          {desc}
+        </p>
       </div>
-
-      {/* Title */}
-      <h3 className="font-semibold text-lg text-slate-800 dark:text-white">
-        {title}
-      </h3>
-
-      {/* Description */}
-      <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
-        {desc}
-      </p>
-
-    </div>
+    </MagicCard>
   );
 }
 
 
- function NavbarDock({ dark }: { dark: boolean }) {
+function NavbarDock() {
   const router = useRouter();
-
-  const iconColor = dark ? "text-blue-300" : "text-blue-700";
+  const iconColor = "text-blue-700 dark:text-blue-300";
 
   return (
-    <Dock
-      direction="middle"
-      className="bg-transparent border-none shadow-none"
-    >
-      {/* IDEAS */}
-      <DockIcon
-        onClick={() => router.push("/ideas")}
-        className="group relative w-12 h-12 flex items-center justify-center"
-      >
+    <Dock direction="middle" className="bg-transparent border-none shadow-none flex items-center h-20">
+      <DockIcon onClick={() => router.push("/ideas")} className="group relative w-12 h-12 flex items-center justify-center">
         <BulbSvg className={`w-5 h-5 ${iconColor}`} />
-
-        <span className="pointer-events-none absolute -bottom-8 scale-0 group-hover:scale-100 transition rounded-md bg-black/80 text-white text-xs px-2 py-1">
-          Ideas
-        </span>
       </DockIcon>
 
-      {/* EXPERIMENTS */}
-      <DockIcon
-        onClick={() => router.push("/experiments")}
-        className="group relative w-12 h-12 flex items-center justify-center"
-      >
+      <DockIcon onClick={() => router.push("/experiments")} className="group relative w-12 h-12 flex items-center justify-center">
         <ChartHistogramIcon className={`w-5 h-5 ${iconColor}`} />
-
-        <span className="pointer-events-none absolute -bottom-8 scale-0 group-hover:scale-100 transition rounded-md bg-black/80 text-white text-xs px-2 py-1">
-          Experiments
-        </span>
       </DockIcon>
 
-      {/* REFLECTION */}
-      <DockIcon
-        onClick={() => router.push("/reflection")}
-        className="group relative w-12 h-12 flex items-center justify-center"
-      >
+      <DockIcon onClick={() => router.push("/reflection")} className="group relative w-12 h-12 flex items-center justify-center">
         <LibraryIcon className={`w-5 h-5 ${iconColor}`} />
-
-        <span className="pointer-events-none absolute -bottom-8 scale-0 group-hover:scale-100 transition rounded-md bg-black/80 text-white text-xs px-2 py-1">
-          Reflection
-        </span>
       </DockIcon>
     </Dock>
   );
