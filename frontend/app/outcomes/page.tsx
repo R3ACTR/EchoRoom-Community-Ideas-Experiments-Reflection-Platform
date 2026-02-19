@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { TrendingUp, FileText } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { PageLayout } from "../community/PageLayout";
 import { apiFetch } from "../lib/api";
 import LoadingState from "../components/LoadingState";
 import ErrorState from "../components/ErrorState";
 import BackButton from "../components/BackButton";
+import Button from "@/app/components/ui/Button";
+import { MagicCard } from "@/components/ui/magic-card";
 
 interface Outcome {
   id: number;
@@ -17,9 +20,12 @@ interface Outcome {
 }
 
 const outcomeColors: Record<string, string> = {
-  Success: "text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30",
-  Mixed: "text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30",
-  Failed: "text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30",
+  Success:
+    "text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30",
+  Mixed:
+    "text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30",
+  Failed:
+    "text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30",
 };
 
 const formatDate = (dateString?: string): string => {
@@ -39,6 +45,8 @@ export default function OutcomesPage() {
   const [outcomes, setOutcomes] = useState<Outcome[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchOutcomes = async () => {
@@ -89,19 +97,39 @@ export default function OutcomesPage() {
         </div>
 
         <p className="text-lg text-gray-600 dark:text-gray-300 mb-10">
-          Outcomes are the results of your experiments. Track what works, what doesn't, and learn from each result.
+          Outcomes are the results of your experiments. Track what works,
+          what doesn't, and reflect on each result.
         </p>
 
         {outcomes.length === 0 ? (
-          <div className="card text-center py-12">
-            <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-3">
-              No outcomes yet
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
-              Run experiments to see outcomes here.
-            </p>
-          </div>
-        ) : (
+  <div className="mt-10">
+    <MagicCard
+      className="p-[1px] rounded-2xl w-full"
+      gradientColor="rgba(59,130,246,0.6)"
+    >
+      <div className="bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-white/10 px-10 py-16 text-center">
+        <TrendingUp className="w-12 h-12 mx-auto mb-6 text-blue-400 opacity-80" />
+
+        <h3 className="text-2xl font-semibold text-black dark:text-white mb-3">
+          No outcomes yet
+        </h3>
+
+        <p className="text-slate-400 text-sm leading-relaxed mb-8 max-w-xl mx-auto">
+          Run experiments to generate outcomes and start reflecting on results.
+        </p>
+
+        <Button
+          onClick={() => router.push("/experiments")}
+          className="rounded-full px-8 py-3"
+        >
+          View Experiments
+        </Button>
+      </div>
+    </MagicCard>
+  </div>
+) : (
+
+
           <div className="space-y-6">
             {outcomes.map((outcome) => (
               <div
@@ -117,9 +145,11 @@ export default function OutcomesPage() {
                       Outcome #{outcome.id}
                     </span>
                   </div>
+
                   <span
                     className={`text-xs font-medium px-3 py-1 rounded-full ${
-                      outcomeColors[outcome.result] || "bg-gray-100 dark:bg-gray-700"
+                      outcomeColors[outcome.result] ||
+                      "bg-gray-100 dark:bg-gray-700"
                     }`}
                   >
                     {outcome.result}
@@ -127,7 +157,7 @@ export default function OutcomesPage() {
                 </div>
 
                 {outcome.notes && (
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg p-4">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg p-4 mb-4">
                     <div className="flex items-start gap-2">
                       <FileText className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
                       <p className="text-sm text-gray-700 dark:text-gray-300">
@@ -137,8 +167,21 @@ export default function OutcomesPage() {
                   </div>
                 )}
 
-                <div className="mt-3 text-xs text-gray-500">
-                  {formatDate(outcome.createdAt)}
+                <div className="flex items-center justify-between mt-4">
+                  <span className="text-xs text-gray-500">
+                    {formatDate(outcome.createdAt)}
+                  </span>
+
+                  <Button
+                    onClick={() =>
+                      router.push(
+                        `/reflection/new?outcomeId=${outcome.id}`
+                      )
+                    }
+                    className="rounded-full px-4 py-2 text-sm"
+                  >
+                    + Add Reflection
+                  </Button>
                 </div>
               </div>
             ))}

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { apiFetch } from "../lib/api";
 import { PageLayout } from "../community/PageLayout";
 import LoadingState from "../components/LoadingState";
@@ -99,7 +98,6 @@ export default function ExperimentsPage() {
     fetchExperiments();
   }, []);
 
-  // Status color
   const getStatusTextColor = (status: string) => {
     if (status === "completed") return "text-green-600 dark:text-green-400";
     if (status === "in-progress") return "text-blue-600 dark:text-blue-400";
@@ -138,7 +136,9 @@ export default function ExperimentsPage() {
             <BackButton />
           </div>
 
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
+
+            {/* LEFT SIDE */}
             <div className="flex items-center gap-3">
               <ChartHistogramIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               <h1 className="text-4xl font-bold text-black dark:text-white">
@@ -146,9 +146,22 @@ export default function ExperimentsPage() {
               </h1>
             </div>
 
-            <Button onClick={() => router.push("/experiments/new")}>
-              + New Experiment
-            </Button>
+            {/* RIGHT SIDE BUTTON GROUP */}
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={() => router.push("/outcomes")}
+                className="rounded-full px-6 py-2"
+              >
+                View Outcomes
+              </Button>
+
+              <Button
+                onClick={() => router.push("/experiments/new")}
+                className="rounded-full px-6 py-2"
+              >
+                + New Experiment
+              </Button>
+            </div>
           </div>
 
           <p className="text-lg max-w-2xl text-black dark:text-white">
@@ -173,14 +186,16 @@ export default function ExperimentsPage() {
                   Start your first experiment to test and validate ideas.
                 </p>
 
-                <Button onClick={() => router.push("/experiments/new")}>
+                <Button
+                  onClick={() => router.push("/experiments/new")}
+                  className="rounded-full px-6 py-2"
+                >
                   + Create First Experiment
                 </Button>
               </div>
             </MagicCard>
           </div>
         ) : (
-          /* Experiments Grid */
           <div className="grid gap-6 md:grid-cols-2">
             {experiments.map((exp) => (
               <div key={exp.id} className="card">
@@ -194,9 +209,7 @@ export default function ExperimentsPage() {
 
                 <div className="flex justify-between items-center mb-2">
                   <span
-                    className={`text-sm font-medium ${getStatusTextColor(
-                      exp.status
-                    )}`}
+                    className={`text-sm font-medium ${getStatusTextColor(exp.status)}`}
                   >
                     Status: {exp.statusLabel}
                   </span>
@@ -208,9 +221,7 @@ export default function ExperimentsPage() {
 
                 <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
                   <div
-                    className={`h-2 rounded-full ${getProgressColor(
-                      exp.status
-                    )}`}
+                    className={`h-2 rounded-full ${getProgressColor(exp.status)}`}
                     style={{ width: `${exp.progress}%` }}
                   />
                 </div>

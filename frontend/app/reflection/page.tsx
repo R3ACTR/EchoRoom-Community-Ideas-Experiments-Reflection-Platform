@@ -143,7 +143,7 @@ export default function ReflectionPage() {
               </h1>
             </div>
 
-            <Button onClick={() => router.push("/reflections/new")}>
+            <Button onClick={() => router.push("/reflection/new")}>
               + New Reflection
             </Button>
           </div>
@@ -171,7 +171,7 @@ export default function ReflectionPage() {
                   Start recording learnings from your outcomes.
                 </p>
 
-                <Button onClick={() => router.push("/reflections/new")}>
+                <Button onClick={() => router.push("/reflection/new")}>
                   + Add First Reflection
                 </Button>
               </div>
