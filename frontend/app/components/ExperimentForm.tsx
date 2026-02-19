@@ -3,220 +3,286 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarIcon, ArrowRight } from "lucide-react";
-import Container from "./ui/Container";
+import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
+
+import Container from "./ui/Container";
+import Button from "./ui/Button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { MagicCard } from "@/components/ui/magic-card";
 
 import { useExperiments } from "../context/ExperimentsContext";
 import { useIdeas } from "../context/IdeasContext";
 
 export function ExperimentForm() {
-    const [preview, setPreview] = useState(false);
+  const router = useRouter();
+  const { addExperiment } = useExperiments();
+  const { ideas } = useIdeas();
 
-    const router = useRouter();
-    const { addExperiment } = useExperiments();
-    const { ideas } = useIdeas();
-    const [formData, setFormData] = useState({
-        title: "",
-        hypothesis: "",
-        startDate: "",
-        endDate: "",
-        linkedIdeaId: "",
-    });
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  const [preview, setPreview] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Mock data for ideas - REPLACED WITH CONTEXT
-    // const ideas = ...
+  const [formData, setFormData] = useState({
+    title: "",
+    hypothesis: "",
+    startDate: "",
+    endDate: "",
+    linkedIdeaId: "",
+  });
 
-    const handleChange = (
-        e: React.ChangeEvent<
-            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      addExperiment({
+        title: formData.title,
+        description: formData.hypothesis,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        linkedIdeaId: formData.linkedIdeaId || undefined,
+      });
+
+      setTimeout(() => {
+        setIsSubmitting(false);
+        router.push("/experiments");
+      }, 500);
+    } catch (error) {
+      console.error("Failed to create experiment:", error);
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Container className="max-w-3xl py-12 space-y-6">
+      
+      {/* Back Button — Top Left Outside Card */}
+      <div className="flex justify-start">
+        <Button
+          type="button"
+          variant="primary"
+          onClick={() => router.push("/experiments")}
         >
-    ) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-    };
+         ←  Back to Experiments
+        </Button>
+      </div>
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
+      <MagicCard gradientColor="rgba(59,130,246,0.6)" className="p-8 backdrop-blur-md border border-white/10 shadow-2xl rounded-2xl">
+        
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">
+            Create New Experiment
+          </h1>
+          <p className="text-muted-foreground">
+            Turn your ideas into actionable experiments.
+          </p>
+        </div>
 
-        try {
-            addExperiment({
-                title: formData.title,
-                description: formData.hypothesis,
-                startDate: formData.startDate,
-                endDate: formData.endDate,
-                linkedIdeaId: formData.linkedIdeaId || undefined,
-            });
+        <form onSubmit={handleSubmit} className="space-y-8">
+          
+          {/* Title */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Experiment Title
+            </label>
+            <input
+              type="text"
+              name="title"
+              required
+              value={formData.title}
+              onChange={handleChange}
+              placeholder="E.g., Testing AI mood-based themes on user engagement"
+              className="w-full px-4 py-3 rounded-xl border bg-background focus:ring-2 focus:ring-primary transition"
+            />
+          </div>
 
-            // Simulate a short delay for UX
-            setTimeout(() => {
-                setIsSubmitting(false);
-                router.push("/experiments");
-            }, 500);
-        } catch (error) {
-            console.error("Failed to create experiment:", error);
-            setIsSubmitting(false);
-        }
-    };
+          {/* Hypothesis */}
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="block text-sm font-medium">
+                Hypothesis
+              </label>
 
-    return (
-        <Container className="max-w-2xl py-12">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-2">Create New Experiment</h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                    Turn your ideas into actionable experiments.
-                </p>
+              <button
+                type="button"
+                onClick={() => setPreview((p) => !p)}
+                className="text-xs px-3 py-1 rounded-md border hover:bg-muted transition"
+              >
+                {preview ? "Write" : "Preview"}
+              </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Title */}
-                <div>
-                    <label
-                        htmlFor="title"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                    >
-                        Experiment Title
-                    </label>
-                    <input
-                        type="text"
-                        id="title"
-                        name="title"
-                        required
-                        value={formData.title}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-800 dark:border-slate-700"
-                        placeholder="E.g., A/B Test for Landing Page"
-                    />
-                </div>
+            {preview ? (
+              <div className="px-4 py-3 rounded-xl border bg-background prose max-w-none min-h-[120px]">
+                <ReactMarkdown>
+                  {formData.hypothesis || "Nothing to preview..."}
+                </ReactMarkdown>
+              </div>
+            ) : (
+              <>
+                <textarea
+                  name="hypothesis"
+                  required
+                  rows={4}
+                  maxLength={300}
+                  value={formData.hypothesis}
+                  onChange={handleChange}
+                  placeholder="What do you expect to happen? E.g., 'If the interface adapts to the user's mood, session length will increase because...' (Supports Markdown)"
+                  className="w-full px-4 py-3 rounded-xl border bg-background focus:ring-2 focus:ring-primary transition"
+                />
+                <p className="text-xs text-right mt-1 text-muted-foreground">
+                  {formData.hypothesis.length}/300 characters
+                </p>
+              </>
+            )}
+          </div>
 
-                {/* Hypothesis */}
-                <div>
-                    <div className="flex items-center justify-between mb-1">
-                        <label
-                            htmlFor="hypothesis"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                        >
-                            Hypothesis
-                        </label>
+          {/* Dates */}
+          <div className="grid md:grid-cols-2 gap-6">
+            
+            {/* Start Date */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Start Date
+              </label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full justify-start flex items-center px-4 py-2 border rounded-md hover:bg-muted"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.startDate
+                      ? format(new Date(formData.startDate), "PPP")
+                      : "Pick start date"}
+                  </button>
+                </PopoverTrigger>
 
-                        <button
-                            type="button"
-                            onClick={() => setPreview((p) => !p)}
-                            className="text-xs px-3 py-1 rounded-md border bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600"
-                        >
-                            {preview ? "Write" : "Preview"}
-                        </button>
-                    </div>
+                {/* Fix: w-auto and p-0 are essential for Shadcn calendars */}
+                <PopoverContent
+                  align="start"
+                  className="w-auto p-0 z-50"
+                >
+                  <Calendar
+                    mode="single"
+                    selected={
+                      formData.startDate
+                        ? new Date(formData.startDate)
+                        : undefined
+                    }
+                    onSelect={(date) => {
+                      if (!date) return;
+                      setFormData((prev) => ({
+                        ...prev,
+                        startDate: format(date, "yyyy-MM-dd"),
+                      }));
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
 
-                    {preview ? (
-                        <div className="w-full px-4 py-3 border rounded-lg bg-white dark:bg-slate-800 dark:border-slate-700 prose max-w-none min-h-[120px]">
-                            <ReactMarkdown>
-                                {formData.hypothesis || "Nothing to preview..."}
-                            </ReactMarkdown>
-                        </div>
-                    ) : (
-                        <>
-                            <textarea
-                                id="hypothesis"
-                                name="hypothesis"
-                                required
-                                rows={4}
-                                value={formData.hypothesis}
-                                onChange={handleChange}
-                                maxLength={300}
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-800 dark:border-slate-700"
-                                placeholder="Supports Markdown: **bold**, # heading, - list"
-                            />
+            {/* End Date */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                End Date
+              </label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-start rounded-md border px-4 py-2 hover:bg-muted transition"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.endDate
+                      ? format(new Date(formData.endDate), "PPP")
+                      : "Pick end date"}
+                  </button>
+                </PopoverTrigger>
 
-                            <p className="text-xs text-right mt-1 text-gray-500">
-                                {formData.hypothesis.length}/300 characters
-                            </p>
-                        </>
-                    )}
-                </div>
+                {/* Fix: w-auto and p-0 are essential for Shadcn calendars */}
+                <PopoverContent
+                  align="start"
+                  className="w-auto p-0 z-50"
+                >
+                  <Calendar
+                    mode="single"
+                    selected={
+                      formData.endDate
+                        ? new Date(formData.endDate)
+                        : undefined
+                    }
+                    disabled={(date) =>
+                      formData.startDate
+                        ? date < new Date(formData.startDate)
+                        : false
+                    }
+                    onSelect={(date) => {
+                      if (!date) return;
+                      setFormData((prev) => ({
+                        ...prev,
+                        endDate: format(date, "yyyy-MM-dd"),
+                      }));
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
 
-                {/* Dates Row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label
-                            htmlFor="startDate"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                        >
-                            Start Date
-                        </label>
-                        <div className="relative">
-                            <input
-                                type="date"
-                                id="startDate"
-                                name="startDate"
-                                required
-                                value={formData.startDate}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-800 dark:border-slate-700"
-                            />
-                            <CalendarIcon className="absolute right-3 top-2.5 h-5 w-5 text-gray-400 pointer-events-none" />
-                        </div>
-                    </div>
+          </div>
 
-                    <div>
-                        <label
-                            htmlFor="endDate"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                        >
-                            End Date
-                        </label>
-                        <div className="relative">
-                            <input
-                                type="date"
-                                id="endDate"
-                                name="endDate"
-                                required
-                                value={formData.endDate}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-800 dark:border-slate-700"
-                            />
-                            <CalendarIcon className="absolute right-3 top-2.5 h-5 w-5 text-gray-400 pointer-events-none" />
-                        </div>
-                    </div>
-                </div>
+          {/* Linked Idea */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Link to an Idea (Optional)
+            </label>
+            <select
+              name="linkedIdeaId"
+              value={formData.linkedIdeaId}
+              onChange={handleChange}
+              className="w-full px-4 py-3 rounded-xl border bg-background focus:ring-2 focus:ring-primary transition"
+            >
+              <option value="">-- Select an Idea --</option>
+              {ideas.map((idea) => (
+                <option key={idea.id} value={idea.id}>
+                  {idea.title}
+                </option>
+              ))}
+            </select>
+          </div>
 
-                {/* Linked Idea */}
-                <div>
-                    <label
-                        htmlFor="linkedIdeaId"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                    >
-                        Link to an Idea (Optional)
-                    </label>
-                    <select
-                        id="linkedIdeaId"
-                        name="linkedIdeaId"
-                        value={formData.linkedIdeaId}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-800 dark:border-slate-700"
-                    >
-                        <option value="">-- Select an Idea --</option>
-                        {ideas.map((idea) => (
-                            <option key={idea.id} value={idea.id}>
-                                {idea.title}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+          {/* Submit */}
+          <div className="pt-4 flex justify-end">
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isSubmitting}
+              className="px-8 py-3 flex items-center gap-2"
+            >
+              {isSubmitting ? "Creating..." : "Create Experiment"}
+              {!isSubmitting }
+            </Button>
+          </div>
 
-                {/* Submit */}
-                <div className="pt-4">
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isSubmitting ? "Creating..." : "Create Experiment"}
-                        {!isSubmitting && <ArrowRight className="w-5 h-5" />}
-                    </button>
-                </div>
-            </form>
-        </Container>
-    );
+        </form>
+      </MagicCard>
+    </Container>
+  );
 }
