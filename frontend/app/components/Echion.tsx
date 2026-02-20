@@ -9,20 +9,43 @@ export default function Echion() {
   const [input, setInput] = useState("");
 
   const handleUserInput = () => {
-    const text = input.toLowerCase().trim();
+  const text = input
+  .toLowerCase()
+  .replace(/[^\w\s]/g, "")
+  .trim();
+  const words = text.split(/\s+/);
 
-    let matchedIntent = echionIntents.find((intent) =>
-      intent.keywords.some((keyword) => text.includes(keyword))
-    );
+  let bestMatch = null;
+  let highestScore = 0;
 
-    if (matchedIntent) {
-      setResponse(matchedIntent.response);
-    } else {
-      setResponse(fallbackResponse);
+  for (const intent of echionIntents) {
+    let score = 0;
+
+    for (const keyword of intent.keywords) {
+      const keywordWords = keyword.split(/\s+/);
+
+      for (const kw of keywordWords) {
+        if (words.includes(kw)) {
+          score++;
+        }
+      }
     }
 
-    setInput("");
-  };
+    if (score > highestScore) {
+      highestScore = score;
+      bestMatch = intent;
+    }
+  }
+
+  // Require at least 1 meaningful match
+  if (bestMatch && highestScore > 0) {
+    setResponse(bestMatch.response);
+  } else {
+    setResponse(fallbackResponse);
+  }
+
+  setInput("");
+};
 
   const triggerIntent = (keyword: string) => {
     const intent = echionIntents.find((i) =>

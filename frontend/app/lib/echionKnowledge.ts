@@ -4,112 +4,316 @@ export type EchionIntent = {
 };
 
 export const echionIntents: EchionIntent[] = [
+
+  // ===============================
+  // PLATFORM PURPOSE & PHILOSOPHY
+  // ===============================
+
   {
-    keywords: ["what is echoroom", "about echoroom", "purpose", "what does this do"],
+    keywords: [
+      "what is echoroom",
+      "about echoroom",
+      "what does this platform do",
+      "explain echoroom",
+      "purpose",
+      "why echoroom",
+      "what is this site",
+      "what is this platform"
+    ],
     response: `EchoRoom is a collaborative learning platform.
 
-It helps communities:
+Communities:
 • Share ideas
 • Test them through experiments
-• Record outcomes
-• Reflect on what they learn
+• Record real outcomes
+• Reflect on what they learned
 
-It focuses on learning loops, not just discussion or voting.`
+It focuses on learning loops — not just discussion or voting.
+
+The goal is not to win ideas.
+The goal is to learn from trying them.`
   },
 
   {
-    keywords: ["how to start", "where to start", "new here", "begin"],
+    keywords: [
+      "how is this different",
+      "difference from other platforms",
+      "why not just discuss",
+      "why not just vote"
+    ],
+    response: `Unlike traditional idea platforms, EchoRoom does not stop at discussion.
+
+It encourages:
+Idea → Experiment → Outcome → Reflection → Shared Learning
+
+The emphasis is on action and documented learning, not popularity.`
+  },
+
+  // ===============================
+  // HOMEPAGE CONFUSION
+  // ===============================
+
+  {
+    keywords: [
+      "start exploring",
+      "learn more button",
+      "what happens if i click",
+      "homepage buttons"
+    ],
+    response: `On the homepage:
+
+• "Start Exploring" takes you to the Ideas page.
+• "Learn More" explains the EchoRoom project in detail.
+
+Most users begin by exploring Ideas.`
+  },
+
+  // ===============================
+  // GETTING STARTED
+  // ===============================
+
+  {
+    keywords: [
+      "how to start",
+      "where do i begin",
+      "i am new",
+      "new here",
+      "what should i do first"
+    ],
     response: `If you're new:
 
-• Click "Start Exploring" on the homepage
-• Browse existing Ideas
-• Create your own Idea
-• Turn it into an Experiment
-• Record the Outcome
-• Write a Reflection
+1. Browse Ideas
+2. Create your own Idea
+3. Turn it into an Experiment
+4. Record the Outcome
+5. Write a Reflection
 
-That’s the full learning loop.`
+That’s the EchoRoom learning loop.`
   },
 
+  // ===============================
+  // IDEAS
+  // ===============================
+
   {
-    keywords: ["create idea", "post idea", "add idea", "new idea"],
+    keywords: [
+      "create idea",
+      "post idea",
+      "add idea",
+      "new idea",
+      "submit idea",
+      "how to create idea"
+    ],
     response: `To create an Idea:
 
 1. Go to the Ideas page
 2. Click "Create Idea"
-3. Add a title and description
-4. Save as draft or publish publicly
+3. Add title and description
+4. Save as Draft or Publish publicly
 
-Drafts let you refine before sharing.`
+Publishing makes it visible to the community.`
   },
 
   {
-    keywords: ["draft", "save draft"],
-    response: `You can save an Idea as a draft if you're not ready to publish it.
+    keywords: [
+      "draft",
+      "save draft",
+      "what is draft",
+      "difference draft publish",
+      "private idea"
+    ],
+    response: `Draft Ideas are private.
 
-Drafts remain private until you publish them.`
+• Draft = saved privately
+• Publish = visible to community
+
+You can edit drafts anytime before publishing.`
   },
 
   {
-    keywords: ["experiment", "create experiment", "new experiment"],
-    response: `Experiments test ideas in real situations.
+    keywords: [
+      "no ideas",
+      "empty ideas",
+      "why nothing here"
+    ],
+    response: `There are no Ideas yet.
 
-To create one:
+You can start the learning loop by creating the first Idea.`
+  },
+
+  // ===============================
+  // EXPERIMENTS
+  // ===============================
+
+  {
+    keywords: [
+      "experiment",
+      "create experiment",
+      "run experiment",
+      "new experiment"
+    ],
+    response: `Experiments test Ideas in real conditions.
+
+To create:
 1. Go to Experiments page
 2. Click "New Experiment"
-3. Add hypothesis and dates
+3. Add hypothesis and duration
 4. Optionally link it to an Idea
 
-Experiments turn ideas into action.`
+Experiments move thinking into action.`
   },
 
   {
-    keywords: ["outcome", "results", "experiment result"],
-    response: `Outcomes record the result of experiments.
+    keywords: [
+      "link idea",
+      "connect idea",
+      "attach idea",
+      "associate idea"
+    ],
+    response: `When creating an Experiment, you can link it to an Idea.
 
-They track:
-• What worked
-• What failed
-• Whether it was success, failure, or mixed
-
-Outcomes come before writing reflections.`
+This keeps the learning structure connected.`
   },
 
   {
-    keywords: ["reflection", "create reflection", "write reflection"],
-    response: `Reflections document what you learned.
+    keywords: [
+      "no experiments",
+      "empty experiments"
+    ],
+    response: `No Experiments yet.
 
-To create one:
-1. Go to Reflection page
-2. Link it to an Outcome
-3. Write what you learned
-4. Share improvements or insights
+Create one to test an Idea and move forward in the learning loop.`
+  },
 
-Reflection is where learning becomes meaningful.`
+  // ===============================
+  // OUTCOMES
+  // ===============================
+
+  {
+    keywords: [
+      "outcome",
+      "results",
+      "experiment result",
+      "what happened"
+    ],
+    response: `Outcomes record the result of Experiments.
+
+They classify:
+• Success
+• Failure
+• Mixed result
+
+Outcomes lead into Reflections.`
   },
 
   {
-    keywords: ["difference", "idea vs experiment", "flow"],
-    response: `EchoRoom follows a learning loop:
+    keywords: [
+      "no outcomes",
+      "empty outcomes"
+    ],
+    response: `Outcomes are created after completing an Experiment.
+
+Finish an Experiment first, then record the outcome.`
+  },
+
+  // ===============================
+  // REFLECTIONS
+  // ===============================
+
+  {
+    keywords: [
+      "reflection",
+      "write reflection",
+      "create reflection",
+      "lessons learned"
+    ],
+    response: `Reflections document learning.
+
+To create:
+1. Go to Reflections page
+2. Link to an Outcome
+3. Write insights and improvements
+
+Reflections turn experience into shared knowledge.`
+  },
+
+  {
+    keywords: [
+      "no reflections",
+      "empty reflections"
+    ],
+    response: `Reflections require an Outcome first.
+
+Complete an Experiment and record its Outcome before reflecting.`
+  },
+
+  // ===============================
+  // FLOW CONFUSION
+  // ===============================
+
+  {
+    keywords: [
+      "flow",
+      "process",
+      "how does it connect",
+      "learning loop",
+      "idea experiment outcome reflection"
+    ],
+    response: `EchoRoom Learning Loop:
 
 Idea → Experiment → Outcome → Reflection → Shared Learning
 
-Ideas are thoughts.
-Experiments test them.
-Outcomes record results.
-Reflections capture learning.`
+Each step builds on the previous one.`
+  },
+
+  // ===============================
+  // PERMISSIONS / VISIBILITY
+  // ===============================
+
+  {
+    keywords: [
+      "public",
+      "private",
+      "who can see",
+      "visibility",
+      "is this public"
+    ],
+    response: `Published Ideas are public.
+
+Draft Ideas remain private.
+
+Experiments and Reflections are connected to Ideas and Outcomes within the learning structure.`
+  },
+
+  // ===============================
+  // CONTRIBUTOR / PROJECT INFO
+  // ===============================
+
+  {
+    keywords: [
+      "open source",
+      "contribute",
+      "osq",
+      "project info"
+    ],
+    response: `EchoRoom is part of Open Source Quest (OSQ).
+
+It is designed to support contributors from diverse skill backgrounds and encourage structured collaborative learning.`
   }
+
 ];
 
 export const fallbackResponse = `
-I’m here to guide you through EchoRoom.
+I’m Echion, your EchoRoom guide.
 
-You can ask me about:
+I can help with:
 • Ideas
 • Experiments
 • Outcomes
 • Reflections
-• How to get started
+• Draft vs Publish
+• Learning loop
+• Getting started
 
-For other topics, please use a general search tool.
+For unrelated topics, please use a general search tool.
 `;
