@@ -1,7 +1,7 @@
 import "../styles/globals.css";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { ExperimentsProvider } from "./context/ExperimentsContext";
-
+import EchionAssistant from "@/app/components/Echion";
 
 export const metadata = {
   title: "EchoRoom",
@@ -19,6 +19,7 @@ export default function RootLayout({
         <ThemeProvider>
           <ExperimentsProvider>
             {children}    
+            <EchionAssistant />
           </ExperimentsProvider>
         </ThemeProvider>
       </body>
