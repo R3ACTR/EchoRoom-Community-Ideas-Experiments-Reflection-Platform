@@ -17,7 +17,6 @@ body {
   margin: 0;
 }
 
-
 /* ========================= */
 /* GLOBAL DESIGN SYSTEM */
 /* ========================= */
@@ -144,6 +143,12 @@ body {
   100% {
     transform: translateY(0);
     }
+  }
+  --animate-gradient: gradient 8s linear infinite;
+  @keyframes gradient {
+  to {
+    background-position: var(--bg-size, 300%) 0;
+    }
   }}
 
 :root {
@@ -237,4 +242,17 @@ body {
 ::view-transition-old(root), ::view-transition-new(root) {
     animation: none;
     mix-blend-mode: normal;
+}
+
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.animate-breathe {
+  animation: breathe 3s ease-in-out infinite;
 }
