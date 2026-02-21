@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import TrashIcon from "@/components/ui/trash-icon";
 import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Link2, Check } from "lucide-react";
 import { PageLayout } from "../community/PageLayout";
 import LoadingState from "../components/LoadingState";
 import ErrorState from "../components/ErrorState";
@@ -26,7 +26,15 @@ export default function IdeasPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleteIdea, setDeleteIdea] = useState<Idea | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
   const router = useRouter();
+
+  const handleCopyLink = (id: number) => {
+    const url = `${window.location.origin}/ideas/${id}`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   // Search and Filter State
   const [searchQuery, setSearchQuery] = useState("");
@@ -245,12 +253,25 @@ export default function IdeasPage() {
                 gradientColor="rgba(59,130,246,0.6)"
               >
                 <div className="relative p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 h-full flex flex-col">
-                  <button
-                    onClick={() => setDeleteIdea(idea)}
-                    className="absolute top-5 right-5 p-2 text-red-400 hover:text-red-600 z-10"
-                  >
-                    <TrashIcon className="w-6 h-6" />
-                  </button>
+                  <div className="absolute top-5 right-5 flex items-center gap-1 z-10">
+                    <button
+                      onClick={() => handleCopyLink(idea.id)}
+                      className="p-2 text-gray-400 hover:text-blue-500 transition-colors"
+                      title="Copy link"
+                    >
+                      {copiedId === idea.id ? (
+                        <Check className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <Link2 className="w-4 h-4" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setDeleteIdea(idea)}
+                      className="p-2 text-red-400 hover:text-red-600"
+                    >
+                      <TrashIcon className="w-6 h-6" />
+                    </button>
+                  </div>
 
                   <h3 className="text-xl font-semibold text-black dark:text-white mb-2 pr-8">
                     {idea.title}
