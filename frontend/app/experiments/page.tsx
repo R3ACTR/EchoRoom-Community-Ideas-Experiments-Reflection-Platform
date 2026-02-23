@@ -17,6 +17,9 @@ interface Experiment {
   id: number;
   title: string;
   description: string;
+  hypothesis: string;
+  successMetric: string;
+  falsifiability: string;
   status: "planned" | "in-progress" | "completed";
   statusLabel: "Planned" | "In Progress" | "Completed";
   progress: number;
@@ -26,6 +29,9 @@ interface BackendExperiment {
   id: number;
   title: string;
   description: string;
+  hypothesis: string;
+  successMetric: string;
+  falsifiability: string;
   status: string;
   progress?: number;
 }

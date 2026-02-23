@@ -10,11 +10,15 @@ import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
 import { RetroGrid } from "@/components/ui/retro-grid";
 import ShareButton from "@/app/components/ShareButton";
+import { Beaker, Target, XCircle } from "lucide-react";
 
 interface Experiment {
   id: number;
   title: string;
   description: string;
+  hypothesis: string;
+  successMetric: string;
+  falsifiability: string;
   status: "planned" | "in-progress" | "completed";
   progress: number;
   linkedIdeaId?: number | null; 
@@ -146,9 +150,35 @@ export default function ExperimentDetailPage() {
   </div>
 )}
 
-<p className="text-gray-600 dark:text-gray-300">
+<p className="text-gray-600 dark:text-gray-300 italic mb-6">
   {experiment.description}
 </p>
+
+<div className="grid gap-6 md:grid-cols-1 mb-8">
+  <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/10 transition-all hover:bg-blue-500/10">
+    <div className="flex items-center gap-2 mb-2 text-blue-400">
+      <Beaker className="w-4 h-4" />
+      <h3 className="text-sm font-semibold uppercase tracking-wider">Hypothesis</h3>
+    </div>
+    <p className="text-gray-200 leading-relaxed">{experiment.hypothesis}</p>
+  </div>
+
+  <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/10 transition-all hover:bg-green-500/10">
+    <div className="flex items-center gap-2 mb-2 text-green-400">
+      <Target className="w-4 h-4" />
+      <h3 className="text-sm font-semibold uppercase tracking-wider">Success Metric</h3>
+    </div>
+    <p className="text-gray-200 leading-relaxed">{experiment.successMetric}</p>
+  </div>
+
+  <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10 transition-all hover:bg-red-500/10">
+    <div className="flex items-center gap-2 mb-2 text-red-400">
+      <XCircle className="w-4 h-4" />
+      <h3 className="text-sm font-semibold uppercase tracking-wider">Falsifiability</h3>
+    </div>
+    <p className="text-gray-200 leading-relaxed">{experiment.falsifiability}</p>
+  </div>
+</div>
           </div>
 
           <div className="space-y-4">
