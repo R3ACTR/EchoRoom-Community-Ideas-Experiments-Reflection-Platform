@@ -13,13 +13,15 @@ export interface Idea {
 
 
 // allowed transitions
-const allowedTransitions: Record<IdeaStatus, IdeaStatus[]> = {
+import { StateMachine } from "../lib/stateMachine";
+
+const ideaStateMachine = new StateMachine<IdeaStatus>({
   draft: ["proposed"],
   proposed: ["experiment"],
   experiment: ["outcome"],
   outcome: ["reflection"],
   reflection: [],
-};
+});
 
 // Get all ideas
 export const getAllIdeas = (): Idea[] => {
@@ -29,6 +31,15 @@ export const getAllIdeas = (): Idea[] => {
 // Get only published ideas (non-draft)
 export const getPublishedIdeas = (): Idea[] => {
   return ideas.filter(i => i.status !== "draft");
+};
+
+//valualable api feature
+
+export const getAvailableTransitions = (id: number): IdeaStatus[] | null => {
+  const idea = ideas.find(i => i.id === id);
+  if (!idea) return null;
+
+  return ideaStateMachine.getAllowedTransitions(idea.status);
 };
 
 // Get only draft ideas
@@ -99,11 +110,8 @@ export const updateIdeaStatus = (id: number, status: IdeaStatus): Idea | null =>
 
   if (!idea) return null;
 
-  const allowed = allowedTransitions[idea.status];
-
-  if (!allowed.includes(status)) {
-    throw new Error(`Invalid transition from '${idea.status}' to '${status}'`);
-  }
+ idea.status = ideaStateMachine.transition(idea.status, status);
+idea.updatedAt = new Date().toISOString();
 
   idea.status = status;
   idea.updatedAt = new Date().toISOString();
