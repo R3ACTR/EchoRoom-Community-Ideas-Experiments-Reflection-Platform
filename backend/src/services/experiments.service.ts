@@ -88,8 +88,13 @@ export const updateExperiment = (
   if (updates.description !== undefined)
     experiment.description = updates.description;
 
-  if (updates.status !== undefined)
-    experiment.status = updates.status;
+  if (updates.status !== undefined) {
+  // If already completed block any status change
+  if (experiment.status === "completed") {
+    throw new Error("Completed experiments cannot be modified");
+  }
+  experiment.status = updates.status;
+}
 
   if (updates.outcomeResult !== undefined)
   experiment.outcomeResult = updates.outcomeResult;

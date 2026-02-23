@@ -161,20 +161,33 @@ export default function ExperimentDetailPage() {
               </span>
             </div>
 
-            <div className="flex gap-4">
-              <Button
-                onClick={() => updateStatus("in-progress")}
-                disabled={experiment.status === "in-progress"}
-              >
-                Mark In Progress
-              </Button>
+            {experiment.status !== "completed" ? (
+              <div className="flex gap-4">
+                <Button
+                  onClick={() => updateStatus("in-progress")}
+                  disabled={experiment.status === "in-progress"}
+                >
+                  Mark In Progress
+                </Button>
 
-              <Button
-                onClick={() => updateStatus("completed")}
-              >
-                Mark Completed
-              </Button>
-            </div>
+                <Button
+                  onClick={() => updateStatus("completed")}
+                  disabled={experiment.status === "planned"}
+                >
+                  Mark Completed
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-4">
+                <Button
+                  onClick={() =>
+                    router.push(`/outcomes?experimentId=${experiment.id}`)
+                  }
+                >
+                  View Outcome
+                </Button>
+              </div>
+            )}
           </div>
 
         </div>
