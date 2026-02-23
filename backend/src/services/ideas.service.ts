@@ -1,4 +1,5 @@
 import { getNextIdeaId, ideas } from "../data/ideas.data";
+import { ConflictError } from "../lib/conflictError";
 
 export type IdeaStatus = "draft" | "proposed" | "experiment" | "outcome" | "reflection";
 
@@ -14,7 +15,7 @@ export interface Idea {
 
 
 // allowed transitions
-import { StateMachine } from "../lib/stateMachine";
+import { StateMachine } from "../lib/statemachine";
 
 const ideaStateMachine = new StateMachine<IdeaStatus>({
   draft: ["proposed"],
@@ -95,22 +96,20 @@ export const updateDraft = (
 
   if (!idea) return null;
 
-if (idea.version !== version) {
+ if (idea.version !== version) {
   throw new ConflictError("Idea has been modified by another user");
-}
+ }
 
-idea.title = title;
-idea.description = description;
-idea.version += 1; // increment version
-idea.updatedAt = new Date().toISOString();
+  idea.title = title;
+  idea.description = description;
+  idea.version += 1; // increment version
+  idea.updatedAt = new Date().toISOString();
   return idea;
 };
 
 // Publish a draft (change from draft to proposed)
 export const publishDraft = (id: number): Idea | null => {
- export const publishDraft = (id: number, version: number): Idea | null => {
-  return updateIdeaStatus(id, "proposed", version);
-};
+  return updateIdeaStatus(id, "proposed");
 };
 
 
@@ -120,10 +119,7 @@ export const updateIdeaStatus = (id: number, status: IdeaStatus): Idea | null =>
 
   if (!idea) return null;
 
- idea.status = ideaStateMachine.transition(idea.status, status);
-idea.updatedAt = new Date().toISOString();
-
-  idea.status = status;
+  idea.status = ideaStateMachine.transition(idea.status, status);
   idea.updatedAt = new Date().toISOString();
 
   return idea;
