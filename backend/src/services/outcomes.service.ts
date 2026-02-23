@@ -72,3 +72,7 @@ export const updateOutcomeResult = (
   outcome.result = result;
   return outcome;
 };
+
+export const hasOutcomeForExperiment = (experimentId: number): boolean => {
+  return outcomes.some(o => o.experimentId === experimentId);
+};

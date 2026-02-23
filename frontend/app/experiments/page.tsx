@@ -82,7 +82,7 @@ export default function ExperimentsPage() {
   const [deleteExperiment, setDeleteExperiment] = useState<Experiment | null>(null);
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
-
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   useEffect(() => {
     const fetchExperiments = async () => {
       try {
@@ -118,8 +118,8 @@ export default function ExperimentsPage() {
 
     setDeleteExperiment(null);
   } catch (err: any) {
-    alert(err.message || "Failed to delete experiment");
-  } finally {
+  setDeleteError(err.message || "Failed to delete experiment");
+} finally {
     setDeleting(false);
   }
 };
@@ -316,6 +316,38 @@ export default function ExperimentsPage() {
               {deleting ? "Deleting..." : "Delete"}
             </Button>
           </div>
+
+        </div>
+      </MagicCard>
+    </div>
+  </div>
+)}
+{deleteError && (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+    onClick={() => setDeleteError(null)}
+  >
+    <div onClick={(e) => e.stopPropagation()}>
+      <MagicCard
+        className="p-[1px] rounded-2xl"
+        gradientColor="rgba(239,68,68,0.6)"
+      >
+        <div className="bg-white/10 dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl px-7 py-7 w-[380px]">
+
+          <h2 className="text-xl font-bold text-blue-100 mb-3">
+            Cannot Delete Experiment
+          </h2>
+
+          <p className="text-slate-200 text-sm leading-relaxed mb-6">
+            {deleteError}
+          </p>
+
+          <Button
+            className="w-full"
+            onClick={() => setDeleteError(null)}
+          >
+            Okay
+          </Button>
 
         </div>
       </MagicCard>

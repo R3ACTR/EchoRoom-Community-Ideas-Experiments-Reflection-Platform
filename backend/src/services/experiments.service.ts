@@ -1,5 +1,5 @@
 // backend/src/services/experiments.service.ts
-
+import { hasOutcomeForExperiment } from "./outcomes.service";
 export type ExperimentStatus = "planned" | "in-progress" | "completed";
 export const EXPERIMENT_PROGRESS_BY_STATUS: Record<ExperimentStatus, number> = {
   planned: 0,
@@ -103,14 +103,16 @@ export const updateExperiment = (
 };
 
 
-// Delete experiment
 export const deleteExperiment = (id: number): boolean => {
 
   const index = experiments.findIndex(e => e.id === id);
-
   if (index === -1) return false;
 
-  experiments.splice(index, 1);
+  // 🔒 Prevent deletion if outcome exists
+  if (hasOutcomeForExperiment(id)) {
+    throw new Error("Cannot delete experiment with a recorded outcome.");
+  }
 
+  experiments.splice(index, 1);
   return true;
 };

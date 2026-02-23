@@ -164,6 +164,7 @@ export const removeExperiment = (
     }
 
     const deleted = deleteExperiment(id);
+
     if (!deleted) {
       res.status(404).json({
         success: false,
@@ -176,7 +177,11 @@ export const removeExperiment = (
       success: true,
       message: "Experiment deleted",
     });
-  } catch (error) {
-    next(error);
+
+  } catch (err: any) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
