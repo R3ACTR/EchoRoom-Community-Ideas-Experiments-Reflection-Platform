@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import TrashIcon from "@/components/ui/trash-icon";
 import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
-import { Search, Filter, ChevronDown, Check } from "lucide-react";
+import { Check, ChevronDown, Facebook, Filter, Link2, Linkedin, MessageCircle, Search, Twitter } from "lucide-react";
 import { PageLayout } from "../community/PageLayout";
 import LoadingState from "../components/LoadingState";
 import ErrorState from "../components/ErrorState";
@@ -103,8 +103,38 @@ export default function IdeasPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleteIdea, setDeleteIdea] = useState<Idea | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
   const router = useRouter();
 
+    const handleCopyLink = (id: number) => {
+    const url = `${window.location.origin}/ideas/${id}`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleShareTwitter = (idea: Idea) => {
+    const text = encodeURIComponent(`Check out this idea on EchoRoom: ${idea.title}`);
+    const url = encodeURIComponent(`${window.location.origin}/ideas/${idea.id}`);
+    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank");
+  };
+
+  const handleShareLinkedIn = (idea: Idea) => {
+    const url = encodeURIComponent(`${window.location.origin}/ideas/${idea.id}`);
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, "_blank");
+  };
+
+  const handleShareWhatsApp = (idea: Idea) => {
+    const text = encodeURIComponent(`Check out this idea on EchoRoom: ${idea.title} - ${window.location.origin}/ideas/${idea.id}`);
+    window.open(`https://wa.me/?text=${text}`, "_blank");
+  };
+
+  const handleShareFacebook = (idea: Idea) => {
+    const url = encodeURIComponent(`${window.location.origin}/ideas/${idea.id}`);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, "_blank");
+  };
+
+  // Search and Filter State
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
@@ -287,12 +317,54 @@ export default function IdeasPage() {
                 gradientColor="rgba(59,130,246,0.6)"
               >
                 <div className="relative p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 h-full flex flex-col">
-                  <button
-                    onClick={() => setDeleteIdea(idea)}
-                    className="absolute top-5 right-5 p-2 text-red-400 hover:text-red-600 z-10"
-                  >
-                    <TrashIcon className="w-6 h-6" />
-                  </button>
+                  <div className="absolute top-5 right-5 flex items-center gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleCopyLink(idea.id); }}
+                      className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"
+                      title="Copy link"
+                    >
+                      {copiedId === idea.id ? (
+                        <Check className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <Link2 className="w-4 h-4" />
+                      )}
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleShareTwitter(idea); }}
+                      className="p-1.5 text-gray-400 hover:text-sky-400 transition-colors"
+                      title="Share on Twitter"
+                    >
+                      <Twitter className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleShareLinkedIn(idea); }}
+                      className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+                      title="Share on LinkedIn"
+                    >
+                      <Linkedin className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleShareWhatsApp(idea); }}
+                      className="p-1.5 text-gray-400 hover:text-emerald-500 transition-colors"
+                      title="Share on WhatsApp"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleShareFacebook(idea); }}
+                      className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors"
+                      title="Share on Facebook"
+                    >
+                      <Facebook className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeleteIdea(idea); }}
+                      className="p-1.5 text-red-400 hover:text-red-600 ml-1 border-l border-white/10"
+                      title="Delete idea"
+                    >
+                      <TrashIcon className="w-5 h-5" />
+                    </button>
+                  </div>
 
                   <h3 className="text-xl font-semibold text-black dark:text-white mb-2 pr-8">
                     {idea.title}

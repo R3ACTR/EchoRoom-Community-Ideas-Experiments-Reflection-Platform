@@ -1,0 +1,6 @@
+nohup: ignoring input
+
+> frontend@0.1.0 dev
+> next dev --port 3002
+
+sh: line 1: next: command not found

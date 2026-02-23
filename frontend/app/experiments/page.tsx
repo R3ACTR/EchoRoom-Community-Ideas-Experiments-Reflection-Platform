@@ -11,6 +11,7 @@ import Button from "@/app/components/ui/Button";
 import ChartHistogramIcon from "@/components/ui/chart-histogram-icon";
 import { MagicCard } from "@/components/ui/magic-card";
 import TrashIcon from "@/components/ui/trash-icon";
+import { Link2, Check } from "lucide-react";
 
 interface Experiment {
   id: number;
@@ -82,6 +83,16 @@ export default function ExperimentsPage() {
   const [deleteExperiment, setDeleteExperiment] = useState<Experiment | null>(null);
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+
+  const handleCopyLink = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/experiments/${id}`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   const [deleteError, setDeleteError] = useState<string | null>(null);
   useEffect(() => {
     const fetchExperiments = async () => {
@@ -235,16 +246,29 @@ export default function ExperimentsPage() {
   >
     <div className="relative p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 h-full flex flex-col">
 
-      {/* Delete Button */}
-      <button
+      {/* Action Buttons */}
+      <div className="absolute top-4 right-4 flex items-center gap-1">
+        <button
+          onClick={(e) => handleCopyLink(e, exp.id)}
+          className="p-2 text-gray-400 hover:text-blue-500 transition-colors"
+          title="Copy link"
+        >
+          {copiedId === exp.id ? (
+            <Check className="w-4 h-4 text-green-500" />
+          ) : (
+            <Link2 className="w-4 h-4" />
+          )}
+        </button>
+        <button
   onClick={(e) => {
     e.stopPropagation();
     setDeleteExperiment(exp);
   }}
-        className="absolute top-4 right-4 p-2 text-red-400 hover:text-red-600 transition"
-      >
-        <TrashIcon className="w-5 h-5" />
-      </button>
+          className="p-2 text-red-400 hover:text-red-600 transition"
+        >
+          <TrashIcon className="w-5 h-5" />
+        </button>
+      </div>
 
       <h2 className="text-xl font-semibold text-black dark:text-white mb-2 pr-8">
         {exp.title}
