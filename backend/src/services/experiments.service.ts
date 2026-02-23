@@ -11,6 +11,9 @@ export interface Experiment {
   id: number;
   title: string;
   description: string;
+  hypothesis: string;
+  successMetric: string;
+  falsifiability: string;
   status: ExperimentStatus;
   linkedIdeaId?: number | null; 
   outcomeResult?: "Success" | "Failed" | null;
@@ -53,6 +56,9 @@ export const getExperimentById = (id: number): Experiment | null => {
 export const createExperiment = (
   title: string,
   description: string,
+  hypothesis: string,
+  successMetric: string,
+  falsifiability: string,
   status: ExperimentStatus,
   linkedIdeaId?: number
 ): Experiment => {
@@ -61,6 +67,9 @@ export const createExperiment = (
     id: nextId++,
     title,
     description,
+    hypothesis,
+    successMetric,
+    falsifiability,
     status,
     linkedIdeaId: linkedIdeaId ?? null,
     createdAt: new Date(),
@@ -87,6 +96,15 @@ export const updateExperiment = (
 
   if (updates.description !== undefined)
     experiment.description = updates.description;
+
+  if (updates.hypothesis !== undefined)
+    experiment.hypothesis = updates.hypothesis;
+
+  if (updates.successMetric !== undefined)
+    experiment.successMetric = updates.successMetric;
+
+  if (updates.falsifiability !== undefined)
+    experiment.falsifiability = updates.falsifiability;
 
   if (updates.status !== undefined) {
   // If already completed block any status change
