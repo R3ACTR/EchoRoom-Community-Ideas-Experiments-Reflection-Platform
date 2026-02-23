@@ -12,6 +12,7 @@ export interface Experiment {
   title: string;
   description: string;
   status: ExperimentStatus;
+  linkedIdeaId?: number | null; 
   outcomeResult?: "Success" | "Failed" | null;
   createdAt: Date;
 }
@@ -52,7 +53,8 @@ export const getExperimentById = (id: number): Experiment | null => {
 export const createExperiment = (
   title: string,
   description: string,
-  status: ExperimentStatus
+  status: ExperimentStatus,
+  linkedIdeaId?: number
 ): Experiment => {
 
   const newExperiment: Experiment = {
@@ -60,6 +62,7 @@ export const createExperiment = (
     title,
     description,
     status,
+    linkedIdeaId: linkedIdeaId ?? null,
     createdAt: new Date(),
   };
 

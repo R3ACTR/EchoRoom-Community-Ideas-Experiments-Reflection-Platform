@@ -60,14 +60,14 @@ const formatReflectionDate = (createdAt?: string): string => {
 
 const mapReflectionToViewModel = (
   reflection: ReflectionApiResponse,
-  outcomeMap: Map<number, string>
+  outcomeMap: Map<number, OutcomeApiResponse>
 ): Reflection => {
-  const outcome = outcomeMap.get(reflection.outcomeId) || "Outcome";
+  const outcome = outcomeMap.get(reflection.outcomeId);
 
   return {
     id: reflection.id,
-    title: `Outcome #${reflection.outcomeId}`,
-    outcome,
+    title: outcome?.experimentTitle || "Unknown Experiment",
+    outcome: outcome?.result || "Unknown",
     learning: reflection.content || "No reflection content",
     author: "Community member",
     date: formatReflectionDate(reflection.createdAt),
@@ -92,8 +92,8 @@ export default function ReflectionPage() {
           apiFetch<OutcomeApiResponse[]>("/outcomes"),
         ]);
 
-        const outcomeMap = new Map<number, string>(
-          outcomesData.map((o) => [o.id, o.result])
+        const outcomeMap = new Map<number, OutcomeApiResponse>(
+          outcomesData.map((o) => [o.id, o])
         );
 
         const mapped = reflectionsData.map((r) =>
@@ -183,37 +183,46 @@ export default function ReflectionPage() {
           <div className="space-y-6">
             {reflections.map((ref) => (
               <div
-                key={ref.id}
-                className="card"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    {ref.title}
-                  </h3>
+  key={ref.id}
+  className="cursor-pointer hover:scale-[1.02] transition"
+>
+  <MagicCard
+    className="p-[1px] rounded-xl"
+    gradientColor="rgba(59,130,246,0.6)"
+  >
+    <div className="p-6 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10">
 
-                  <span
-                    className={`text-xs font-medium px-3 py-1 rounded-full ${
-                      outcomeColors[ref.outcome] || ""
-                    }`}
-                  >
-                    {ref.outcome}
-                  </span>
-                </div>
+      <div className="flex items-start justify-between mb-3">
+        <h3 className="text-xl font-semibold text-black dark:text-white">
+          {ref.title}
+        </h3>
 
-                <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg p-4 mb-4">
-                  <div className="flex items-start gap-2">
-                    <MessageSquare className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-                    <p className="text-sm italic">
-                      "{ref.learning}"
-                    </p>
-                  </div>
-                </div>
+        <span
+          className={`text-xs font-medium px-3 py-1 rounded-full ${
+            outcomeColors[ref.outcome] || ""
+          }`}
+        >
+          {ref.outcome}
+        </span>
+      </div>
 
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>By {ref.author}</span>
-                  <span>{ref.date}</span>
-                </div>
-              </div>
+      <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg p-4 mb-4">
+        <div className="flex items-start gap-2">
+          <MessageSquare className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+          <p className="text-sm italic">
+            "{ref.learning}"
+          </p>
+        </div>
+      </div>
+
+      <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+        <span>By {ref.author}</span>
+        <span>{ref.date}</span>
+      </div>
+
+    </div>
+  </MagicCard>
+</div>
             ))}
           </div>
         )}

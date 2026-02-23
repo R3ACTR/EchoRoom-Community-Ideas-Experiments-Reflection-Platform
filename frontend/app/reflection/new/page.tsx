@@ -6,6 +6,7 @@ import { apiFetch } from "../../lib/api";
 import { PageLayout } from "../../community/PageLayout";
 import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
+import { RetroGrid } from "@/components/ui/retro-grid";
 
 interface Outcome {
   id: number;
@@ -71,6 +72,10 @@ export default function NewReflectionPage() {
   };
 
   return (
+    <>
+     <div className="fixed inset-0 z-0 pointer-events-none">
+      <RetroGrid />
+    </div>
     <PageLayout>
       <div className="section max-w-2xl mx-auto">
 
@@ -165,5 +170,6 @@ export default function NewReflectionPage() {
         </MagicCard>
       </div>
     </PageLayout>
+    </>
   );
 }

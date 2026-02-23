@@ -70,7 +70,7 @@ export const postExperiment = (
   next: NextFunction
 ): void => {
   try {
-    const { title, description, status } = req.body;
+    const { title, description, status, linkedIdeaId } = req.body;
 
     if (!title || !description || !status) {
       res.status(400).json({
@@ -91,7 +91,8 @@ export const postExperiment = (
     const experiment = createExperiment(
       String(title),
       String(description),
-      status
+      status,
+      linkedIdeaId ? Number(linkedIdeaId) : undefined
     );
 
     res.status(201).json({

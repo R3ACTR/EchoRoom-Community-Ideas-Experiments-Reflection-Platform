@@ -91,9 +91,7 @@ export default function ExperimentsPage() {
 
         const data = await apiFetch<BackendExperiment[]>("/experiments");
         const normalized = data.map(normalizeExperiment);
-        setExperiments(
-          normalized.filter(exp => exp.status !== "completed")
-        );
+        setExperiments(normalized);
       } catch (err: any) {
         setError(err.message || "Failed to fetch experiments");
       } finally {
