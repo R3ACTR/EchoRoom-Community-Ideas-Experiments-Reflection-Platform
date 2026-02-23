@@ -17,6 +17,9 @@ import { Dock, DockIcon } from "@/components/ui/dock";
 import { useRouter } from "next/navigation";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { MagicCard } from "@/components/ui/magic-card";
+import GithubIcon from "@/components/ui/github-icon";
+import UsersGroupIcon from "@/components/ui/users-group-icon";
+import InfoCircleIcon from "@/components/ui/info-circle-icon";
 
 export default function HomePage() {
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
@@ -211,29 +214,110 @@ export default function HomePage() {
 
         </div>
       </section>
+      {/* TECH STACK */}
+<section className="py-24 bg-blue-50 dark:bg-slate-900 border-t border-blue-100 dark:border-slate-800 transition-colors">
+  <div className="max-w-5xl mx-auto px-6 text-center">
+
+    <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400 mb-12">
+      Built With Modern Technologies
+    </p>
+
+    <div className="flex flex-wrap items-center justify-center gap-16">
+
+      <img
+        src="/react.svg"
+        alt="React"
+        className="w-12 h-12 
+           opacity-60 
+           grayscale 
+           dark:invert dark:opacity-70 dark:grayscale-0
+           hover:opacity-100 hover:scale-110 hover:invert-0 hover:grayscale-0
+           transition-all duration-300"
+      />
+
+      <img
+        src="/nextdotjs.svg"
+        alt="Next.js"
+        className="w-12 h-12 
+           opacity-60 
+           grayscale 
+           dark:invert dark:opacity-70 dark:grayscale-0
+           hover:opacity-100 hover:scale-110 hover:invert-0 hover:grayscale-0
+           transition-all duration-300"
+      />
+
+      <img
+        src="/nodedotjs.svg"
+        alt="Node.js"
+        className="w-12 h-12 
+           opacity-60 
+           grayscale 
+           dark:invert dark:opacity-70 dark:grayscale-0
+           hover:opacity-100 hover:scale-110 hover:invert-0 hover:grayscale-0
+           transition-all duration-300"
+      />
+
+      <img
+        src="/tailwindcss.svg"
+        alt="Tailwind CSS"
+        className="w-12 h-12 
+           opacity-60 
+           grayscale 
+           dark:invert dark:opacity-70 dark:grayscale-0
+           hover:opacity-100 hover:scale-110 hover:invert-0 hover:grayscale-0
+           transition-all duration-300"
+      />
+
+    </div>
+
+  </div>
+</section>
 
       {/* FOOTER */}
-      <footer className="border-t border-slate-200 dark:border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col md:flex-row justify-between items-center md:items-start text-center md:text-left">
-          <p className="text-sm text-slate-500">
-            © 2026 EchoRoom — Built during Open Source Quest
-          </p>
-          <div className="flex gap-4 sm:gap-6 text-sm text-slate-500 mt-4 md:mt-0">
-            <Link href="/about" className="hover:text-blue-600">
-              About
-            </Link>
-            <Link href="/community" className="hover:text-blue-600">
-              Community
-            </Link>
-            <Link
-              href="https://github.com/R3ACTR/EchoRoom-Community-Ideas-Experiments-Reflection-Platform"
-              className="hover:text-blue-600"
-            >
-              GitHub
-            </Link>
-          </div>
-        </div>
-      </footer>
+      {/* FOOTER */}
+<footer className="border-t border-slate-200 dark:border-slate-700 py-10">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row justify-between items-center md:items-start text-center md:text-left gap-6">
+
+    {/* Left Side */}
+    <div>
+      <p className="text-sm text-slate-500 dark:text-slate-400">
+        © 2026 EchoRoom — Built during Open Source Quest
+      </p>
+      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+        Community-driven experimentation platform
+      </p>
+    </div>
+
+    {/* Right Side Links */}
+    <div className="flex gap-8 text-sm text-slate-500 dark:text-slate-400 items-center">
+
+      <Link
+        href="/about"
+        className="flex items-center gap-2 hover:text-blue-600 transition"
+      >
+        <InfoCircleIcon className="w-4 h-4 opacity-70 dark:opacity-60" />
+        <span>About</span>
+      </Link>
+
+      <Link
+        href="/community"
+        className="flex items-center gap-2 hover:text-blue-600 transition"
+      >
+        <UsersGroupIcon className="w-4 h-4 opacity-70 dark:opacity-60" />
+        <span>Community</span>
+      </Link>
+
+      <Link
+        href="https://github.com/R3ACTR/EchoRoom-Community-Ideas-Experiments-Reflection-Platform"
+        className="flex items-center gap-2 hover:text-blue-600 transition"
+      >
+        <GithubIcon className="w-4 h-4 opacity-70 dark:opacity-60" />
+        <span>GitHub</span>
+      </Link>
+
+    </div>
+  </div>
+</footer>
     </main>
   );
 }

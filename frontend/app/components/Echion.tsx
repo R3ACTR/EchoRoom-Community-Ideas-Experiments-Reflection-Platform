@@ -7,7 +7,8 @@ import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
 import { AnimatedGradientText } from "@/components/ui/animated-gradient-text"
 import { useEffect } from "react";
-
+import EchionIcon from "@/components/ui/echion-icon";
+import UsersIcon from "@/components/ui/users-icon";
 export default function Echion() {
   const [open, setOpen] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
@@ -149,7 +150,7 @@ const words = text.split(/\s+/);
   <div className="absolute bottom-16 right-14 z-50 animate-in fade-in slide-in-from-bottom-4 slide-in-from-right-4 zoom-in-95 duration-500 ease-out">
     <div className="
       relative
-      bg-gradient-to-br from-[#8CE4FF] to-[#0F2854]
+      bg-gradient-to-br from-[#3A9AFF] via-[#2F7CF6] to-[#0992C2]
       text-white
       px-5 py-3
       rounded-2xl
@@ -169,7 +170,7 @@ const words = text.split(/\s+/);
         duration={50} 
         className="relative z-10 text-white text-sm font-medium tracking-wide"
       >
-        Hi 👋 I’m Echion
+        Hi I’m Echion
       </TypingAnimation>
     </div>
   </div>
@@ -177,12 +178,9 @@ const words = text.split(/\s+/);
     {/* Glow ring */}
     <div className="absolute inset-0 rounded-full bg-blue-500/30 blur-xl animate-pulse"></div>
 
-    {/* Breathing animation */}
-    <img
-      src="/echion.webp"
-      alt="Echion Assistant"
-      className="relative w-14 h-14 drop-shadow-lg animate-breathe group-hover:scale-110 transition-transform duration-300"
-    />
+  <EchionIcon
+  className="relative w-14 h-14 drop-shadow-lg animate-breathe group-hover:scale-110 transition-transform duration-300"
+/>
   </div>
 </div>
 

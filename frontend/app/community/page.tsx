@@ -11,6 +11,7 @@ import ChartHistogramIcon from "@/components/ui/chart-histogram-icon";
 
 import { MagicCard } from "@/components/ui/magic-card";
 import { Users } from "lucide-react";
+import { Meteors } from "@/components/ui/meteors";
 
 const CommunityPage = () => {
   const stats = [
@@ -35,6 +36,8 @@ const CommunityPage = () => {
   ];
 
   return (
+    <>
+    <Meteors />
     <PageLayout>
       <div className="relative container py-16">
         {/* Back Button */}
@@ -102,6 +105,7 @@ const CommunityPage = () => {
         </div>
       </div>
     </PageLayout>
+    </>
   );
 };
 

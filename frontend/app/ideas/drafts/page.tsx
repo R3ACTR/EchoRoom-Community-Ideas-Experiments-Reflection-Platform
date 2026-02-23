@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import TrashIcon from "@/components/ui/trash-icon";
 import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
+import FileDescriptionIcon from "@/components/ui/file-description-icon";
 
 interface Idea {
   id: number;
@@ -106,7 +107,7 @@ export default function DraftsPage() {
 
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <BulbSvg className="w-8 h-8 text-gray-500 dark:text-gray-400" />
+              <FileDescriptionIcon className="w-8 h-8 text-gray-500 dark:text-gray-400" />
               <h1 className="text-4xl font-bold text-black dark:text-white">
                 My Drafts
               </h1>
@@ -129,7 +130,7 @@ export default function DraftsPage() {
               gradientColor="rgba(107,114,128,0.6)"
             >
               <div className="bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 px-10 py-12 text-center">
-                <BulbSvg className="w-10 h-10 mx-auto mb-5 text-gray-400 opacity-80" />
+                <FileDescriptionIcon className="w-10 h-10 mx-auto mb-5 text-gray-400 opacity-80" />
 
                 <h3 className="text-xl font-semibold text-black dark:text-white mb-2">
                   No drafts yet
