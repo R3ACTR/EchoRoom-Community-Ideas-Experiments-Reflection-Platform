@@ -9,6 +9,7 @@ import ErrorState from "@/app/components/ErrorState";
 import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
 import { RetroGrid } from "@/components/ui/retro-grid";
+import ShareButton from "@/app/components/ShareButton";
 
 interface Experiment {
   id: number;
@@ -123,9 +124,12 @@ export default function ExperimentDetailPage() {
           </Button>
 
           <div>
-            <h1 className="text-3xl font-bold mb-3">
+            <div className="flex justify-between items-start mb-3">
+              <h1 className="text-3xl font-bold">
   {experiment.title}
 </h1>
+              <ShareButton title={experiment.title} description={experiment.description} type="experiment" />
+            </div>
 
 {/* Linked Idea Display */}
 {experiment.linkedIdeaId && ideaExists && ideaTitle && (

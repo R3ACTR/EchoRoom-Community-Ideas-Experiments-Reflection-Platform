@@ -7,7 +7,7 @@ import LoadingState from "../../components/LoadingState";
 import ErrorState from "../../components/ErrorState";
 import { apiFetch } from "../../lib/api";
 import IdeaTimeline from "../../components/IdeaTimeline";
-import { Link2, Check, Twitter, Linkedin, Facebook, MessageCircle, Share2 } from "lucide-react";
+import ShareButton from "../../components/ShareButton";
 
 
 interface Idea {
@@ -94,9 +94,12 @@ export default function IdeaDetailPage() {
     <PageLayout>
       <div className="section max-w-3xl">
 
-        <h1 className="text-3xl font-bold mb-4">
-          {idea.title}
-        </h1>
+        <div className="flex justify-between items-start mb-4">
+          <h1 className="text-3xl font-bold">
+            {idea.title}
+          </h1>
+          <ShareButton title={idea.title} description={idea.description} type="idea" />
+        </div>
 
         <p className="text-gray-600 mb-6">
           {idea.description}
