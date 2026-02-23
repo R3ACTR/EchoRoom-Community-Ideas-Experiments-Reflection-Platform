@@ -32,6 +32,8 @@ export function ExperimentForm() {
   const { addExperiment } = useExperiments();
   const [ideas, setIdeas] = useState<any[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
+  const [aiInsights, setAiInsights] = useState<any[]>([]);
+  const [isFetchingInsights, setIsFetchingInsights] = useState(false);
   
   useEffect(() => {
     const fetchIdeas = async () => {
@@ -59,6 +61,35 @@ export function ExperimentForm() {
     endDate: "",
     linkedIdeaId: "",
   });
+
+  useEffect(() => {
+    const fetchAIInsights = async () => {
+      if (formData.title.length < 5) {
+        setAiInsights([]);
+        return;
+      }
+
+      setIsFetchingInsights(true);
+      try {
+        const response: any = await apiFetch("/insights/suggest-patterns", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            title: formData.title, 
+            description: formData.description 
+          }),
+        });
+        setAiInsights(response || []);
+      } catch (error) {
+        console.error("Failed to fetch AI insights:", error);
+      } finally {
+        setIsFetchingInsights(false);
+      }
+    };
+
+    const timer = setTimeout(fetchAIInsights, 1000);
+    return () => clearTimeout(timer);
+  }, [formData.title, formData.description]);
   const [dateError, setDateError] = useState<string>("");
 
   const handleChange = (
@@ -187,6 +218,40 @@ export function ExperimentForm() {
                     className="w-full px-4 py-3 rounded-xl border bg-background focus:ring-2 focus:ring-primary transition"
                   />
                 </div>
+
+                {/* AI Insights Panel */}
+                {(isFetchingInsights || aiInsights.length > 0) && (
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-500">
+                    <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+                      <Beaker className="w-4 h-4 animate-pulse" />
+                      {isFetchingInsights ? "AI is thinking..." : "AI Community Insights"}
+                    </div>
+                    {!isFetchingInsights && aiInsights.map((insight) => (
+                      <div key={insight.id} className="bg-background/50 border border-primary/10 rounded-lg p-3 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                          <span className="font-medium text-sm">{insight.label}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground ml-6">
+                          {insight.data.description}
+                        </p>
+                        {insight.data.confidence && (
+                          <div className="ml-6 mt-2 flex items-center gap-2">
+                            <div className="h-1.5 w-16 bg-muted rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-primary" 
+                                style={{ width: `${insight.data.confidence * 100}%` }}
+                              />
+                            </div>
+                            <span className="text-[10px] text-muted-foreground">
+                              {Math.round(insight.data.confidence * 100)}% confidence
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
