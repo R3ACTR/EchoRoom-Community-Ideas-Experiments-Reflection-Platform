@@ -199,45 +199,60 @@ export default function NewReflectionPage() {
             className="p-8 rounded-3xl bg-white/75 dark:bg-zinc-900/70 backdrop-blur-xl border border-white/10 shadow-xl"
           >
             {/* Visual Stepper UI added here */}
-            <div className="flex items-center justify-center w-full mb-10 mt-2">
-              {[1, 2, 3, 4, 5].map((s, index) => (
-                <div key={s} className="flex items-center">
-                  {/* Step Node */}
-                  <div
-                    className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-all duration-300 ${
-                      s < step
-                        ? "bg-blue-600 text-white" // Completed
-                        : s === step
-                        ? "bg-blue-600 text-white ring-4 ring-blue-500/30 shadow-[0_0_15px_rgba(37,99,235,0.5)]" // Current
-                        : "bg-gray-200 dark:bg-zinc-800 text-gray-500" // Upcoming
-                    }`}
-                  >
-                    {s < step ? (
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : (
-                      s
-                    )}
-                  </div>
+            <div className="flex items-center justify-center w-full mb-8 mt-2 px-2 overflow-hidden">
+  {[1, 2, 3, 4, 5].map((s, index) => (
+    <div key={s} className="flex items-center flex-shrink-0">
+      
+      {/* Step Node */}
+      <div
+        className={`
+          flex items-center justify-center
+          w-6 h-6 sm:w-8 sm:h-8
+          text-xs sm:text-sm
+          rounded-full font-semibold
+          transition-all duration-300
+          ${
+            s < step
+              ? "bg-blue-600 text-white"
+              : s === step
+              ? "bg-blue-600 text-white ring-2 sm:ring-4 ring-blue-500/30 shadow-[0_0_10px_rgba(37,99,235,0.5)]"
+              : "bg-gray-200 dark:bg-zinc-800 text-gray-500"
+          }
+        `}
+      >
+        {s < step ? (
+          <svg
+            className="w-3 h-3 sm:w-4 sm:h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+          </svg>
+        ) : (
+          s
+        )}
+      </div>
 
-                  {/* Connector Line */}
-                  {index < 4 && (
-                    <div
-                      className={`w-10 sm:w-16 h-1 mx-2 rounded transition-all duration-300 ${
-                        s < step ? "bg-blue-600" : "bg-gray-200 dark:bg-zinc-800"
-                      }`}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
+      {/* Connector */}
+      {index < 4 && (
+        <div
+          className={`
+            w-4 sm:w-10 md:w-16
+            h-[2px]
+            mx-1 sm:mx-2
+            rounded transition-all duration-300
+            ${
+              s < step
+                ? "bg-blue-600"
+                : "bg-gray-200 dark:bg-zinc-800"
+            }
+          `}
+        />
+      )}
+    </div>
+  ))}
+</div>
 
             {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
 
