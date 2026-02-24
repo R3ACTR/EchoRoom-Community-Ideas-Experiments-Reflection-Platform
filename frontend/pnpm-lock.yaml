@@ -38,9 +38,18 @@ importers:
       next:
         specifier: ^16.1.6
         version: 16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next-themes:
+        specifier: ^0.4.6
+        version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      ogl:
+        specifier: ^1.0.11
+        version: 1.0.11
       react:
         specifier: ^19.2.3
         version: 19.2.4
+      react-day-picker:
+        specifier: ^9.13.2
+        version: 9.13.2(react@19.2.4)
       react-dom:
         specifier: ^19.2.3
         version: 19.2.4(react@19.2.4)
@@ -250,6 +259,9 @@ packages:
   '@csstools/css-tokenizer@3.0.4':
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
     engines: {node: '>=18'}
+
+  '@date-fns/tz@1.4.1':
+    resolution: {integrity: sha512-P5LUNhtbj6YfI3iJjw5EL9eUAG6OitD0W3fWQcpQjDRc/QIsL0tRNuO1PcDvPccWL1fSTXXdE1ds+l95DV/OFA==}
 
   '@emnapi/runtime@1.8.1':
     resolution: {integrity: sha512-mehfKSMWjjNol8659Z8KxEMrdSJDDot5SXMq00dM8BN4o+CLNXQ0xH2V7EchNHV4RmbZLmmPdEaXZc5H2FXmDg==}
@@ -1719,6 +1731,9 @@ packages:
     resolution: {integrity: sha512-ZYP5VBHshaDAiVZxjbRVcFJpc+4xGgT0bK3vzy1HLN8jTO975HEbuYzZJcHoQEY5K1a0z8YayJkyVETa08eNTg==}
     engines: {node: '>=18'}
 
+  date-fns-jalali@4.1.0-0:
+    resolution: {integrity: sha512-hTIP/z+t+qKwBDcmmsnmjWTduxCg+5KfdqWQvb2X/8C9+knYY6epN/pfxdDuyVlSVeFz0sM5eEfwIUQ70U4ckg==}
+
   date-fns@4.1.0:
     resolution: {integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==}
 
@@ -2369,6 +2384,12 @@ packages:
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
+  next-themes@0.4.6:
+    resolution: {integrity: sha512-pZvgD5L0IEvX5/9GWyHMf3m8BKiVQwsCMHfoFosXtXBMnaS0ZnIJ9ST4b4NqLVKDEm8QBxoNNGNaBv2JNF6XNA==}
+    peerDependencies:
+      react: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
+      react-dom: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
+
   next@16.1.6:
     resolution: {integrity: sha512-hkyRkcu5x/41KoqnROkfTm2pZVbKxvbZRuNvKXLRXxs3VfyO0WhY50TQS40EuKO9SW3rBj/sF3WbVwDACeMZyw==}
     engines: {node: '>=20.9.0'}
@@ -2398,6 +2419,9 @@ packages:
 
   obug@2.1.1:
     resolution: {integrity: sha512-uTqF9MuPraAQ+IsnPf366RG4cP9RtUi7MLO1N3KEc+wb0a6yKpeL0lmk2IB1jY5KHPAlTc6T/JRdC/YqxHNwkQ==}
+
+  ogl@1.0.11:
+    resolution: {integrity: sha512-kUpC154AFfxi16pmZUK4jk3J+8zxwTWGPo03EoYA8QPbzikHoaC82n6pNTbd+oEaJonaE8aPWBlX7ad9zrqLsA==}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -2481,6 +2505,12 @@ packages:
 
   querystringify@2.2.0:
     resolution: {integrity: sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ==}
+
+  react-day-picker@9.13.2:
+    resolution: {integrity: sha512-IMPiXfXVIAuR5Yk58DDPBC8QKClrhdXV+Tr/alBrwrHUw0qDDYB1m5zPNuTnnPIr/gmJ4ChMxmtqPdxm8+R4Eg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: '>=16.8.0'
 
   react-dom@19.2.4:
     resolution: {integrity: sha512-AXJdLo8kgMbimY95O2aKQqsz2iWi9jMgKJhRBAxECE4IFxfcazB2LmzloIoibJI3C12IlY20+KFaLv+71bUJeQ==}
@@ -3105,6 +3135,8 @@ snapshots:
       '@csstools/css-tokenizer': 3.0.4
 
   '@csstools/css-tokenizer@3.0.4': {}
+
+  '@date-fns/tz@1.4.1': {}
 
   '@emnapi/runtime@1.8.1':
     dependencies:
@@ -4357,6 +4389,8 @@ snapshots:
       whatwg-mimetype: 4.0.0
       whatwg-url: 14.2.0
 
+  date-fns-jalali@4.1.0-0: {}
+
   date-fns@4.1.0: {}
 
   dayjs@1.11.19: {}
@@ -5145,6 +5179,11 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
+  next-themes@0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+    dependencies:
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+
   next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       '@next/env': 16.1.6
@@ -5174,6 +5213,8 @@ snapshots:
   nwsapi@2.2.23: {}
 
   obug@2.1.1: {}
+
+  ogl@1.0.11: {}
 
   optionator@0.9.4:
     dependencies:
@@ -5264,6 +5305,13 @@ snapshots:
   punycode@2.3.1: {}
 
   querystringify@2.2.0: {}
+
+  react-day-picker@9.13.2(react@19.2.4):
+    dependencies:
+      '@date-fns/tz': 1.4.1
+      date-fns: 4.1.0
+      date-fns-jalali: 4.1.0-0
+      react: 19.2.4
 
   react-dom@19.2.4(react@19.2.4):
     dependencies:
