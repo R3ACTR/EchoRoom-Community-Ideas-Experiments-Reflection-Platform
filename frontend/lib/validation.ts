@@ -10,14 +10,76 @@ export const TAG_MAX_LENGTH = 30;
 export const OUTCOME_NOTES_MAX_LENGTH = 1000;
 export const MIN_REFLECTION_LENGTH = 10;
 export const MAX_REFLECTION_LENGTH = 2000;
+export const IDEA_STATUSES = [
+  "draft",
+  "proposed",
+  "experiment",
+  "outcome",
+  "reflection",
+  "discarded",
+] as const;
+export const IDEA_STATUS_FILTERS = [
+  "All",
+  "New",
+  "In Progress",
+  "Implemented",
+  "Discarded",
+] as const;
+
+export type IdeaStatus = (typeof IDEA_STATUSES)[number];
+export type IdeaStatusFilter = (typeof IDEA_STATUS_FILTERS)[number];
 
 export interface ValidationResult {
   valid: boolean;
   error?: string;
 }
 
+const IDEA_STATUS_ALIASES: Record<string, IdeaStatus> = {
+  draft: "draft",
+  proposed: "proposed",
+  experiment: "experiment",
+  outcome: "outcome",
+  reflection: "reflection",
+  discarded: "discarded",
+  new: "proposed",
+  "in progress": "experiment",
+  "in-progress": "experiment",
+  in_progress: "experiment",
+  implemented: "reflection",
+};
+
+const IDEA_STATUS_LABELS: Record<IdeaStatus, string> = {
+  draft: "Draft",
+  proposed: "New",
+  experiment: "In Progress",
+  outcome: "In Progress",
+  reflection: "Implemented",
+  discarded: "Discarded",
+};
+
 export function isValidString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+export function normalizeIdeaStatus(value: unknown): IdeaStatus | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  return IDEA_STATUS_ALIASES[value.trim().toLowerCase()] ?? null;
+}
+
+export function isIdeaStatus(value: unknown): value is IdeaStatus {
+  return normalizeIdeaStatus(value) !== null;
+}
+
+export function getIdeaStatusLabel(value: unknown): string {
+  const normalized = normalizeIdeaStatus(value);
+  if (!normalized) {
+    return "Unknown";
+  }
+
+  return IDEA_STATUS_LABELS[normalized];
 }
 
 export function isValidEmail(email: unknown): boolean {
