@@ -6,7 +6,6 @@ import { PageLayout } from "../../community/PageLayout";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../lib/api";
 import BackButton from "../../components/BackButton";
-import BulbSvg from "@/components/ui/bulb-svg";
 import { useRouter } from "next/navigation";
 import TrashIcon from "@/components/ui/trash-icon";
 import Button from "@/app/components/ui/Button";
@@ -35,7 +34,6 @@ export default function DraftsPage() {
     const fetchDrafts = async () => {
       try {
         setLoading(true);
-        setError(null);
         const draftsData = await apiFetch<Idea[]>("/ideas/drafts");
         setDrafts(draftsData);
       } catch (err: any) {
@@ -46,14 +44,6 @@ export default function DraftsPage() {
     };
 
     fetchDrafts();
-  }, []);
-
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setDeleteDraft(null);
-    };
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
   const handleDelete = async () => {
@@ -73,7 +63,7 @@ export default function DraftsPage() {
         throw new Error(data.message || "Delete failed");
       }
 
-      setDrafts(prev => prev.filter(i => i.id !== deleteDraft.id));
+      setDrafts((prev) => prev.filter((i) => i.id !== deleteDraft.id));
       setDeleteDraft(null);
     } catch (err: any) {
       alert(err.message || "Failed to delete draft");
@@ -100,37 +90,47 @@ export default function DraftsPage() {
 
   return (
     <PageLayout>
-      <div className="section">
+      <div className="section px-4 sm:px-0">
         <div className="mb-8">
           <div className="mb-4">
-            <BackButton />
+            <Button
+                onClick={() => router.push("/ideas")}
+                className="rounded-full px-6 py-2"
+                >
+               ← Back to Ideas
+            </Button>
           </div>
 
-          <div className="flex items-center justify-between mb-3">
+          {/* Header */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
             <div className="flex items-center gap-3">
-              <FileDescriptionIcon className="w-8 h-8 text-gray-500 dark:text-gray-400" />
-              <h1 className="text-4xl font-bold text-black dark:text-white">
+              <FileDescriptionIcon className="w-7 h-7 sm:w-8 sm:h-8 text-gray-500 dark:text-gray-400" />
+              <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white">
                 My Drafts
               </h1>
             </div>
 
-            <Button onClick={() => router.push("/ideas/create")}>
+            <Button
+              onClick={() => router.push("/ideas/create")}
+              className="w-full sm:w-auto"
+            >
               + New Draft
             </Button>
           </div>
 
-          <p className="text-lg max-w-2xl text-black dark:text-white">
+          <p className="text-base sm:text-lg max-w-2xl text-black dark:text-white">
             Drafts are private ideas that you can refine and publish later.
           </p>
         </div>
 
+        {/* EMPTY STATE */}
         {drafts.length === 0 ? (
           <div className="flex justify-center mt-14">
             <MagicCard
               className="p-[1px] rounded-xl w-full"
               gradientColor="rgba(107,114,128,0.6)"
             >
-              <div className="bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 px-10 py-12 text-center">
+              <div className="bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 px-6 sm:px-10 py-10 sm:py-12 text-center">
                 <FileDescriptionIcon className="w-10 h-10 mx-auto mb-5 text-gray-400 opacity-80" />
 
                 <h3 className="text-xl font-semibold text-black dark:text-white mb-2">
@@ -148,7 +148,7 @@ export default function DraftsPage() {
             </MagicCard>
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {drafts.map((draft) => (
               <div
                 key={draft.id}
@@ -161,26 +161,32 @@ export default function DraftsPage() {
                 >
                   <div className="relative p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10">
 
+                    {/* Delete button always visible on mobile */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeleteDraft(draft);
                       }}
-                      className="absolute top-5 right-5 p-2 text-red-400 hover:text-red-600"
+                      className="absolute top-4 right-4 p-2 text-red-400 hover:text-red-600"
                     >
-                      <TrashIcon className="w-6 h-6" />
+                      <TrashIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                     </button>
 
                     <div className="flex justify-between items-start mb-2 pr-8">
-                      <h3 className="text-xl font-semibold text-black dark:text-white">
+                      <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white">
                         {draft.title}
                       </h3>
-                      <div className={`
-                      px-2 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase border
-                      ${draft.complexity === "LOW" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" :
-                          draft.complexity === "HIGH" ? "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400" :
-                            "bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400"}
-                    `}>
+
+                      <div
+                        className={`px-2 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase border
+                        ${
+                          draft.complexity === "LOW"
+                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                            : draft.complexity === "HIGH"
+                            ? "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400"
+                            : "bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400"
+                        }`}
+                      >
                         {draft.complexity}
                       </div>
                     </div>
@@ -200,17 +206,15 @@ export default function DraftsPage() {
         )}
       </div>
 
+      {/* DELETE MODAL */}
       {deleteDraft && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
           onClick={() => !deleting && setDeleteDraft(null)}
         >
           <div onClick={(e) => e.stopPropagation()}>
-            <MagicCard
-              className="p-[1px] rounded-2xl"
-              gradientColor="rgba(107,114,128,0.6)"
-            >
-              <div className="bg-white/10 dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl px-7 py-7 w-[380px]">
+            <MagicCard className="p-[1px] rounded-2xl">
+              <div className="bg-white/10 dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl px-6 py-6 w-[90vw] sm:w-[380px]">
 
                 <div className="mb-6">
                   <h2 className="text-xl font-bold text-black dark:text-white">
@@ -224,14 +228,18 @@ export default function DraftsPage() {
 
                 <div className="flex gap-4">
                   <Button
-                    className={`w-full ${deleting ? "opacity-50 pointer-events-none" : ""}`}
+                    className={`w-full ${
+                      deleting ? "opacity-50 pointer-events-none" : ""
+                    }`}
                     onClick={() => setDeleteDraft(null)}
                   >
                     Cancel
                   </Button>
 
                   <Button
-                    className={`w-full ${deleting ? "opacity-50 pointer-events-none" : ""}`}
+                    className={`w-full ${
+                      deleting ? "opacity-50 pointer-events-none" : ""
+                    }`}
                     onClick={handleDelete}
                   >
                     {deleting ? "Deleting..." : "Delete"}
