@@ -133,7 +133,7 @@ export default function IdeasPage() {
 
   // Search and Filter State
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState<IdeaStatusFilter>("All");
 
   useEffect(() => {
     const fetchIdeas = async () => {
@@ -153,10 +153,18 @@ export default function IdeasPage() {
   }, []);
 
   const filteredIdeas = ideas.filter((idea) => {
+    const normalizedStatus = normalizeIdeaStatus(idea.status);
     const matchesSearch =
       idea.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       idea.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "All" || idea.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "All" ||
+      (statusFilter === "New" && normalizedStatus === "proposed") ||
+      (statusFilter === "In Progress" &&
+        (normalizedStatus === "experiment" || normalizedStatus === "outcome")) ||
+      (statusFilter === "Implemented" && normalizedStatus === "reflection") ||
+      (statusFilter === "Discarded" && normalizedStatus === "discarded");
+
     return matchesSearch && matchesStatus;
   });
 
