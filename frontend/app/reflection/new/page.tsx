@@ -66,11 +66,25 @@ export default function NewReflectionPage() {
         },
         body: JSON.stringify({
           outcomeId: selectedOutcome,
-          content: `${whatWentWell}\n\n${challenges}\n\n${surprises}\n\n${nextSteps}`,
-          whatWentWell,
-          challenges,
-          surprises,
-          nextSteps,
+          context: {
+            emotionBefore: 3, // Defaulting for now
+            confidenceBefore: 5,
+          },
+          breakdown: {
+            whatHappened: `Reflection on ${outcomes.find(o => o.id === selectedOutcome)?.experimentTitle}`,
+            whatWorked: whatWentWell,
+            whatDidntWork: challenges,
+            surprises: surprises,
+          },
+          growth: {
+            lessonLearned: "See breakdown what worked",
+            nextAction: nextSteps,
+          },
+          result: {
+            emotionAfter: 4,
+            confidenceAfter: 7,
+          },
+          visibility: "public",
         }),
       });
       router.push("/reflection");
