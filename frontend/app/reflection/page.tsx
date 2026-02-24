@@ -171,7 +171,7 @@ export default function ReflectionPage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <RefreshIcon className="w-8 h-8 text-blue-600 dark:text-blue-500 animate-in spin-in duration-700" />
+                <LibraryIcon className="w-8 h-8 text-blue-600 dark:text-blue-500 animate-in spin-in duration-700" />
                 <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">
                   Reflections
                 </h1>
@@ -193,9 +193,9 @@ export default function ReflectionPage() {
         {/* Empty State */}
         {reflections.length === 0 ? (
           <div className="flex justify-center mt-14">
-            <MagicCard className="p-[1px] rounded-2xl w-full max-w-2xl" gradientColor="rgba(59,130,246,0.3)">
+            <MagicCard className="p-[1px] rounded-2xl w-full " gradientColor="rgba(59,130,246,0.3)">
               <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-2xl px-10 py-16 text-center">
-                <div className="bg-blue-100 dark:bg-blue-900/30 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <LibraryIcon className="w-10 h-10 text-blue-600 dark:text-blue-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">

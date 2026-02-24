@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import TrashIcon from "@/components/ui/trash-icon";
 import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
-import { Check, Facebook, Filter, Link2, Linkedin, MessageCircle, Twitter } from "lucide-react";
+import { Check, Facebook, Filter, Link2, Linkedin, MessageCircle, Twitter , Layers, Sparkles, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { PageLayout } from "../community/PageLayout";
 import LoadingState from "../components/LoadingState";
 import ErrorState from "../components/ErrorState";
@@ -29,7 +29,25 @@ const STATUS_OPTIONS = [
   { value: "Implemented", label: "Implemented" },
   { value: "Discarded", label: "Discarded" },
 ];
-
+const getStatusIcon = (status: string, isActive: boolean) => {
+    const colorClass = isActive ? "text-blue-500" : "text-gray-400";
+    const size = 16;
+    
+    switch (status) {
+      case "All": 
+        return <Layers size={size} className={colorClass} />;
+      case "New": 
+        return <Sparkles size={size} className={`text-amber-400 ${isActive ? 'text-blue-500' : ''}`} />; // Sparkles pop nicely with amber!
+      case "In Progress": 
+        return <Clock size={size} className={colorClass} />;
+      case "Implemented": 
+        return <CheckCircle2 size={size} className={`text-emerald-500 ${isActive ? 'text-blue-500' : ''}`} />;
+      case "Discarded": 
+        return <XCircle size={size} className={`text-rose-500 ${isActive ? 'text-blue-500' : ''}`} />;
+      default: 
+        return <Layers size={size} className={colorClass} />;
+    }
+  };
 export default function IdeasPage() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,10 +140,9 @@ export default function IdeasPage() {
   const searchActions = STATUS_OPTIONS.map((opt) => ({
     id: opt.value,
     label: `Filter: ${opt.label}`,
-    icon: <Filter size={16} className={statusFilter === opt.value ? "text-blue-500" : "text-gray-400"} />,
+    icon: getStatusIcon(opt.value, statusFilter === opt.value),
     onClick: () => setStatusFilter(opt.value),
   }));
-
   if (loading) {
     return (
       <PageLayout>
@@ -179,7 +196,7 @@ export default function IdeasPage() {
             className="p-[1px] rounded-2xl mb-8 w-full relative z-50"
             gradientColor="rgba(59,130,246,0.6)"
           >
-            <div className="w-full p-4 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-white/10 flex items-center">
+            <div className="w-full p-2 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-white/10 flex items-center">
               <div className="relative w-full z-40 [&>div]:max-w-none [&>div]:w-full">
                 <ActionSearchBar
                   placeholder={`Search ideas... (Viewing: ${statusFilter})`}

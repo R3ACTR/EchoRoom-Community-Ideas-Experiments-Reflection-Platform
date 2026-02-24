@@ -446,7 +446,6 @@ export function ExperimentForm() {
                 disabled={currentStep === 0 || isSubmitting}
                 className="px-8"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
 
@@ -460,8 +459,7 @@ export function ExperimentForm() {
                   isSubmitting ? "Creating..." : "Finish Experiment"
                 ) : (
                   <>
-                    Next
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    Next 
                   </>
                 )}
               </Button>
