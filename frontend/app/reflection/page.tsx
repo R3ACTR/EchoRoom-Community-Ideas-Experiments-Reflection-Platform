@@ -196,7 +196,7 @@ export default function ReflectionPage() {
             <MagicCard className="p-[1px] rounded-2xl w-full " gradientColor="rgba(59,130,246,0.3)">
               <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-2xl px-10 py-16 text-center">
                 <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <LibraryIcon className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+                  <LibraryIcon className="w-10 h-10 text-blue-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
                   Your growth journal is empty

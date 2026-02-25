@@ -17,6 +17,7 @@ model User {
   updatedAt    DateTime @updatedAt
   
   refreshTokens RefreshToken[]
+  likes         Like[]
 }
 
 model RefreshToken {
@@ -44,6 +45,7 @@ model Idea {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   authorId    String @db.ObjectId
+  likes       Like[]
 }
 
 enum IdeaComplexity {
@@ -76,4 +78,15 @@ model Reflection {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   content   String
   createdAt DateTime @default(now())
+}
+
+model Like {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  ideaId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  idea      Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, ideaId])
 }

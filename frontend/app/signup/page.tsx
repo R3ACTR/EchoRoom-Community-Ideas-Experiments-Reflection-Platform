@@ -60,7 +60,7 @@ export default function SignupPage() {
   };
 
   return (
-    <main className="relative min-h-screen bg-slate-50 dark:bg-slate-950 flex items-start justify-center px-4 py-16">
+    <main className="relative min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center px-4">
       
       {/* Meteors background */}
       <Meteors number={18} className="opacity-40 dark:opacity-60" />

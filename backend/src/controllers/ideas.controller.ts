@@ -8,9 +8,20 @@ import {
   getPublishedIdeas,
   getDraftIdeas,
   getIdeaById,
+  normalizeIdeaStatus,
   updateIdeaStatus,
   deleteIdea,
 } from "../services/ideas.service";
+
+function isValidString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isValidComplexity(
+  complexity: unknown
+): complexity is "LOW" | "MEDIUM" | "HIGH" {
+  return ["LOW", "MEDIUM", "HIGH"].includes(String(complexity));
+}
 
 export const getIdeas = (_req: Request, res: Response): void => {
   const ideas = getPublishedIdeas();
@@ -105,9 +116,31 @@ export const patchIdeaStatus = (
 ): void => {
   const id = Number(req.params.id);
   const { status, version } = req.body;
+  const normalizedStatus = normalizeIdeaStatus(status);
+
+  if (Number.isNaN(id)) {
+    res.status(400).json({ success: false, message: "Invalid idea ID" });
+    return;
+  }
+
+  if (!normalizedStatus) {
+    res.status(400).json({
+      success: false,
+      message: "Invalid status value",
+    });
+    return;
+  }
+
+  if (typeof version !== "number") {
+    res.status(400).json({
+      success: false,
+      message: "Version is required",
+    });
+    return;
+  }
 
   try {
-    const idea = updateIdeaStatus(id, status, version);
+    const idea = updateIdeaStatus(id, normalizedStatus, version);
 
     if (!idea) {
       res.status(404).json({ success: false, message: "Idea not found" });
