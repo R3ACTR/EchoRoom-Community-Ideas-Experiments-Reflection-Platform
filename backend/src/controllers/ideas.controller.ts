@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { AuthRequest } from "../middleware/auth";
 import {
   createIdea,
   createDraft,
@@ -27,6 +28,12 @@ function isValidComplexity(
   complexity: unknown
 ): complexity is "LOW" | "MEDIUM" | "HIGH" {
   return ["LOW", "MEDIUM", "HIGH"].includes(String(complexity));
+}
+
+function readGoal(value: unknown): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (!isValidString(value)) return undefined;
+  return value.trim();
 }
 
 export const getIdeas = (_req: Request, res: Response): void => {
@@ -132,7 +139,7 @@ export const publishDraftHandler = (
   res: Response
 ): void => {
   const id = Number(req.params.id);
-  const { version } = req.body;
+  const { version, goal } = req.body;
 
   if (Number.isNaN(id)) {
     res.status(400).json({ success: false, message: "Invalid idea ID" });
@@ -147,8 +154,19 @@ export const publishDraftHandler = (
     return;
   }
 
+  if (goal !== undefined && !isValidString(goal)) {
+    res.status(400).json({
+      success: false,
+      message: "Goal must be a non-empty string",
+    });
+    return;
+  }
+
+  const userId = (req as AuthRequest).userId;
+  const goalValue = readGoal(goal);
+
   try {
-    const idea = publishDraft(id, version);
+    const idea = publishDraft(id, version, userId, goalValue);
 
     if (!idea) {
       res.status(404).json({ success: false, message: "Draft not found" });
@@ -192,7 +210,7 @@ export const patchIdeaStatus = (
   res: Response
 ): void => {
   const id = Number(req.params.id);
-  const { status, version } = req.body;
+  const { status, version, goal } = req.body;
 
   if (Number.isNaN(id)) {
     res.status(400).json({ success: false, message: "Invalid idea ID" });
@@ -215,8 +233,19 @@ export const patchIdeaStatus = (
     return;
   }
 
+  if (goal !== undefined && !isValidString(goal)) {
+    res.status(400).json({
+      success: false,
+      message: "Goal must be a non-empty string",
+    });
+    return;
+  }
+
+  const userId = (req as AuthRequest).userId;
+  const goalValue = readGoal(goal);
+
   try {
-    const idea = updateIdeaStatus(id, status, version);
+    const idea = updateIdeaStatus(id, status, version, userId, goalValue);
 
     if (!idea) {
       res.status(404).json({ success: false, message: "Idea not found" });

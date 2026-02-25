@@ -1,6 +1,7 @@
 import { getNextIdeaId, ideas } from "../data/ideas.data";
 import { StateMachine } from "../lib/statemachine";
 import { ConflictError } from "../lib/conflictError";
+import { recordStateTransition } from "./audit-log.service";
 
 export type IdeaStatus =
   | "draft"
@@ -132,16 +133,20 @@ export const updateDraft = (
 // 🔹 Publish draft
 export const publishDraft = (
   id: number,
-  version: number
+  version: number,
+  userId?: string,
+  goal?: string
 ): Idea | null => {
-  return updateIdeaStatus(id, "proposed", version);
+  return updateIdeaStatus(id, "proposed", version, userId, goal);
 };
 
 // 🔹 Update idea status (state machine + optimistic locking)
 export const updateIdeaStatus = (
   id: number,
   status: IdeaStatus,
-  version: number
+  version: number,
+  userId?: string,
+  goal?: string
 ): Idea | null => {
   const idea = ideas.find((i) => i.id === id);
   if (!idea) return null;
@@ -150,9 +155,20 @@ export const updateIdeaStatus = (
     throw new ConflictError("Idea has been modified by another user");
   }
 
-  idea.status = ideaStateMachine.transition(idea.status, status);
+  const previousStatus = idea.status;
+  const nextStatus = ideaStateMachine.transition(idea.status, status);
+  idea.status = nextStatus;
   idea.version += 1;
   idea.updatedAt = new Date().toISOString();
+
+  recordStateTransition({
+    entityType: "idea",
+    entityId: idea.id,
+    previousState: previousStatus,
+    newState: nextStatus,
+    userId,
+    goal,
+  });
 
   return idea;
 };

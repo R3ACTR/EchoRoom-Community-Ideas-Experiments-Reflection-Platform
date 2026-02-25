@@ -1,5 +1,6 @@
 // backend/src/services/experiments.service.ts
 import { hasOutcomeForExperiment } from "./outcomes.service";
+import { recordStateTransition } from "./audit-log.service";
 export type ExperimentStatus = "planned" | "in-progress" | "completed";
 export const EXPERIMENT_PROGRESS_BY_STATUS: Record<ExperimentStatus, number> = {
   planned: 0,
@@ -18,6 +19,11 @@ export interface Experiment {
   linkedIdeaId?: number | null; 
   outcomeResult?: "Success" | "Failed" | null;
   createdAt: Date;
+}
+
+export interface ExperimentUpdateMeta {
+  userId?: string;
+  goal?: string;
 }
 
 // in-memory storage
@@ -84,7 +90,8 @@ export const createExperiment = (
 // Update experiment
 export const updateExperiment = (
   id: number,
-  updates: Partial<Experiment>
+  updates: Partial<Experiment>,
+  auditMeta?: ExperimentUpdateMeta
 ): Experiment | null => {
 
   const experiment = experiments.find(e => e.id === id);
@@ -107,12 +114,24 @@ export const updateExperiment = (
     experiment.falsifiability = updates.falsifiability;
 
   if (updates.status !== undefined) {
-  // If already completed block any status change
-  if (experiment.status === "completed") {
-    throw new Error("Completed experiments cannot be modified");
+    // If already completed block any status change
+    if (experiment.status === "completed") {
+      throw new Error("Completed experiments cannot be modified");
+    }
+
+    const previousStatus = experiment.status;
+    if (updates.status !== previousStatus) {
+      experiment.status = updates.status;
+      recordStateTransition({
+        entityType: "experiment",
+        entityId: experiment.id,
+        previousState: previousStatus,
+        newState: updates.status,
+        userId: auditMeta?.userId,
+        goal: auditMeta?.goal,
+      });
+    }
   }
-  experiment.status = updates.status;
-}
 
   if (updates.outcomeResult !== undefined)
   experiment.outcomeResult = updates.outcomeResult;
