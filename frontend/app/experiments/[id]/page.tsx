@@ -133,7 +133,12 @@ export default function ExperimentDetailPage() {
 
               {/* Top Navigation Bar */}
               <div className="flex justify-between items-center mb-10">
-                <BackButton />
+               <Button
+                           onClick={() => router.push("/experiments")}
+                           className="primary"
+                           >
+                         ← Back to experiments
+                         </Button>
                 <ShareButton 
                   title={experiment.title} 
                   description={experiment.description} 
