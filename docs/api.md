@@ -104,9 +104,18 @@ Response `200`:
   "success": true,
   "message": "Token refreshed successfully",
   "data": {
+  
     "accessToken": "...",
     "refreshToken": "..."
-  }
+ docs/add-response-schemas
+]
+
+**Error Response (500 Internal Server Error):**
+```json
+{
+  "error": "Failed to fetch experiments"
+=======
+ main
 }
 ```
 
@@ -189,6 +198,11 @@ Body:
   "title": "Updated title",
   "description": "Updated description",
   "version": 1
+}
+**Error Response (400 Bad Request):**
+```json
+{
+  "error": "Title and description are required"
 }
 ```
 
