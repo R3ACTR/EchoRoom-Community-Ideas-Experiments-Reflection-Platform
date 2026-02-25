@@ -11,7 +11,7 @@ import Button from "@/app/components/ui/Button";
 import ChartHistogramIcon from "@/components/ui/chart-histogram-icon";
 import { MagicCard } from "@/components/ui/magic-card";
 import TrashIcon from "@/components/ui/trash-icon";
-import { Link2, Check, Clock } from "lucide-react";
+import { Link2, Check, Clock, Lightbulb, Target, ShieldAlert } from "lucide-react";
 import { differenceInDays, parseISO, isAfter } from "date-fns";
 
 interface Experiment {
@@ -103,6 +103,7 @@ export default function ExperimentsPage() {
   };
 
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  
   useEffect(() => {
     const fetchExperiments = async () => {
       try {
@@ -121,6 +122,7 @@ export default function ExperimentsPage() {
 
     fetchExperiments();
   }, []);
+
   const handleDelete = async () => {
     if (!deleteExperiment || deleting) return;
 
@@ -130,7 +132,6 @@ export default function ExperimentsPage() {
       await apiFetch(`/experiments/${deleteExperiment.id}`, {
         method: "DELETE",
       });
-
 
       setExperiments(prev =>
         prev.filter(exp => exp.id !== deleteExperiment.id)
@@ -242,15 +243,15 @@ export default function ExperimentsPage() {
             </MagicCard>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 xl:grid-cols-2">
             {experiments.map((exp) => (
               <div
                 key={exp.id}
                 onClick={() => router.push(`/experiments/${exp.id}`)}
-                className="cursor-pointer hover:scale-[1.02] transition"
+                className="cursor-pointer hover:scale-[1.01] transition-transform duration-200 h-full flex flex-col"
               >
                 <MagicCard
-                  className="p-[1px] rounded-xl relative"
+                  className="p-[1px] rounded-xl relative h-full flex-grow"
                   gradientColor="rgba(59,130,246,0.6)"
                 >
                   <div className="relative p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 h-full flex flex-col">
@@ -279,50 +280,84 @@ export default function ExperimentsPage() {
                       </button>
                     </div>
 
-                    <h2 className="text-xl font-semibold text-black dark:text-white mb-2 pr-8">
+                    <h2 className="text-xl font-semibold text-black dark:text-white mb-2 pr-16">
                       {exp.title}
                     </h2>
 
-                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 text-sm">
                       {exp.description}
                     </p>
 
-                    <div className="flex justify-between items-center mb-2">
-                      <span
-                        className={`text-sm font-medium ${getStatusTextColor(exp.status)}`}
-                      >
-                        Status: {exp.statusLabel}
-                      </span>
-
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {exp.progress}%
-                      </span>
+                    {/* NEW: Experiment Details Grid */}
+                    <div className="space-y-2 mb-6 bg-black/5 dark:bg-white/5 rounded-lg p-3 border border-black/5 dark:border-white/5 flex-grow">
+                      {exp.hypothesis && (
+                        <div className="flex items-start gap-2">
+                          <Lightbulb className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                          <p className="text-gray-700 dark:text-gray-300 line-clamp-2 text-xs">
+                            <strong className="text-gray-900 dark:text-gray-100 font-medium">Hypothesis: </strong>
+                            {exp.hypothesis}
+                          </p>
+                        </div>
+                      )}
+                      {exp.successMetric && (
+                        <div className="flex items-start gap-2">
+                          <Target className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                          <p className="text-gray-700 dark:text-gray-300 line-clamp-2 text-xs">
+                            <strong className="text-gray-900 dark:text-gray-100 font-medium">Metric: </strong>
+                            {exp.successMetric}
+                          </p>
+                        </div>
+                      )}
+                      {exp.falsifiability && (
+                        <div className="flex items-start gap-2">
+                          <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                          <p className="text-gray-700 dark:text-gray-300 line-clamp-2 text-xs">
+                            <strong className="text-gray-900 dark:text-gray-100 font-medium">Falsifiability: </strong>
+                            {exp.falsifiability}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2 mb-4">
-                      <div
-                        className={`h-2 rounded-full ${getProgressColor(exp.status)}`}
-                        style={{ width: `${exp.progress}%` }}
-                      />
-                    </div>
+                    {/* Progress Section */}
+                    <div className="mt-auto">
+                      <div className="flex justify-between items-center mb-2">
+                        <span
+                          className={`text-sm font-medium ${getStatusTextColor(exp.status)}`}
+                        >
+                          Status: {exp.statusLabel}
+                        </span>
 
-                    {exp.endDate && exp.status !== "completed" && (
-                      <div className="mt-auto pt-4 border-t border-white/5 flex items-center gap-2 text-xs">
-                        <Clock className={`w-3.5 h-3.5 ${differenceInDays(parseISO(exp.endDate), new Date()) <= 3
-                            ? "text-red-500 animate-pulse"
-                            : "text-blue-400"
-                          }`} />
-                        <span className={
-                          differenceInDays(parseISO(exp.endDate), new Date()) <= 3
-                            ? "text-red-500 font-bold"
-                            : "text-gray-400"
-                        }>
-                          {isAfter(new Date(), parseISO(exp.endDate))
-                            ? "Deadline passed"
-                            : `${differenceInDays(parseISO(exp.endDate), new Date())} days remaining`}
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          {exp.progress}%
                         </span>
                       </div>
-                    )}
+
+                      <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2 mb-4">
+                        <div
+                          className={`h-2 rounded-full ${getProgressColor(exp.status)}`}
+                          style={{ width: `${exp.progress}%` }}
+                        />
+                      </div>
+
+                      {exp.endDate && exp.status !== "completed" && (
+                        <div className="pt-3 border-t border-black/5 dark:border-white/5 flex items-center gap-2 text-xs">
+                          <Clock className={`w-3.5 h-3.5 ${differenceInDays(parseISO(exp.endDate), new Date()) <= 3
+                              ? "text-red-500 animate-pulse"
+                              : "text-blue-400"
+                            }`} />
+                          <span className={
+                            differenceInDays(parseISO(exp.endDate), new Date()) <= 3
+                              ? "text-red-500 font-bold"
+                              : "text-gray-500 dark:text-gray-400"
+                          }>
+                            {isAfter(new Date(), parseISO(exp.endDate))
+                              ? "Deadline passed"
+                              : `${differenceInDays(parseISO(exp.endDate), new Date())} days remaining`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
                   </div>
                 </MagicCard>
@@ -331,6 +366,8 @@ export default function ExperimentsPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
       {deleteExperiment && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
@@ -373,6 +410,8 @@ export default function ExperimentsPage() {
           </div>
         </div>
       )}
+
+      {/* Error Modal */}
       {deleteError && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
