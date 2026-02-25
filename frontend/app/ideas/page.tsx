@@ -31,6 +31,7 @@ import ErrorState from "../components/ErrorState";
 import ActionSearchBar from "@/components/ui/action-search-bar";
 import HeartIcon from "@/components/ui/heart-icon";
 import CopyIcon from "@/components/ui/copy-icon";
+import BookmarkIcon from "@/components/ui/bookmark-icon";
 
 interface Idea {
   id: number;
@@ -45,6 +46,10 @@ interface LikeData {
     count: number;
     liked: boolean;
   };
+}
+
+interface BookmarkData {
+  [ideaId: number]: boolean;
 }
 
 const STATUS_OPTIONS = [
@@ -98,6 +103,8 @@ export default function IdeasPage() {
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [likes, setLikes] = useState<LikeData>({});
   const [likingId, setLikingId] = useState<number | null>(null);
+  const [bookmarks, setBookmarks] = useState<BookmarkData>({});
+  const [bookmarkingId, setBookmarkingId] = useState<number | null>(null);
 
   // Load likes from localStorage on mount
   useEffect(() => {
@@ -109,12 +116,28 @@ export default function IdeasPage() {
         console.error("Failed to parse likes", e);
       }
     }
+    
+    // Load bookmarks from localStorage
+    const storedBookmarks = localStorage.getItem("echoroom_bookmarks");
+    if (storedBookmarks) {
+      try {
+        setBookmarks(JSON.parse(storedBookmarks));
+      } catch (e) {
+        console.error("Failed to parse bookmarks", e);
+      }
+    }
   }, []);
 
   // Save likes to localStorage when they change
   const saveLikes = useCallback((newLikes: LikeData) => {
     setLikes(newLikes);
     localStorage.setItem("echoroom_likes", JSON.stringify(newLikes));
+  }, []);
+
+  // Save bookmarks to localStorage when they change
+  const saveBookmarks = useCallback((newBookmarks: BookmarkData) => {
+    setBookmarks(newBookmarks);
+    localStorage.setItem("echoroom_bookmarks", JSON.stringify(newBookmarks));
   }, []);
 
   // Toggle like for an idea
@@ -133,6 +156,20 @@ export default function IdeasPage() {
     };
     saveLikes(newLikes);
     setLikingId(null);
+  };
+
+  // Toggle bookmark for an idea
+  const handleBookmark = (ideaId: number) => {
+    setBookmarkingId(ideaId);
+    const currentBookmark = bookmarks[ideaId] || false;
+    const newBookmarkState = !currentBookmark;
+    
+    const newBookmarks = {
+      ...bookmarks,
+      [ideaId]: newBookmarkState,
+    };
+    saveBookmarks(newBookmarks);
+    setBookmarkingId(null);
   };
 
   const handleCopyLink = (id: number) => {
@@ -258,6 +295,12 @@ export default function IdeasPage() {
 
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <Button
+                onClick={() => router.push("/ideas/bookmarks")}
+                className="rounded-full bg-amber-500 hover:bg-amber-600 text-white w-full sm:w-auto"
+              >
+                My Bookmarks
+              </Button>
+              <Button
                 onClick={() => router.push("/ideas/drafts")}
                 className="rounded-full bg-gray-500 hover:bg-gray-600 text-white w-full sm:w-auto"
               >
@@ -346,6 +389,25 @@ export default function IdeasPage() {
                       ) : (
                         <Copy className="w-4 h-4" />
                       )}
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBookmark(idea.id);
+                      }}
+                      disabled={bookmarkingId === idea.id}
+                      className={`p-2 transition-colors ${
+                        (bookmarks[idea.id] ?? false)
+                          ? "text-amber-500 hover:text-amber-600"
+                          : "text-gray-400 hover:text-amber-500"
+                      }`}
+                      title={(bookmarks[idea.id] ?? false) ? "Remove bookmark" : "Bookmark"}
+                    >
+                      <BookmarkIcon 
+                        filled={(bookmarks[idea.id] ?? false)} 
+                        className="w-4 h-4" 
+                      />
                     </button>
 
                     <button
