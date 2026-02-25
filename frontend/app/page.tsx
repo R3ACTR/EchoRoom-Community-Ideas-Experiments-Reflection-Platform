@@ -31,6 +31,27 @@ export default function HomePage() {
       .catch(() => setBackendOnline(false));
   }, []);
 
+  const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    router.push("/");
+    router.refresh();
+  };
+
+  if (!mounted) return <div className="hidden sm:block w-32" />;
+
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors">
       
@@ -59,21 +80,40 @@ export default function HomePage() {
 
             {/* Desktop Auth Buttons */}
             <div className="hidden sm:flex items-center gap-4">
-              <Link href="/signup">
-                <Button
-                  variant="primary"
-                  className="rounded-full px-6 py-2.5 text-sm font-normal tracking-tight"
-                >
-                  Sign Up
-                </Button>
-              </Link>
-              <Link
-                href="/login"
-                className="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition font-medium text-base"
-              >
-                Login
-              </Link>
-            </div>
+      {user ? (
+        <>
+          <Button
+            onClick={() => router.push("/ideas")}
+             variant="outline"
+          >
+            Dashboard
+          </Button>
+          <Button
+            onClick={handleLogout}
+            className="primary"
+          >
+            Logout
+          </Button>
+        </>
+      ) : (
+        <>
+          <Link href="/signup">
+            <Button
+              variant="primary"
+              className="rounded-full px-6 py-2.5 text-sm font-normal tracking-tight"
+            >
+              Sign Up
+            </Button>
+          </Link>
+          <Link
+            href="/login"
+            className="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition font-medium text-base"
+          >
+            Login
+          </Link>
+        </>
+      )}
+    </div>
 
             {/* Mobile Hamburger Toggle */}
             <button
@@ -99,35 +139,64 @@ export default function HomePage() {
         </div>
 
         {/* Mobile Dropdown Menu */}
-        {isMobileMenuOpen && (
-          <div className="absolute top-full left-0 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-lg md:hidden flex flex-col p-4 gap-4 animate-in slide-in-from-top-2 fade-in duration-200">
-            <Link href="/ideas" className="flex items-center gap-3 text-slate-700 dark:text-slate-200 font-medium px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg">
-              <BulbSvg className="w-5 h-5 text-blue-500" />
-              Ideas
-            </Link>
-            <Link href="/experiments" className="flex items-center gap-3 text-slate-700 dark:text-slate-200 font-medium px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg">
-              <ChartHistogramIcon className="w-5 h-5 text-blue-500" />
-              Experiments
-            </Link>
-            <Link href="/reflection" className="flex items-center gap-3 text-slate-700 dark:text-slate-200 font-medium px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg">
-              <LibraryIcon className="w-5 h-5 text-blue-500" />
-              Reflection
-            </Link>
-            
-            <div className="h-px bg-slate-200 dark:bg-slate-800 my-1" />
-            
-            <div className="flex flex-col gap-3 sm:hidden">
-              <Link href="/signup">
-                <Button variant="primary" className="w-full rounded-full">
-                  Sign Up
-                </Button>
-              </Link>
-              <Link href="/login" className="text-center text-slate-600 dark:text-slate-300 hover:text-blue-500 font-medium py-2">
-                Login
-              </Link>
-            </div>
+{isMobileMenuOpen && (
+  <div className="absolute top-full left-0 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-lg md:hidden flex flex-col p-4 gap-4 animate-in slide-in-from-top-2 fade-in duration-200">
+    <Link href="/ideas" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 text-slate-700 dark:text-slate-200 font-medium px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg">
+      <BulbSvg className="w-5 h-5 text-blue-500" />
+      Ideas
+    </Link>
+    <Link href="/experiments" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 text-slate-700 dark:text-slate-200 font-medium px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg">
+      <ChartHistogramIcon className="w-5 h-5 text-blue-500" />
+      Experiments
+    </Link>
+    <Link href="/reflection" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 text-slate-700 dark:text-slate-200 font-medium px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg">
+      <LibraryIcon className="w-5 h-5 text-blue-500" />
+      Reflection
+    </Link>
+    
+    <div className="h-px bg-slate-200 dark:bg-slate-800 my-1" />
+    
+    {/* Dynamic Mobile Auth Section */}
+    <div className="flex flex-col gap-3">
+      {user ? (
+        <>
+          <div className="px-2 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            Account: {user.name || user.email}
           </div>
-        )}
+          <Link href="/ideas" onClick={() => setIsMobileMenuOpen(false)}>
+            <Button variant="outline" className="w-full rounded-full">
+              Go to Dashboard
+            </Button>
+          </Link>
+          <Button 
+            onClick={() => {
+              handleLogout();
+              setIsMobileMenuOpen(false);
+            }}
+            className="w-full text-center text-red-600 dark:text-red-400 font-medium py-2 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg"
+          >
+            Logout
+          </Button>
+        </>
+      ) : (
+        <>
+          <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+            <Button variant="primary" className="w-full rounded-full">
+              Sign Up
+            </Button>
+          </Link>
+          <Link 
+            href="/login" 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="text-center text-slate-600 dark:text-slate-300 hover:text-blue-500 font-medium py-2"
+          >
+            Login
+          </Link>
+        </>
+      )}
+    </div>
+  </div>
+)}
       </nav>
 
       {/* HERO */}
