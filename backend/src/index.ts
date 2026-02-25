@@ -10,6 +10,7 @@ import reflectionsRoutes from "./routes/reflections.routes";
 import authRoutes from "./routes/auth.routes";
 import commentsRoutes from "./routes/comments.routes";
 import likesRoutes from "./routes/likes.routes";
+import insightsRoutes from "./routes/insights.routes";
 
 // import prisma from "./lib/prisma";
 console.log("INDEX TS SERVER STARTED");
@@ -28,6 +29,7 @@ app.use("/ideas", ideasRoutes);
 app.use("/experiments", experimentsRoutes);
 app.use("/outcomes", outcomesRoutes);
 app.use("/reflections", reflectionsRoutes);
+app.use("/insights", insightsRoutes);
 app.use("/ideas/:ideaId/comments", commentsRoutes);
 app.use("/likes", likesRoutes);
 
