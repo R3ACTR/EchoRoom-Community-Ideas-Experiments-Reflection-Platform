@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarIcon, ArrowRight, ArrowLeft, AlertCircle, CheckCircle2, Beaker, Target, XCircle } from "lucide-react";
+import { CalendarIcon, AlertCircle, CheckCircle2, Beaker, Target, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import { apiFetch } from "../lib/api";
@@ -15,7 +15,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { MagicCard } from "@/components/ui/magic-card";
-import { useEffect } from "react";
 import { useExperiments } from "../context/ExperimentsContext";
 import { RetroGrid } from "@/components/ui/retro-grid";
 
@@ -35,6 +34,12 @@ export function ExperimentForm() {
   const [aiInsights, setAiInsights] = useState<any[]>([]);
   const [isFetchingInsights, setIsFetchingInsights] = useState(false);
 
+  // New state for the custom toast/popup notification
+  const [toast, setToast] = useState<{ message: string; visible: boolean }>({
+    message: "",
+    visible: false,
+  });
+
   useEffect(() => {
     const fetchIdeas = async () => {
       try {
@@ -53,7 +58,7 @@ export function ExperimentForm() {
 
   const [formData, setFormData] = useState({
     title: "",
-    description: "", // Now generic notes
+    description: "", 
     hypothesis: "",
     successMetric: "",
     falsifiability: "",
@@ -90,6 +95,7 @@ export function ExperimentForm() {
     const timer = setTimeout(fetchAIInsights, 1000);
     return () => clearTimeout(timer);
   }, [formData.title, formData.description]);
+  
   const [dateError, setDateError] = useState<string>("");
 
   const handleChange = (
@@ -101,10 +107,19 @@ export function ExperimentForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const showToast = (message: string) => {
+    setToast({ message, visible: true });
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, visible: false }));
+    }, 3000);
+  };
+
   const nextStep = () => {
     if (currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
+      const next = currentStep + 1;
+      setCurrentStep(next);
       setPreview(false);
+      showToast(`${STEPS[next].title} Phase!`);
     }
   };
 
@@ -143,7 +158,11 @@ export function ExperimentForm() {
         }),
       });
 
-      router.push("/experiments");
+      showToast("Experiment Created Successfully!");
+      setTimeout(() => {
+         router.push("/experiments");
+      }, 1000);
+      
     } catch (error) {
       console.error("Failed to create experiment:", error);
     } finally {
@@ -152,21 +171,69 @@ export function ExperimentForm() {
   };
 
   const renderStepIndicator = () => (
-    <div className="flex items-center justify-between mb-8 overflow-x-auto pb-2">
+    // REMOVED overflow-hidden and ADDED pb-8 so the text has room to show
+    <div className="flex items-center justify-center w-full mb-8 mt-4 px-2 pb-8">
       {STEPS.map((step, index) => (
-        <div key={step.id} className="flex flex-col items-center flex-1 min-w-[80px]">
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors mb-2 ${index <= currentStep
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground border border-white/10"
+        <div key={step.id} className="flex items-center flex-shrink-0">
+          
+          {/* Step Node & Title Wrapper */}
+          <div className="flex flex-col items-center relative">
+            <div
+              className={`
+                flex items-center justify-center
+                w-8 h-8 sm:w-10 sm:h-10
+                text-sm sm:text-base
+                rounded-full font-semibold
+                transition-all duration-300
+                ${
+                  index < currentStep
+                    ? "bg-blue-600 text-white"
+                    : index === currentStep
+                    ? "bg-blue-600 text-white ring-4 ring-blue-500/30 shadow-[0_0_10px_rgba(37,99,235,0.5)]"
+                    : "bg-gray-200 dark:bg-zinc-800 text-gray-500"
+                }
+              `}
+            >
+              {index < currentStep ? (
+                <svg
+                  className="w-4 h-4 sm:w-5 sm:h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                index + 1
+              )}
+            </div>
+            
+            {/* Styled exactly like the screenshot: uppercase, tracking-widest, bold */}
+            <span 
+              className={`absolute top-full mt-3 text-[10px] uppercase tracking-widest font-bold whitespace-nowrap transition-colors duration-300 ${
+                index === currentStep ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"
               }`}
-          >
-            {index < currentStep ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
+            >
+              {step.id}
+            </span>
           </div>
-          <span className={`text-[10px] uppercase tracking-wider font-semibold ${index === currentStep ? "text-primary" : "text-muted-foreground"
-            }`}>
-            {step.id}
-          </span>
+
+          {/* Connector */}
+          {index < STEPS.length - 1 && (
+            <div
+              className={`
+                w-8 sm:w-12 md:w-20
+                h-[2px]
+                mx-2 sm:mx-4
+                rounded transition-all duration-300
+                ${
+                  index < currentStep
+                    ? "bg-blue-600"
+                    : "bg-gray-200 dark:bg-zinc-800"
+                }
+              `}
+            />
+          )}
         </div>
       ))}
     </div>
@@ -183,17 +250,18 @@ export function ExperimentForm() {
             type="button"
             variant="primary"
             onClick={() => router.push("/experiments")}
+            className="rounded-full px-6 py-2"
           >
             ← Back to Experiments
           </Button>
         </div>
 
-        <MagicCard gradientColor="rgba(59,130,246,0.6)" className="p-8 backdrop-blur-md border border-white/10 shadow-2xl rounded-2xl">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-1">
+        <MagicCard gradientColor="rgba(59,130,246,0.6)" className="p-8 backdrop-blur-md border border-white/10 shadow-2xl rounded-3xl bg-white/75 dark:bg-zinc-900/70">
+          <div className="mb-6 text-center sm:text-left">
+            <h1 className="text-3xl font-bold mb-1 text-black dark:text-white">
               {STEPS[currentStep].title}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-gray-600 dark:text-gray-400">
               {STEPS[currentStep].description}
             </p>
           </div>
@@ -214,19 +282,19 @@ export function ExperimentForm() {
                     value={formData.title}
                     onChange={handleChange}
                     placeholder="E.g., Testing AI mood-based themes"
-                    className="w-full px-4 py-3 rounded-xl border bg-background focus:ring-2 focus:ring-primary transition"
+                    className="w-full px-4 py-3 rounded-xl border bg-white dark:bg-zinc-950 focus:ring-2 focus:ring-blue-500 outline-none transition"
                   />
                 </div>
 
                 {/* AI Insights Panel */}
                 {(isFetchingInsights || aiInsights.length > 0) && (
-                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-500">
-                    <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+                  <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-500">
+                    <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-semibold text-sm">
                       <Beaker className="w-4 h-4 animate-pulse" />
                       {isFetchingInsights ? "AI is thinking..." : "AI Community Insights"}
                     </div>
                     {!isFetchingInsights && aiInsights.map((insight) => (
-                      <div key={insight.id} className="bg-background/50 border border-primary/10 rounded-lg p-3 space-y-1">
+                      <div key={insight.id} className="bg-background/50 border border-blue-500/10 rounded-lg p-3 space-y-1">
                         <div className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-green-500" />
                           <span className="font-medium text-sm">{insight.label}</span>
@@ -238,7 +306,7 @@ export function ExperimentForm() {
                           <div className="ml-6 mt-2 flex items-center gap-2">
                             <div className="h-1.5 w-16 bg-muted rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-primary"
+                                className="h-full bg-blue-500"
                                 style={{ width: `${insight.data.confidence * 100}%` }}
                               />
                             </div>
@@ -260,7 +328,7 @@ export function ExperimentForm() {
                     name="linkedIdeaId"
                     value={formData.linkedIdeaId}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border bg-background focus:ring-2 focus:ring-primary transition"
+                    className="w-full px-4 py-3 rounded-xl border bg-white dark:bg-zinc-950 focus:ring-2 focus:ring-blue-500 outline-none transition"
                   >
                     <option value="">-- Select an Idea --</option>
                     {ideas.map((idea) => (
@@ -277,7 +345,7 @@ export function ExperimentForm() {
               <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl flex items-start gap-4 mb-4">
                   <Beaker className="w-6 h-6 text-blue-500 shrink-0 mt-1" />
-                  <p className="text-sm text-blue-200">
+                  <p className="text-sm text-blue-700 dark:text-blue-200">
                     A good hypothesis follows a predictable pattern: <strong>"If we [do X], then [Y will happen]."</strong>
                   </p>
                 </div>
@@ -294,7 +362,7 @@ export function ExperimentForm() {
                 </div>
 
                 {preview ? (
-                  <div className="px-4 py-3 rounded-xl border bg-background prose max-w-none min-h-[120px]">
+                  <div className="px-4 py-3 rounded-xl border bg-white dark:bg-zinc-950 prose max-w-none min-h-[120px]">
                     <ReactMarkdown>{formData.hypothesis || "Nothing to preview..."}</ReactMarkdown>
                   </div>
                 ) : (
@@ -307,7 +375,7 @@ export function ExperimentForm() {
                       value={formData.hypothesis}
                       onChange={handleChange}
                       placeholder="E.g., If we add a mood selector to the onboarding, then user retention will increase by 15% because users feel more understood from the start."
-                      className="w-full px-4 py-3 rounded-xl border bg-background focus:ring-2 focus:ring-primary transition"
+                      className="w-full px-4 py-3 rounded-xl border bg-white dark:bg-zinc-950 focus:ring-2 focus:ring-blue-500 outline-none transition"
                     />
                     <p className="text-xs text-right mt-1 text-muted-foreground">
                       {formData.hypothesis.length}/500 characters
@@ -321,7 +389,7 @@ export function ExperimentForm() {
               <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="bg-green-500/10 border border-green-500/20 p-4 rounded-xl flex items-start gap-4 mb-4">
                   <Target className="w-6 h-6 text-green-500 shrink-0 mt-1" />
-                  <p className="text-sm text-green-200">
+                  <p className="text-sm text-green-700 dark:text-green-200">
                     How will you measure success? Be specific. <strong>"We will see a [X]% increase in [Y]."</strong>
                   </p>
                 </div>
@@ -335,7 +403,7 @@ export function ExperimentForm() {
                   value={formData.successMetric}
                   onChange={handleChange}
                   placeholder="E.g., 20% increase in weekly active users (WAU)."
-                  className="w-full px-4 py-3 rounded-xl border bg-background focus:ring-2 focus:ring-primary transition"
+                  className="w-full px-4 py-3 rounded-xl border bg-white dark:bg-zinc-950 focus:ring-2 focus:ring-blue-500 outline-none transition"
                 />
               </div>
             )}
@@ -344,7 +412,7 @@ export function ExperimentForm() {
               <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-start gap-4 mb-4">
                   <XCircle className="w-6 h-6 text-red-500 shrink-0 mt-1" />
-                  <p className="text-sm text-red-200">
+                  <p className="text-sm text-red-700 dark:text-red-200">
                     Scientific rigor requires falsifiability. <strong>"The experiment fails if..."</strong>
                   </p>
                 </div>
@@ -358,7 +426,7 @@ export function ExperimentForm() {
                   value={formData.falsifiability}
                   onChange={handleChange}
                   placeholder="E.g., The experiment fails if the retention rate stays below 5% after the first month."
-                  className="w-full px-4 py-3 rounded-xl border bg-background focus:ring-2 focus:ring-primary transition"
+                  className="w-full px-4 py-3 rounded-xl border bg-white dark:bg-zinc-950 focus:ring-2 focus:ring-blue-500 outline-none transition"
                 />
               </div>
             )}
@@ -379,7 +447,7 @@ export function ExperimentForm() {
                     <label className="block text-sm font-medium mb-2">Start Date</label>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <button type="button" className="w-full justify-start flex items-center px-4 py-2 border rounded-md hover:bg-muted">
+                        <button type="button" className="w-full justify-start flex items-center px-4 py-3 border rounded-xl bg-white dark:bg-zinc-950 hover:bg-muted transition">
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {formData.startDate ? format(new Date(formData.startDate), "PPP") : "Pick start date"}
                         </button>
@@ -402,7 +470,7 @@ export function ExperimentForm() {
                     <label className="block text-sm font-medium mb-2">End Date</label>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <button type="button" className="flex w-full items-center justify-start rounded-md border px-4 py-2 hover:bg-muted transition">
+                        <button type="button" className="w-full justify-start flex items-center px-4 py-3 border rounded-xl bg-white dark:bg-zinc-950 hover:bg-muted transition">
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {formData.endDate ? format(new Date(formData.endDate), "PPP") : "Pick end date"}
                         </button>
@@ -431,7 +499,7 @@ export function ExperimentForm() {
                     value={formData.description}
                     onChange={handleChange}
                     placeholder="Any extra context or setup required..."
-                    className="w-full px-4 py-3 rounded-xl border bg-background focus:ring-2 focus:ring-primary transition"
+                    className="w-full px-4 py-3 rounded-xl border bg-white dark:bg-zinc-950 focus:ring-2 focus:ring-blue-500 outline-none transition"
                   />
                 </div>
               </div>
@@ -443,30 +511,41 @@ export function ExperimentForm() {
                 variant="secondary"
                 onClick={prevStep}
                 disabled={currentStep === 0 || isSubmitting}
-                className="px-8"
+                className="rounded-full px-8 py-2"
               >
-                Back
+                Previous
               </Button>
 
               <Button
                 type="submit"
                 variant="primary"
                 disabled={isSubmitting}
-                className="px-8"
+                className="rounded-full px-8 py-2"
               >
                 {currentStep === STEPS.length - 1 ? (
                   isSubmitting ? "Creating..." : "Finish Experiment"
                 ) : (
-                  <>
-                    Next 
-                  </>
+                  <>Next</>
                 )}
               </Button>
             </div>
           </form>
         </MagicCard>
       </Container>
+
+      {/* Toast Notification Popup */}
+      {toast.visible && (
+        <div className="fixed top-24 right-6 z-50 animate-in slide-in-from-top-5 fade-in duration-300 pointer-events-none">
+          <div className="flex items-center gap-3 bg-zinc-900 dark:bg-black text-white px-5 py-3 rounded-xl shadow-2xl border border-zinc-800">
+            <span className="text-green-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </span>
+            <p className="text-sm font-medium tracking-wide">{toast.message}</p>
+          </div>
+        </div>
+      )}
     </>
   );
 }
-
