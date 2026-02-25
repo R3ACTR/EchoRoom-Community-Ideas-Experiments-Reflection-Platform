@@ -97,6 +97,7 @@ export const experimentsSchemas = {
         endDate: nonEmptyString.optional(),
         linkedIdeaId: z.coerce.number().optional(),
         outcomeResult: z.enum(["Success", "Failed"]).optional(),
+        progress: z.number().min(0).max(100).optional(),
       })
       .strict(),
   },

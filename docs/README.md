@@ -19,7 +19,7 @@ Documentation is a **first-class contribution** in this project.
 - workflow.md – Idea → Experiment → Reflection loop
 - moderation.md – Community safety & guidelines
 - user-roles.md – Proposed user roles and permissions
-
+- health.md – Backend health check endpoint
 ---
 
 ## Who Can Contribute Here?

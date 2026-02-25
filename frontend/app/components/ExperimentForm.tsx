@@ -64,9 +64,9 @@ export function ExperimentForm() {
 
   useEffect(() => {
     const fetchAIInsights = async () => {
-      if (formData.title.length < 5) {
-        setAiInsights([]);
-        return;
+      if (formData.title.trim().length < 5 || formData.description.trim().length < 5) {
+         setAiInsights([]);
+         return;
       }
 
       setIsFetchingInsights(true);

@@ -16,6 +16,7 @@ export interface Experiment {
   successMetric: string;
   falsifiability: string;
   status: ExperimentStatus;
+  progress: number;
   endDate: string; // ISO date string
   linkedIdeaId?: number | null;
   outcomeResult?: "Success" | "Failed" | null;
@@ -79,6 +80,7 @@ export const createExperiment = (
     successMetric,
     falsifiability,
     status,
+    progress: getProgressForExperimentStatus(status),
     endDate,
     linkedIdeaId: linkedIdeaId ?? null,
     createdAt: new Date(),
@@ -121,43 +123,30 @@ export const updateExperiment = (
     if (experiment.status === "completed") {
       throw new Error("Completed experiments cannot be modified");
     }
-const previousStatus = experiment.status;                                             
-  if (updates.status !== previousStatus) {                                              
-    experiment.status = updates.status;                                                 
-    recordStateTransition({                                                             
-      entityType: "experiment",                                                         
-      entityId: experiment.id,                                                          
-      previousState: previousStatus,                                                    
-      newState: updates.status,                                                         
-      userId: auditMeta?.userId,                                                        
-      goal: auditMeta?.goal,                                                            
-    });                                                                                 
-  }                                                                                     
-                                                                                        
-  So the full section is:                                                               
-                                                                                        
-  if (updates.status !== undefined) {                                                   
-    // If already completed block any status change                                     
-    if (experiment.status === "completed") {                                            
-      throw new Error("Completed experiments cannot be modified");                      
-    }                                                                                   
-                                                                                        
-    const previousStatus = experiment.status;                                           
-    if (updates.status !== previousStatus) {                                            
-      experiment.status = updates.status;                                               
-      recordStateTransition({                                                           
-        entityType: "experiment",
-        entityId: experiment.id,                                                        
-        previousState: previousStatus,                                                  
-        newState: updates.status,                                                       
-        userId: auditMeta?.userId,                                                      
-        goal: auditMeta?.goal,                                                          
-      });                                                                               
-    }                                                                                   
-  }                                                                                     
-      
+if (updates.status !== undefined) {                                                                               
+      // If already completed block any status change                                                                 
+      if (experiment.status === "completed") {                                                                        
+        throw new Error("Completed experiments cannot be modified");                                                  
+      }                                                                                                               
+                                                                                                                      
+      const previousStatus = experiment.status;                                                                       
+      if (updates.status !== previousStatus) {                                                                        
+        experiment.status = updates.status;                                                                           
+        experiment.progress = getProgressForExperimentStatus(updates.status);                                         
+        recordStateTransition({                                                                                       
+          entityType: "experiment",                                                                                   
+          entityId: experiment.id,                                                                                    
+          previousState: previousStatus,                                                                              
+          newState: updates.status,                                                                                   
+          userId: auditMeta?.userId,                                                                                  
+          goal: auditMeta?.goal,                                                                                      
+        });                                                                                                           
+      }                                                                                                               
+    }  
   if (updates.outcomeResult !== undefined)
     experiment.outcomeResult = updates.outcomeResult;
+  if (updates.progress !== undefined)
+  experiment.progress = updates.progress;
 
   return experiment;
 };
