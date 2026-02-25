@@ -8,6 +8,7 @@ import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
 import { RetroGrid } from "@/components/ui/retro-grid";
 import SmoothSlider from "@/components/ui/SmoothSlider"; 
+
 interface Outcome {
   id: number;
   experimentId: number;
@@ -25,6 +26,14 @@ const emotionOptions = [
 
 type Visibility = "private" | "public";
 
+const REFLECTION_STEPS = [
+  { id: "outcome", title: "Select Outcome" },
+  { id: "before", title: "Before Starting" },
+  { id: "breakdown", title: "Breakdown" },
+  { id: "growth", title: "Growth" },
+  { id: "after", title: "After Outcome" },
+];
+
 export default function NewReflectionPage() {
   const router = useRouter();
 
@@ -33,7 +42,6 @@ export default function NewReflectionPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // New state for the custom toast/popup notification
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({
     message: "",
     visible: false,
@@ -125,7 +133,6 @@ export default function NewReflectionPage() {
     return true;
   };
 
-  // Helper to trigger the notification popup
   const showToast = (message: string) => {
     setToast({ message, visible: true });
     setTimeout(() => {
@@ -137,7 +144,7 @@ export default function NewReflectionPage() {
     if (validateStep()) {
       setStep((prev) => {
         const next = prev + 1;
-        showToast(`Step ${next}!`);
+        showToast(`${REFLECTION_STEPS[next - 1].title} Phase!`);
         return next;
       });
     }
@@ -162,10 +169,10 @@ export default function NewReflectionPage() {
       showToast("Reflection Submitted Successfully!");
       setTimeout(() => {
          router.push("/reflection");
-      }, 1000); // Slight delay so they can see the success toast
+      }, 1000); 
     } catch (err: any) {
       setError(err.message || "Failed to create reflection");
-      setLoading(false); // Make sure to re-enable button on fail
+      setLoading(false); 
     }
   };
 
@@ -198,61 +205,72 @@ export default function NewReflectionPage() {
             gradientColor="rgba(59,130,246,0.6)"
             className="p-8 rounded-3xl bg-white/75 dark:bg-zinc-900/70 backdrop-blur-xl border border-white/10 shadow-xl"
           >
-            {/* Visual Stepper UI added here */}
-            <div className="flex items-center justify-center w-full mb-8 mt-2 px-2 overflow-hidden">
-  {[1, 2, 3, 4, 5].map((s, index) => (
-    <div key={s} className="flex items-center flex-shrink-0">
-      
-      {/* Step Node */}
-      <div
-        className={`
-          flex items-center justify-center
-          w-6 h-6 sm:w-8 sm:h-8
-          text-xs sm:text-sm
-          rounded-full font-semibold
-          transition-all duration-300
-          ${
-            s < step
-              ? "bg-blue-600 text-white"
-              : s === step
-              ? "bg-blue-600 text-white ring-2 sm:ring-4 ring-blue-500/30 shadow-[0_0_10px_rgba(37,99,235,0.5)]"
-              : "bg-gray-200 dark:bg-zinc-800 text-gray-500"
-          }
-        `}
-      >
-        {s < step ? (
-          <svg
-            className="w-3 h-3 sm:w-4 sm:h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-          </svg>
-        ) : (
-          s
-        )}
-      </div>
+            {/* Visual Stepper UI (Fixed Layout)
+              Using a grid puts the text into the normal document flow so the box wraps it.
+            */}
+            <div className="grid grid-cols-5 w-full mb-10 mt-2">
+              {REFLECTION_STEPS.map((stepData, index) => {
+                const s = index + 1;
+                return (
+                  <div key={stepData.id} className="relative flex flex-col items-center">
+                    
+                    {/* Absolute Connector Line running from center to center */}
+                    {index < REFLECTION_STEPS.length - 1 && (
+                      <div
+                        className={`
+                          absolute top-4 sm:top-5 left-1/2 w-full h-[2px] transition-all duration-300
+                          ${
+                            s < step
+                              ? "bg-blue-600"
+                              : "bg-gray-200 dark:bg-zinc-800"
+                          }
+                        `}
+                      />
+                    )}
 
-      {/* Connector */}
-      {index < 4 && (
-        <div
-          className={`
-            w-4 sm:w-10 md:w-16
-            h-[2px]
-            mx-1 sm:mx-2
-            rounded transition-all duration-300
-            ${
-              s < step
-                ? "bg-blue-600"
-                : "bg-gray-200 dark:bg-zinc-800"
-            }
-          `}
-        />
-      )}
-    </div>
-  ))}
-</div>
+                    {/* Step Node */}
+                    <div
+                      className={`
+                        relative z-10 flex items-center justify-center
+                        w-8 h-8 sm:w-10 sm:h-10
+                        text-sm sm:text-base
+                        rounded-full font-semibold
+                        transition-all duration-300
+                        ${
+                          s < step
+                            ? "bg-blue-600 text-white"
+                            : s === step
+                            ? "bg-blue-600 text-white ring-4 ring-blue-500/30 shadow-[0_0_10px_rgba(37,99,235,0.5)]"
+                            : "bg-gray-200 dark:bg-zinc-800 text-gray-500"
+                        }
+                      `}
+                    >
+                      {s < step ? (
+                        <svg
+                          className="w-4 h-4 sm:w-5 sm:h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        s
+                      )}
+                    </div>
+                    
+                    {/* Normal document flow text underneath */}
+                    <span 
+                      className={`mt-3 text-[9px] sm:text-[10px] uppercase tracking-widest font-bold text-center px-1 transition-colors duration-300 ${
+                        s === step ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"
+                      }`}
+                    >
+                      {stepData.id}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
 
             {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
 
@@ -312,21 +330,21 @@ export default function NewReflectionPage() {
                 </div>
 
                 <div>
-  <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
-    Confidence (1–10)
-  </label>
-  <SmoothSlider
-    min={1}
-    max={10}
-    value={form.context.confidenceBefore}
-    onChange={(val) =>
-      setForm({
-        ...form,
-        context: { ...form.context, confidenceBefore: val },
-      })
-    }
-  />
-</div>
+                  <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
+                    Confidence (1–10)
+                  </label>
+                  <SmoothSlider
+                    min={1}
+                    max={10}
+                    value={form.context.confidenceBefore}
+                    onChange={(val) =>
+                      setForm({
+                        ...form,
+                        context: { ...form.context, confidenceBefore: val },
+                      })
+                    }
+                  />
+                </div>
 
                 <div className="flex justify-between pt-4">
                   <Button onClick={prevStep} variant="outline" className="rounded-full px-6">
@@ -363,7 +381,7 @@ export default function NewReflectionPage() {
                 ].map((field) => {
                   const currentValue = (form.breakdown as any)[field.key];
                   const wordCount = currentValue.trim().split(/\s+/).filter(Boolean).length;
-                  const maxWords = 50; // Change limit here if needed
+                  const maxWords = 50; 
 
                   return (
                     <div key={field.key}>
@@ -377,7 +395,6 @@ export default function NewReflectionPage() {
                           const inputText = e.target.value;
                           const currentWords = inputText.trim().split(/\s+/).filter(Boolean).length;
                           
-                          // Only allow typing if under word limit OR if they are deleting characters
                           if (currentWords <= maxWords || inputText.length < currentValue.length) {
                             setForm({
                               ...form,
