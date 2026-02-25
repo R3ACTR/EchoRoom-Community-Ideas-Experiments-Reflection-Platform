@@ -35,3 +35,10 @@ export const numericIdParamSchema = (fieldName = "id") =>
       .string()
       .regex(/^\d+$/, `${fieldName} must be a valid numeric ID`),
   });
+
+export const objectIdParamSchema = (fieldName = "id") =>
+  z.object({
+    [fieldName]: z
+      .string()
+      .regex(/^[a-fA-F0-9]{24}$/, `${fieldName} must be a valid ObjectId`),
+  });

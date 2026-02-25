@@ -9,19 +9,21 @@ export const getGraph = (
     res: Response,
     next: NextFunction
 ): void => {
-    try {
-        const ideas = getAllIdeas();
-        const experiments = getAllExperiments();
+    void (async () => {
+        try {
+            const ideas = await getAllIdeas();
+            const experiments = await getAllExperiments();
 
-        const graph = getLearningGraph(ideas, experiments);
+            const graph = getLearningGraph(ideas, experiments);
 
-        res.json({
-            success: true,
-            data: graph,
-        });
-    } catch (error) {
-        next(error);
-    }
+            res.json({
+                success: true,
+                data: graph,
+            });
+        } catch (error) {
+            next(error);
+        }
+    })();
 };
 
 export const getSuggestions = (

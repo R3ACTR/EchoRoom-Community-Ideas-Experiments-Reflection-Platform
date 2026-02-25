@@ -1,39 +1,47 @@
-import { comments, getNextCommentId } from "../data/comments.data";
+import prisma from "../lib/prisma";
+import { Comment as PrismaComment } from "@prisma/client";
 
 export interface Comment {
-    id: number;
-    ideaId: number;
-    userId: string;
-    username: string;
-    content: string;
-    createdAt: string;
+  id: string;
+  ideaId: string;
+  userId: string;
+  username: string;
+  content: string;
+  createdAt: string;
 }
 
-/**
- * Get all comments for a specific idea
- */
-export const getAllCommentsForIdea = (ideaId: number): Comment[] => {
-    return comments.filter((c) => c.ideaId === ideaId);
+const toComment = (comment: PrismaComment): Comment => ({
+  id: comment.id,
+  ideaId: comment.ideaId,
+  userId: comment.userId,
+  username: comment.username,
+  content: comment.content,
+  createdAt: comment.createdAt.toISOString(),
+});
+
+export const getAllCommentsForIdea = async (ideaId: string): Promise<Comment[]> => {
+  const comments = await prisma.comment.findMany({
+    where: { ideaId },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return comments.map(toComment);
 };
 
-/**
- * Add a new comment to an idea
- */
-export const addComment = (
-    ideaId: number,
-    userId: string,
-    username: string,
-    content: string
-): Comment => {
-    const newComment: Comment = {
-        id: getNextCommentId(),
-        ideaId,
-        userId,
-        username,
-        content,
-        createdAt: new Date().toISOString(),
-    };
+export const addComment = async (
+  ideaId: string,
+  userId: string,
+  username: string,
+  content: string
+): Promise<Comment> => {
+  const comment = await prisma.comment.create({
+    data: {
+      ideaId,
+      userId,
+      username,
+      content,
+    },
+  });
 
-    comments.push(newComment);
-    return newComment;
+  return toComment(comment);
 };

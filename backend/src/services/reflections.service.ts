@@ -1,117 +1,105 @@
-// backend/src/services/reflections.service.ts
+import prisma from "../lib/prisma";
+import { Reflection as PrismaReflection, Prisma } from "@prisma/client";
+
+type ReflectionContext = {
+  emotionBefore: number;
+  confidenceBefore: number;
+};
+
+type ReflectionBreakdown = {
+  whatHappened: string;
+  whatWorked: string;
+  whatDidntWork: string;
+};
+
+type ReflectionGrowth = {
+  lessonLearned: string;
+  nextAction: string;
+};
+
+type ReflectionResult = {
+  emotionAfter: number;
+  confidenceAfter: number;
+};
 
 export interface Reflection {
-  id: number;
-  outcomeId: number;
-
-  context: {
-    emotionBefore: number;
-    confidenceBefore: number;
-  };
-
-  breakdown: {
-    whatHappened: string;
-    whatWorked: string;
-    whatDidntWork: string;
-  };
-
-  growth: {
-    lessonLearned: string;
-    nextAction: string;
-  };
-
-  result: {
-    emotionAfter: number;
-    confidenceAfter: number;
-  };
-
+  id: string;
+  outcomeId: string;
+  context: ReflectionContext;
+  breakdown: ReflectionBreakdown;
+  growth: ReflectionGrowth;
+  result: ReflectionResult;
   tags?: string[];
   evidenceLink?: string;
   visibility: "private" | "public";
-
   createdAt: Date;
 }
 
-
-// in-memory storage
-let reflections: Reflection[] = [];
-let nextId = 1;
-
 export interface ReflectionInput {
-  outcomeId: number;
-
-  context: {
-    emotionBefore: number;
-    confidenceBefore: number;
-  };
-
-  breakdown: {
-    whatHappened: string;
-    whatWorked: string;
-    whatDidntWork: string;
-  };
-
-  growth: {
-    lessonLearned: string;
-    nextAction: string;
-  };
-
-  result: {
-    emotionAfter: number;
-    confidenceAfter: number;
-  };
-
+  outcomeId: string;
+  context: ReflectionContext;
+  breakdown: ReflectionBreakdown;
+  growth: ReflectionGrowth;
+  result: ReflectionResult;
   tags?: string[];
   evidenceLink?: string;
   visibility: "private" | "public";
 }
 
-// Create reflection
-export const createReflection = (
+const toReflection = (reflection: PrismaReflection): Reflection => ({
+  id: reflection.id,
+  outcomeId: reflection.outcomeId,
+  context: reflection.context as unknown as ReflectionContext,
+  breakdown: reflection.breakdown as unknown as ReflectionBreakdown,
+  growth: reflection.growth as unknown as ReflectionGrowth,
+  result: reflection.result as unknown as ReflectionResult,
+  tags: reflection.tags,
+  evidenceLink: reflection.evidenceLink,
+  visibility: reflection.visibility as "private" | "public",
+  createdAt: reflection.createdAt,
+});
+
+export const createReflection = async (
   data: ReflectionInput
-): Reflection => {
+): Promise<Reflection> => {
+  const reflection = await prisma.reflection.create({
+    data: {
+      outcomeId: data.outcomeId,
+      context: data.context as Prisma.InputJsonValue,
+      breakdown: data.breakdown as Prisma.InputJsonValue,
+      growth: data.growth as Prisma.InputJsonValue,
+      result: data.result as Prisma.InputJsonValue,
+      tags: data.tags ?? [],
+      evidenceLink: data.evidenceLink ?? "",
+      visibility: data.visibility,
+    },
+  });
 
-  const newReflection: Reflection = {
-    id: nextId++,
-    outcomeId: data.outcomeId,
-
-    context: data.context,
-    breakdown: data.breakdown,
-    growth: data.growth,
-    result: data.result,
-
-    tags: data.tags ?? [],
-    evidenceLink: data.evidenceLink ?? "",
-    visibility: data.visibility,
-
-    createdAt: new Date(),
-  };
-
-  reflections.push(newReflection);
-
-  return newReflection;
+  return toReflection(reflection);
 };
 
+export const getAllReflections = async (): Promise<Reflection[]> => {
+  const reflections = await prisma.reflection.findMany({
+    orderBy: { createdAt: "desc" },
+  });
 
-// Get all reflections
-export const getAllReflections = (): Reflection[] => {
-  return reflections;
+  return reflections.map(toReflection);
 };
 
+export const getReflectionsByOutcomeId = async (
+  outcomeId: string
+): Promise<Reflection[]> => {
+  const reflections = await prisma.reflection.findMany({
+    where: { outcomeId },
+    orderBy: { createdAt: "desc" },
+  });
 
-// Get reflections by outcome ID
-export const getReflectionsByOutcomeId = (
-  outcomeId: number
-): Reflection[] => {
-
-  return reflections.filter(
-    reflection => reflection.outcomeId === outcomeId
-  );
-
+  return reflections.map(toReflection);
 };
 
-export const getReflectionById = (
-  id: number
-): Reflection | undefined => {
-  return reflections.find(reflection => reflection.id === id);
+export const getReflectionById = async (
+  id: string
+): Promise<Reflection | undefined> => {
+  const reflection = await prisma.reflection.findUnique({ where: { id } });
+  return reflection ? toReflection(reflection) : undefined;
 };

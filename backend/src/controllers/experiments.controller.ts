@@ -19,15 +19,17 @@ export const getExperiments = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const experiments = getAllExperiments();
-    res.json({
-      success: true,
-      data: experiments.map(toExperimentResponse),
-    });
-  } catch (error) {
-    next(error);
-  }
+  void (async () => {
+    try {
+      const experiments = await getAllExperiments();
+      res.json({
+        success: true,
+        data: experiments.map(toExperimentResponse),
+      });
+    } catch (error) {
+      next(error);
+    }
+  })();
 };
 
 export const getExperiment = (
@@ -35,25 +37,27 @@ export const getExperiment = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const id = Number(req.params.id);
+  void (async () => {
+    try {
+      const { id } = req.params;
 
-    const experiment = getExperimentById(id);
-    if (!experiment) {
-      res.status(404).json({
-        success: false,
-        message: "Experiment not found",
+      const experiment = await getExperimentById(id);
+      if (!experiment) {
+        res.status(404).json({
+          success: false,
+          message: "Experiment not found",
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: toExperimentResponse(experiment),
       });
-      return;
+    } catch (error) {
+      next(error);
     }
-
-    res.json({
-      success: true,
-      data: toExperimentResponse(experiment),
-    });
-  } catch (error) {
-    next(error);
-  }
+  })();
 };
 
 export const postExperiment = (
@@ -61,27 +65,38 @@ export const postExperiment = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const { title, description, hypothesis, successMetric, falsifiability, status, endDate, linkedIdeaId } = req.body;
+  void (async () => {
+    try {
+      const {
+        title,
+        description,
+        hypothesis,
+        successMetric,
+        falsifiability,
+        status,
+        endDate,
+        linkedIdeaId,
+      } = req.body;
 
-    const experiment = createExperiment(
-      String(title),
-      String(description),
-      String(hypothesis),
-      String(successMetric),
-      String(falsifiability),
-      status,
-      String(endDate),
-      linkedIdeaId ? Number(linkedIdeaId) : undefined
-    );
+      const experiment = await createExperiment(
+        String(title),
+        String(description),
+        String(hypothesis),
+        String(successMetric),
+        String(falsifiability),
+        status,
+        String(endDate),
+        linkedIdeaId ? String(linkedIdeaId) : undefined
+      );
 
-    res.status(201).json({
-      success: true,
-      data: toExperimentResponse(experiment),
-    });
-  } catch (error) {
-    next(error);
-  }
+      res.status(201).json({
+        success: true,
+        data: toExperimentResponse(experiment),
+      });
+    } catch (error) {
+      next(error);
+    }
+  })();
 };
 
 export const putExperiment = (
@@ -89,54 +104,57 @@ export const putExperiment = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const id = Number(req.params.id);
+  void (async () => {
+    try {
+      const { id } = req.params;
 
-    const updatedExperiment = updateExperiment(id, req.body);
-    if (!updatedExperiment) {
-      res.status(404).json({
-        success: false,
-        message: "Experiment not found",
+      const updatedExperiment = await updateExperiment(id, req.body);
+      if (!updatedExperiment) {
+        res.status(404).json({
+          success: false,
+          message: "Experiment not found",
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: toExperimentResponse(updatedExperiment),
       });
-      return;
+    } catch (error) {
+      next(error);
     }
-
-    res.json({
-      success: true,
-      data: toExperimentResponse(updatedExperiment),
-    });
-  } catch (error) {
-    next(error);
-  }
+  })();
 };
 
 export const removeExperiment = (
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
-  try {
-    const id = Number(req.params.id);
+  void (async () => {
+    try {
+      const { id } = req.params;
 
-    const deleted = deleteExperiment(id);
+      const deleted = await deleteExperiment(id);
 
-    if (!deleted) {
-      res.status(404).json({
-        success: false,
-        message: "Experiment not found",
+      if (!deleted) {
+        res.status(404).json({
+          success: false,
+          message: "Experiment not found",
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: "Experiment deleted",
       });
-      return;
+    } catch (err: any) {
+      res.status(400).json({
+        success: false,
+        message: err.message,
+      });
     }
-
-    res.json({
-      success: true,
-      message: "Experiment deleted",
-    });
-
-  } catch (err: any) {
-    res.status(400).json({
-      success: false,
-      message: err.message,
-    });
-  }
+  })();
 };

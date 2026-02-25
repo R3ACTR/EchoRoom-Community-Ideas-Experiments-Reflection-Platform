@@ -1,4 +1,5 @@
-import { getNextIdeaId, ideas } from "../data/ideas.data";
+import prisma from "../lib/prisma";
+import { Idea as PrismaIdea, IdeaComplexity as PrismaIdeaComplexity } from "@prisma/client";
 import { StateMachine } from "../lib/statemachine";
 import { ConflictError } from "../lib/conflictError";
 
@@ -10,10 +11,10 @@ export type IdeaStatus =
   | "reflection"
   | "discarded";
 
-export type IdeaComplexity = "LOW" | "MEDIUM" | "HIGH";
+export type IdeaComplexity = PrismaIdeaComplexity;
 
 export interface Idea {
-  id: number;
+  id: string;
   title: string;
   description: string;
   status: IdeaStatus;
@@ -23,7 +24,6 @@ export interface Idea {
   updatedAt: string;
 }
 
-// 🔹 Allowed transitions
 const ideaStateMachine = new StateMachine<IdeaStatus>({
   draft: ["proposed", "discarded"],
   proposed: ["experiment", "discarded"],
@@ -47,6 +47,17 @@ const IDEA_STATUS_ALIASES: Record<string, IdeaStatus> = {
   implemented: "reflection",
 };
 
+const toIdea = (idea: PrismaIdea): Idea => ({
+  id: idea.id,
+  title: idea.title,
+  description: idea.description,
+  status: idea.status as IdeaStatus,
+  complexity: idea.complexity,
+  version: idea.version,
+  createdAt: idea.createdAt.toISOString(),
+  updatedAt: idea.updatedAt.toISOString(),
+});
+
 export const normalizeIdeaStatus = (status: unknown): IdeaStatus | null => {
   if (typeof status !== "string") {
     return null;
@@ -55,137 +66,147 @@ export const normalizeIdeaStatus = (status: unknown): IdeaStatus | null => {
   return IDEA_STATUS_ALIASES[status.trim().toLowerCase()] ?? null;
 };
 
-// 🔹 Get all ideas
-export const getAllIdeas = (): Idea[] => {
-  return ideas;
+export const getAllIdeas = async (): Promise<Idea[]> => {
+  const ideas = await prisma.idea.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
+  return ideas.map(toIdea);
 };
 
-// 🔹 Get published ideas (non-draft)
-export const getPublishedIdeas = (): Idea[] => {
-  return ideas.filter((i) => i.status !== "draft");
+export const getPublishedIdeas = async (): Promise<Idea[]> => {
+  const ideas = await prisma.idea.findMany({
+    where: { status: { not: "draft" } },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return ideas.map(toIdea);
 };
 
-// 🔹 Get draft ideas
-export const getDraftIdeas = (): Idea[] => {
-  return ideas.filter((i) => i.status === "draft");
+export const getDraftIdeas = async (): Promise<Idea[]> => {
+  const ideas = await prisma.idea.findMany({
+    where: { status: "draft" },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return ideas.map(toIdea);
 };
 
-// 🔹 Get idea by ID
-export const getIdeaById = (id: number): Idea | null => {
-  return ideas.find((i) => i.id === id) || null;
+export const getIdeaById = async (id: string): Promise<Idea | null> => {
+  const idea = await prisma.idea.findUnique({ where: { id } });
+  return idea ? toIdea(idea) : null;
 };
 
-// 🔹 Get available transitions
-export const getAvailableTransitions = (
-  id: number
-): IdeaStatus[] | null => {
-  const idea = ideas.find((i) => i.id === id);
-  if (!idea) return null;
+export const getAvailableTransitions = async (
+  id: string
+): Promise<IdeaStatus[] | null> => {
+  const idea = await prisma.idea.findUnique({ where: { id } });
+  if (!idea) {
+    return null;
+  }
 
-  return ideaStateMachine.getAllowedTransitions(idea.status);
+  return ideaStateMachine.getAllowedTransitions(idea.status as IdeaStatus);
 };
 
-// 🔹 Create proposed idea
-export const createIdea = (
+export const createIdea = async (
   title: string,
   description: string,
   complexity: IdeaComplexity = "MEDIUM"
-): Idea => {
-  const now = new Date().toISOString();
+): Promise<Idea> => {
+  const idea = await prisma.idea.create({
+    data: {
+      title,
+      description,
+      complexity,
+      status: "proposed",
+    },
+  });
 
-  const newIdea: Idea = {
-    id: getNextIdeaId(),
-    title,
-    description,
-    status: "proposed",
-    complexity,
-    version: 1,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  ideas.push(newIdea);
-  return newIdea;
+  return toIdea(idea);
 };
 
-// 🔹 Create draft
-export const createDraft = (
+export const createDraft = async (
   title: string,
   description: string,
   complexity: IdeaComplexity = "MEDIUM"
-): Idea => {
-  const now = new Date().toISOString();
+): Promise<Idea> => {
+  const idea = await prisma.idea.create({
+    data: {
+      title,
+      description,
+      complexity,
+      status: "draft",
+    },
+  });
 
-  const newDraft: Idea = {
-    id: getNextIdeaId(),
-    title,
-    description,
-    status: "draft",
-    complexity,
-    version: 1,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  ideas.push(newDraft);
-  return newDraft;
+  return toIdea(idea);
 };
 
-// 🔹 Update draft (optimistic locking)
-export const updateDraft = (
-  id: number,
+export const updateDraft = async (
+  id: string,
   title: string,
   description: string,
   version: number
-): Idea | null => {
-  const idea = ideas.find((i) => i.id === id);
-  if (!idea) return null;
+): Promise<Idea | null> => {
+  const existing = await prisma.idea.findUnique({ where: { id } });
+  if (!existing) {
+    return null;
+  }
 
-  if (idea.version !== version) {
+  if (existing.version !== version) {
     throw new ConflictError("Idea has been modified by another user");
   }
 
-  idea.title = title;
-  idea.description = description;
-  idea.version += 1;
-  idea.updatedAt = new Date().toISOString();
+  const updated = await prisma.idea.update({
+    where: { id },
+    data: {
+      title,
+      description,
+      version: { increment: 1 },
+    },
+  });
 
-  return idea;
+  return toIdea(updated);
 };
 
-// 🔹 Publish draft
-export const publishDraft = (
-  id: number,
+export const publishDraft = async (
+  id: string,
   version: number
-): Idea | null => {
+): Promise<Idea | null> => {
   return updateIdeaStatus(id, "proposed", version);
 };
 
-// 🔹 Update idea status (state machine + optimistic locking)
-export const updateIdeaStatus = (
-  id: number,
+export const updateIdeaStatus = async (
+  id: string,
   status: IdeaStatus,
   version: number
-): Idea | null => {
-  const idea = ideas.find((i) => i.id === id);
-  if (!idea) return null;
+): Promise<Idea | null> => {
+  const existing = await prisma.idea.findUnique({ where: { id } });
+  if (!existing) {
+    return null;
+  }
 
-  if (idea.version !== version) {
+  if (existing.version !== version) {
     throw new ConflictError("Idea has been modified by another user");
   }
 
-  idea.status = ideaStateMachine.transition(idea.status, status);
-  idea.version += 1;
-  idea.updatedAt = new Date().toISOString();
+  const nextStatus = ideaStateMachine.transition(
+    existing.status as IdeaStatus,
+    status
+  );
 
-  return idea;
+  const updated = await prisma.idea.update({
+    where: { id },
+    data: {
+      status: nextStatus,
+      version: { increment: 1 },
+    },
+  });
+
+  return toIdea(updated);
 };
 
-// 🔹 Delete idea
-export const deleteIdea = (id: number): boolean => {
-  const index = ideas.findIndex((i) => i.id === id);
-  if (index === -1) return false;
-
-  ideas.splice(index, 1);
-  return true;
+export const deleteIdea = async (id: string): Promise<boolean> => {
+  const deleted = await prisma.idea.deleteMany({ where: { id } });
+  return deleted.count > 0;
 };

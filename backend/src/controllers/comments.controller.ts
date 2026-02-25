@@ -3,26 +3,37 @@ import { getAllCommentsForIdea, addComment } from "../services/comments.service"
 import { AuthRequest } from "../middleware/auth";
 
 export const getCommentsHandler = (req: Request, res: Response): void => {
-    const ideaId = Number(req.params.ideaId);
-
-    const comments = getAllCommentsForIdea(ideaId);
-    res.json({ success: true, comments });
+    void (async () => {
+        try {
+            const { ideaId } = req.params;
+            const comments = await getAllCommentsForIdea(ideaId);
+            res.json({ success: true, comments });
+        } catch {
+            res.status(500).json({ success: false, message: "Failed to fetch comments" });
+        }
+    })();
 };
 
 export const postCommentHandler = (req: AuthRequest, res: Response): void => {
-    const ideaId = Number(req.params.ideaId);
-    const { content } = req.body;
+    void (async () => {
+        try {
+            const { ideaId } = req.params;
+            const { content } = req.body;
 
-    // Fallback for demo/mock login where no token is provided
-    const userId = req.user?.userId || "anonymous";
-    const username = req.user?.username || "Community Member";
+            // Fallback for demo/mock login where no token is provided
+            const userId = req.user?.userId || "anonymous";
+            const username = req.user?.username || "Community Member";
 
-    const comment = addComment(
-        ideaId,
-        userId,
-        username,
-        content
-    );
+            const comment = await addComment(
+                ideaId,
+                userId,
+                username,
+                content
+            );
 
-    res.status(201).json({ success: true, comment });
+            res.status(201).json({ success: true, comment });
+        } catch {
+            res.status(500).json({ success: false, message: "Failed to create comment" });
+        }
+    })();
 };

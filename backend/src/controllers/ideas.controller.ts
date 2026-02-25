@@ -12,36 +12,30 @@ import {
   updateIdeaStatus,
   deleteIdea,
 } from "../services/ideas.service";
-
-function isValidString(value: unknown): value is string {
-  return typeof value === "string" && value.trim().length > 0;
-}
-
-function isValidComplexity(
-  complexity: unknown
-): complexity is "LOW" | "MEDIUM" | "HIGH" {
-  return ["LOW", "MEDIUM", "HIGH"].includes(String(complexity));
-}
-
-export const getIdeas = (_req: Request, res: Response): void => {
-  const ideas = getPublishedIdeas();
+export const getIdeas = async (_req: Request, res: Response): Promise<void> => {
+  const ideas = await getPublishedIdeas();
   res.json({ success: true, ideas });
 };
 
-export const getAllIdeasHandler = (_req: Request, res: Response): void => {
-  const ideas = getAllIdeas();
+export const getAllIdeasHandler = async (
+  _req: Request,
+  res: Response
+): Promise<void> => {
+  const ideas = await getAllIdeas();
   res.json({ success: true, ideas });
 };
 
-export const getDrafts = (_req: Request, res: Response): void => {
-  const drafts = getDraftIdeas();
+export const getDrafts = async (_req: Request, res: Response): Promise<void> => {
+  const drafts = await getDraftIdeas();
   res.json({ success: true, ideas: drafts });
 };
 
-export const getIdeaByIdHandler = (req: Request, res: Response): void => {
-  const id = Number(req.params.id);
-
-  const idea = getIdeaById(id);
+export const getIdeaByIdHandler = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { id } = req.params;
+  const idea = await getIdeaById(id);
 
   if (!idea) {
     res.status(404).json({ success: false, message: "Idea not found" });
@@ -51,19 +45,19 @@ export const getIdeaByIdHandler = (req: Request, res: Response): void => {
   res.json({ success: true, idea });
 };
 
-export const postDraft = (req: Request, res: Response): void => {
+export const postDraft = async (req: Request, res: Response): Promise<void> => {
   const { title, description, complexity } = req.body;
 
-  const draft = createDraft(title, description, complexity);
+  const draft = await createDraft(title, description, complexity);
   res.status(201).json({ success: true, idea: draft });
 };
 
-export const putDraft = (req: Request, res: Response): void => {
-  const id = Number(req.params.id);
+export const putDraft = async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
   const { title, description, version } = req.body;
 
   try {
-    const draft = updateDraft(id, title, description, version);
+    const draft = await updateDraft(id, title, description, version);
 
     if (!draft) {
       res.status(404).json({ success: false, message: "Draft not found" });
@@ -79,15 +73,15 @@ export const putDraft = (req: Request, res: Response): void => {
   }
 };
 
-export const publishDraftHandler = (
+export const publishDraftHandler = async (
   req: Request,
   res: Response
-): void => {
-  const id = Number(req.params.id);
+): Promise<void> => {
+  const { id } = req.params;
   const { version } = req.body;
 
   try {
-    const idea = publishDraft(id, version);
+    const idea = await publishDraft(id, version);
 
     if (!idea) {
       res.status(404).json({ success: false, message: "Draft not found" });
@@ -103,25 +97,20 @@ export const publishDraftHandler = (
   }
 };
 
-export const postIdea = (req: Request, res: Response): void => {
+export const postIdea = async (req: Request, res: Response): Promise<void> => {
   const { title, description, complexity } = req.body;
 
-  const idea = createIdea(title, description, complexity);
+  const idea = await createIdea(title, description, complexity);
   res.status(201).json({ success: true, idea });
 };
 
-export const patchIdeaStatus = (
+export const patchIdeaStatus = async (
   req: Request,
   res: Response
-): void => {
-  const id = Number(req.params.id);
+): Promise<void> => {
+  const { id } = req.params;
   const { status, version } = req.body;
   const normalizedStatus = normalizeIdeaStatus(status);
-
-  if (Number.isNaN(id)) {
-    res.status(400).json({ success: false, message: "Invalid idea ID" });
-    return;
-  }
 
   if (!normalizedStatus) {
     res.status(400).json({
@@ -140,7 +129,7 @@ export const patchIdeaStatus = (
   }
 
   try {
-    const idea = updateIdeaStatus(id, normalizedStatus, version);
+    const idea = await updateIdeaStatus(id, normalizedStatus, version);
 
     if (!idea) {
       res.status(404).json({ success: false, message: "Idea not found" });
@@ -156,13 +145,13 @@ export const patchIdeaStatus = (
   }
 };
 
-export const deleteIdeaById = (
+export const deleteIdeaById = async (
   req: Request,
   res: Response
-): void => {
-  const id = Number(req.params.id);
+): Promise<void> => {
+  const { id } = req.params;
 
-  const deleted = deleteIdea(id);
+  const deleted = await deleteIdea(id);
 
   if (!deleted) {
     res.status(404).json({ success: false, message: "Idea not found" });

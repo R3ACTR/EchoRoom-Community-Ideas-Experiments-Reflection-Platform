@@ -11,36 +11,38 @@ export const postReflection = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const {
-      outcomeId,
-      context,
-      breakdown,
-      growth,
-      result,
-      tags,
-      evidenceLink,
-      visibility,
-    } = req.body;
+  void (async () => {
+    try {
+      const {
+        outcomeId,
+        context,
+        breakdown,
+        growth,
+        result,
+        tags,
+        evidenceLink,
+        visibility,
+      } = req.body;
 
-    const reflection = createReflection({
-      outcomeId: Number(outcomeId),
-      context,
-      breakdown,
-      growth,
-      result,
-      tags,
-      evidenceLink,
-      visibility,
-    });
+      const reflection = await createReflection({
+        outcomeId: String(outcomeId),
+        context,
+        breakdown,
+        growth,
+        result,
+        tags,
+        evidenceLink,
+        visibility,
+      });
 
-    res.status(201).json({
-      success: true,
-      data: reflection,
-    });
-  } catch (error) {
-    next(error);
-  }
+      res.status(201).json({
+        success: true,
+        data: reflection,
+      });
+    } catch (error) {
+      next(error);
+    }
+  })();
 };
 
 export const getReflections = (
@@ -48,17 +50,19 @@ export const getReflections = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const reflections = getAllReflections();
+  void (async () => {
+    try {
+      const reflections = await getAllReflections();
 
-    res.json({
-      success: true,
-      count: reflections.length,
-      data: reflections,
-    });
-  } catch (error) {
-    next(error);
-  }
+      res.json({
+        success: true,
+        count: reflections.length,
+        data: reflections,
+      });
+    } catch (error) {
+      next(error);
+    }
+  })();
 };
 
 export const getReflectionsByOutcome = (
@@ -66,18 +70,19 @@ export const getReflectionsByOutcome = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const outcomeId = Number(req.params.outcomeId);
+  void (async () => {
+    try {
+      const { outcomeId } = req.params;
+      const reflections = await getReflectionsByOutcomeId(outcomeId);
 
-    const reflections = getReflectionsByOutcomeId(outcomeId);
-
-    res.json({
-      success: true,
-      data: reflections,
-    });
-  } catch (error) {
-    next(error);
-  }
+      res.json({
+        success: true,
+        data: reflections,
+      });
+    } catch (error) {
+      next(error);
+    }
+  })();
 };
 
 export const getReflectionByIdController = (
@@ -85,24 +90,25 @@ export const getReflectionByIdController = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const id = Number(req.params.id);
+  void (async () => {
+    try {
+      const { id } = req.params;
+      const reflection = await getReflectionById(id);
 
-    const reflection = getReflectionById(id);
+      if (!reflection) {
+        res.status(404).json({
+          success: false,
+          message: "Reflection not found",
+        });
+        return;
+      }
 
-    if (!reflection) {
-      res.status(404).json({
-        success: false,
-        message: "Reflection not found",
+      res.json({
+        success: true,
+        data: reflection,
       });
-      return;
+    } catch (error) {
+      next(error);
     }
-
-    res.json({
-      success: true,
-      data: reflection,
-    });
-  } catch (error) {
-    next(error);
-  }
-}; 
+  })();
+};

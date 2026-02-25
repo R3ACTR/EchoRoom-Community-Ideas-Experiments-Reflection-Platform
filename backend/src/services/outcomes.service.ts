@@ -1,78 +1,89 @@
-// backend/src/services/outcomes.service.ts
-import { getExperimentById } from "./experiments.service";
+import prisma from "../lib/prisma";
+import { Outcome as PrismaOutcome } from "@prisma/client";
 
 export interface Outcome {
-  id: number;
-  experimentId: number;
+  id: string;
+  experimentId: string;
   result: string;
   notes: string;
   createdAt: Date;
 }
 
+type OutcomeWithTitle = Outcome & { experimentTitle: string };
 
-// in-memory storage
-let outcomes: Outcome[] = [];
-let nextId = 1;
+const toOutcome = (outcome: PrismaOutcome): Outcome => ({
+  id: outcome.id,
+  experimentId: outcome.experimentId,
+  result: outcome.result,
+  notes: outcome.notes,
+  createdAt: outcome.createdAt,
+});
 
-
-// Create outcome
-export const createOutcome = (
-  experimentId: number,
+export const createOutcome = async (
+  experimentId: string,
   result: string,
   notes?: string
-): Outcome => {
-
-  const newOutcome: Outcome = {
-    id: nextId++,
-    experimentId,
-    result,
-    notes: notes || "",
-    createdAt: new Date(),
-  };
-
-  outcomes.push(newOutcome);
-
-  return newOutcome;
-};
-
-
-// Get all outcomes
-export const getAllOutcomes = () => {
-  return outcomes.map((o) => {
-    const experiment = getExperimentById(o.experimentId);
-
-    return {
-      ...o,
-      experimentTitle: experiment?.title || "Unknown Experiment",
-    };
+): Promise<Outcome> => {
+  const outcome = await prisma.outcome.create({
+    data: {
+      experimentId,
+      result,
+      notes: notes ?? "",
+    },
   });
+
+  return toOutcome(outcome);
 };
 
-// Get outcomes by experiment ID
-export const getOutcomesByExperimentId = (
-  experimentId: number
-): Outcome[] => {
+export const getAllOutcomes = async (): Promise<OutcomeWithTitle[]> => {
+  const outcomes = await prisma.outcome.findMany({
+    include: {
+      experiment: {
+        select: {
+          title: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
-  return outcomes.filter(
-    outcome => outcome.experimentId === experimentId
-  );
-
+  return outcomes.map((outcome) => ({
+    ...toOutcome(outcome),
+    experimentTitle: outcome.experiment?.title ?? "Unknown Experiment",
+  }));
 };
 
-// Update outcome result
-export const updateOutcomeResult = (
-  id: number,
+export const getOutcomesByExperimentId = async (
+  experimentId: string
+): Promise<Outcome[]> => {
+  const outcomes = await prisma.outcome.findMany({
+    where: { experimentId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return outcomes.map(toOutcome);
+};
+
+export const updateOutcomeResult = async (
+  id: string,
   result: string
-): Outcome | null => {
+): Promise<Outcome | null> => {
+  const existing = await prisma.outcome.findUnique({ where: { id } });
+  if (!existing) {
+    return null;
+  }
 
-  const outcome = outcomes.find(o => o.id === id);
+  const updated = await prisma.outcome.update({
+    where: { id },
+    data: { result },
+  });
 
-  if (!outcome) return null;
-
-  outcome.result = result;
-  return outcome;
+  return toOutcome(updated);
 };
 
-export const hasOutcomeForExperiment = (experimentId: number): boolean => {
-  return outcomes.some(o => o.experimentId === experimentId);
+export const hasOutcomeForExperiment = async (
+  experimentId: string
+): Promise<boolean> => {
+  const count = await prisma.outcome.count({ where: { experimentId } });
+  return count > 0;
 };

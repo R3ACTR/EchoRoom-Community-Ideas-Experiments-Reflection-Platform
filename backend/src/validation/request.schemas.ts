@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { numericIdParamSchema } from "../middleware/validate.middleware";
+import {
+  numericIdParamSchema,
+  objectIdParamSchema,
+} from "../middleware/validate.middleware";
 
 const nonEmptyString = z.string().trim().min(1, "Field is required");
 const ideaComplexitySchema = z.enum(["LOW", "MEDIUM", "HIGH"]);
@@ -14,10 +17,10 @@ const experimentStatusSchema = z.enum(["planned", "in-progress", "completed"]);
 
 export const ideasSchemas = {
   getIdeaById: {
-    params: numericIdParamSchema("id"),
+    params: objectIdParamSchema("id"),
   },
   deleteIdeaById: {
-    params: numericIdParamSchema("id"),
+    params: objectIdParamSchema("id"),
   },
   postIdea: {
     body: z.object({
@@ -34,7 +37,7 @@ export const ideasSchemas = {
     }),
   },
   putDraft: {
-    params: numericIdParamSchema("id"),
+    params: objectIdParamSchema("id"),
     body: z.object({
       title: nonEmptyString,
       description: nonEmptyString,
@@ -42,13 +45,13 @@ export const ideasSchemas = {
     }),
   },
   publishDraft: {
-    params: numericIdParamSchema("id"),
+    params: objectIdParamSchema("id"),
     body: z.object({
       version: z.number(),
     }),
   },
   patchIdeaStatus: {
-    params: numericIdParamSchema("id"),
+    params: objectIdParamSchema("id"),
     body: z.object({
       status: ideaStatusSchema,
       version: z.number(),
@@ -58,10 +61,10 @@ export const ideasSchemas = {
 
 export const commentsSchemas = {
   list: {
-    params: numericIdParamSchema("ideaId"),
+    params: objectIdParamSchema("ideaId"),
   },
   create: {
-    params: numericIdParamSchema("ideaId"),
+    params: objectIdParamSchema("ideaId"),
     body: z.object({
       content: nonEmptyString,
     }),
@@ -70,7 +73,7 @@ export const commentsSchemas = {
 
 export const experimentsSchemas = {
   getById: {
-    params: numericIdParamSchema("id"),
+    params: objectIdParamSchema("id"),
   },
   create: {
     body: z.object({
@@ -81,11 +84,11 @@ export const experimentsSchemas = {
       falsifiability: nonEmptyString,
       status: experimentStatusSchema,
       endDate: nonEmptyString,
-      linkedIdeaId: z.coerce.number().optional(),
+      linkedIdeaId: z.string().regex(/^[a-fA-F0-9]{24}$/).optional(),
     }),
   },
   update: {
-    params: numericIdParamSchema("id"),
+    params: objectIdParamSchema("id"),
     body: z
       .object({
         title: nonEmptyString.optional(),
@@ -95,14 +98,14 @@ export const experimentsSchemas = {
         falsifiability: nonEmptyString.optional(),
         status: experimentStatusSchema.optional(),
         endDate: nonEmptyString.optional(),
-        linkedIdeaId: z.coerce.number().optional(),
+        linkedIdeaId: z.string().regex(/^[a-fA-F0-9]{24}$/).optional(),
         outcomeResult: z.enum(["Success", "Failed"]).optional(),
         progress: z.number().min(0).max(100).optional(),
       })
       .strict(),
   },
   remove: {
-    params: numericIdParamSchema("id"),
+    params: objectIdParamSchema("id"),
   },
 };
 
@@ -117,14 +120,14 @@ export const insightsSchemas = {
 
 export const reflectionsSchemas = {
   getById: {
-    params: numericIdParamSchema("id"),
+    params: objectIdParamSchema("id"),
   },
   listByOutcome: {
-    params: numericIdParamSchema("outcomeId"),
+    params: objectIdParamSchema("outcomeId"),
   },
   create: {
     body: z.object({
-      outcomeId: z.coerce.number(),
+      outcomeId: z.string().regex(/^[a-fA-F0-9]{24}$/),
       context: z.object({
         emotionBefore: z.number().min(1).max(5),
         confidenceBefore: z.number().min(1).max(10),
@@ -152,16 +155,16 @@ export const reflectionsSchemas = {
 export const outcomesSchemas = {
   create: {
     body: z.object({
-      experimentId: z.coerce.number(),
+      experimentId: z.string().regex(/^[a-fA-F0-9]{24}$/),
       result: nonEmptyString,
       notes: z.string().optional(),
     }),
   },
   listByExperiment: {
-    params: numericIdParamSchema("experimentId"),
+    params: objectIdParamSchema("experimentId"),
   },
   updateResult: {
-    params: numericIdParamSchema("id"),
+    params: objectIdParamSchema("id"),
     body: z.object({
       result: nonEmptyString,
     }),
