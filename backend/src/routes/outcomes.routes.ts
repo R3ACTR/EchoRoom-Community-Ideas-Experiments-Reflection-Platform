@@ -1,4 +1,6 @@
 import { Router, Request, Response } from "express";
+import { validateRequest } from "../middleware/validate.middleware";
+import { outcomesSchemas } from "../validation/request.schemas";
 
 import {
   createOutcome,
@@ -11,19 +13,11 @@ const router = Router();
 
 
 // POST /outcomes
-router.post("/", (req: Request, res: Response) => {
+router.post("/", validateRequest(outcomesSchemas.create), (req: Request, res: Response) => {
 
   try {
 
     const { experimentId, result, notes } = req.body;
-
-    // 1. Validate required fields
-    if (!experimentId || !result) {
-      return res.status(400).json({
-        success: false,
-        message: "experimentId and result are required",
-      });
-    }
 
     const outcome = createOutcome(
       experimentId,
@@ -62,16 +56,9 @@ router.get("/", (_req: Request, res: Response) => {
 
 
 // GET /outcomes/:experimentId
-router.get("/:experimentId", (req: Request, res: Response) => {
+router.get("/:experimentId", validateRequest(outcomesSchemas.listByExperiment), (req: Request, res: Response) => {
   try {
     const experimentId = Number(req.params.experimentId);
-
-    if (!experimentId) {
-      return res.status(400).json({
-        success: false,
-        message: "Valid experimentId is required",
-      });
-    }
 
   const outcomes = getOutcomesByExperimentId(experimentId);
 
@@ -87,17 +74,10 @@ router.get("/:experimentId", (req: Request, res: Response) => {
     });
   }
 });
-router.put("/:id", (req: Request, res: Response) => {
+router.put("/:id", validateRequest(outcomesSchemas.updateResult), (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { result } = req.body;
-
-    if (!id || !result) {
-      return res.status(400).json({
-        success: false,
-        message: "id and result are required",
-      });
-    }
 
     const updated = updateOutcomeResult(id, result);
 

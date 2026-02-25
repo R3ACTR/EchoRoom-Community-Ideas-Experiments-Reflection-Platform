@@ -9,19 +9,13 @@ import {
   getPublishedIdeas,
   getDraftIdeas,
   getIdeaById,
-  IdeaStatus,
+  normalizeIdeaStatus,
   updateIdeaStatus,
   deleteIdea,
 } from "../services/ideas.service";
 
 function isValidString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
-}
-
-function isValidStatus(status: unknown): status is IdeaStatus {
-  return ["draft", "proposed", "experiment", "outcome", "reflection"].includes(
-    String(status)
-  );
 }
 
 function isValidComplexity(
@@ -54,11 +48,6 @@ export const getDrafts = (_req: Request, res: Response): void => {
 export const getIdeaByIdHandler = (req: Request, res: Response): void => {
   const id = Number(req.params.id);
 
-  if (Number.isNaN(id)) {
-    res.status(400).json({ success: false, message: "Invalid idea ID" });
-    return;
-  }
-
   const idea = getIdeaById(id);
 
   if (!idea) {
@@ -72,22 +61,6 @@ export const getIdeaByIdHandler = (req: Request, res: Response): void => {
 export const postDraft = (req: Request, res: Response): void => {
   const { title, description, complexity } = req.body;
 
-  if (!isValidString(title) || !isValidString(description)) {
-    res.status(400).json({
-      success: false,
-      message: "Title and description are required",
-    });
-    return;
-  }
-
-  if (complexity && !isValidComplexity(complexity)) {
-    res.status(400).json({
-      success: false,
-      message: "Invalid complexity value",
-    });
-    return;
-  }
-
   const draft = createDraft(title, description, complexity);
   res.status(201).json({ success: true, idea: draft });
 };
@@ -95,27 +68,6 @@ export const postDraft = (req: Request, res: Response): void => {
 export const putDraft = (req: Request, res: Response): void => {
   const id = Number(req.params.id);
   const { title, description, version } = req.body;
-
-  if (Number.isNaN(id)) {
-    res.status(400).json({ success: false, message: "Invalid idea ID" });
-    return;
-  }
-
-  if (!isValidString(title) || !isValidString(description)) {
-    res.status(400).json({
-      success: false,
-      message: "Title and description are required",
-    });
-    return;
-  }
-
-  if (typeof version !== "number") {
-    res.status(400).json({
-      success: false,
-      message: "Version is required",
-    });
-    return;
-  }
 
   try {
     const draft = updateDraft(id, title, description, version);
@@ -141,30 +93,34 @@ export const publishDraftHandler = (
   const id = Number(req.params.id);
   const { version, goal } = req.body;
 
-  if (Number.isNaN(id)) {
-    res.status(400).json({ success: false, message: "Invalid idea ID" });
+if (Number.isNaN(id)) {                                                               
+    res.status(400).json({ success: false, message: "Invalid idea ID" });               
     return;
-  }
-
-  if (typeof version !== "number") {
-    res.status(400).json({
-      success: false,
-      message: "Version is required",
-    });
-    return;
-  }
-
-  if (goal !== undefined && !isValidString(goal)) {
-    res.status(400).json({
-      success: false,
-      message: "Goal must be a non-empty string",
-    });
-    return;
-  }
-
-  const userId = (req as AuthRequest).userId;
-  const goalValue = readGoal(goal);
-
+  }                                                                                     
+                                                                                        
+  if (typeof version !== "number") {                                                    
+    res.status(400).json({                                                              
+      success: false,                                                                   
+      message: "Version is required",                                                   
+    });                                                                                 
+    return;                                                                             
+  }                                                                                     
+                                                                                        
+  if (goal !== undefined && !isValidString(goal)) {                                     
+    res.status(400).json({                                                              
+      success: false,                                                                   
+      message: "Goal must be a non-empty string",                                       
+    });                                                                                 
+    return;                                                                             
+  }                                                                                     
+                                                                                        
+  const userId = (req as AuthRequest).userId;                                           
+  const goalValue = readGoal(goal);                                                     
+                                                                                        
+  Then call:                                                                            
+                                                                                        
+  const idea = updateIdeaStatus(id, status, version, userId, goalValue);                
+                           
   try {
     const idea = publishDraft(id, version, userId, goalValue);
 
@@ -185,22 +141,6 @@ export const publishDraftHandler = (
 export const postIdea = (req: Request, res: Response): void => {
   const { title, description, complexity } = req.body;
 
-  if (!isValidString(title) || !isValidString(description)) {
-    res.status(400).json({
-      success: false,
-      message: "Title and description are required",
-    });
-    return;
-  }
-
-  if (complexity && !isValidComplexity(complexity)) {
-    res.status(400).json({
-      success: false,
-      message: "Invalid complexity value",
-    });
-    return;
-  }
-
   const idea = createIdea(title, description, complexity);
   res.status(201).json({ success: true, idea });
 };
@@ -210,14 +150,21 @@ export const patchIdeaStatus = (
   res: Response
 ): void => {
   const id = Number(req.params.id);
-  const { status, version, goal } = req.body;
-
+const { status, version, goal } = req.body;                                           
+                                                                                        
+  And remove these lines from the main side:                                            
+                                                                                        
+  const normalizedStatus = normalizeIdeaStatus(status);                                 
+                                                                                        
+  Then keep status usage as:                                                            
+                                                                                        
+  const idea = updateIdeaStatus(id, status, version, userId, goalValue);           
   if (Number.isNaN(id)) {
     res.status(400).json({ success: false, message: "Invalid idea ID" });
     return;
   }
 
-  if (!isValidStatus(status)) {
+  if (!normalizedStatus) {
     res.status(400).json({
       success: false,
       message: "Invalid status value",
@@ -245,8 +192,12 @@ export const patchIdeaStatus = (
   const goalValue = readGoal(goal);
 
   try {
-    const idea = updateIdeaStatus(id, status, version, userId, goalValue);
-
+const idea = updateIdeaStatus(id, status, version, userId, goalValue);                
+                                                                                        
+  Remove the main version:                                                              
+                                                                                        
+  const idea = updateIdeaStatus(id, normalizedStatus, version);                         
+                          
     if (!idea) {
       res.status(404).json({ success: false, message: "Idea not found" });
       return;
@@ -266,11 +217,6 @@ export const deleteIdeaById = (
   res: Response
 ): void => {
   const id = Number(req.params.id);
-
-  if (Number.isNaN(id)) {
-    res.status(400).json({ success: false, message: "Invalid idea ID" });
-    return;
-  }
 
   const deleted = deleteIdea(id);
 

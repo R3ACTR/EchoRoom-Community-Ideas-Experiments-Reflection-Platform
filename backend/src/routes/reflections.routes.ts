@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { validateRequest } from "../middleware/validate.middleware";
+import { reflectionsSchemas } from "../validation/request.schemas";
 import {
   getReflections,
   getReflectionsByOutcome,
@@ -8,9 +10,17 @@ import {
 
 const router = Router();
 
-router.post("/", postReflection);
+router.post("/", validateRequest(reflectionsSchemas.create), postReflection);
 router.get("/", getReflections);
-router.get("/id/:id", getReflectionByIdController);
-router.get("/:outcomeId", getReflectionsByOutcome);
+router.get(
+  "/id/:id",
+  validateRequest(reflectionsSchemas.getById),
+  getReflectionByIdController
+);
+router.get(
+  "/:outcomeId",
+  validateRequest(reflectionsSchemas.listByOutcome),
+  getReflectionsByOutcome
+);
 
 export default router;

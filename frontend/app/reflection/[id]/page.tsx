@@ -120,7 +120,7 @@ export default function ReflectionDetailPage() {
         <div className="mb-8">
           <Button
             onClick={() => router.push("/reflection")}
-            variant="outline"
+            variant="primary"
             className="rounded-full px-6 py-2 mb-6 hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
           >
             ← Back to Reflections

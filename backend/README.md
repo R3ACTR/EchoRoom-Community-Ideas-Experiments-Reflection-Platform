@@ -1,51 +1,96 @@
 # EchoRoom Backend
 
-This is the backend service for EchoRoom.
+Backend service for EchoRoom, built with Express + TypeScript.
 
-Currently, this backend is a **minimal scaffold** intended for OSQ contributors.
+## Current Status
 
----
+The backend is no longer a minimal scaffold. It currently includes:
 
-## What Exists Right Now
+- Auth system with JWT access tokens and refresh tokens
+- Prisma + MongoDB integration for auth persistence (`User`, `RefreshToken`)
+- Domain APIs for ideas, comments, experiments, outcomes, and reflections
+- State transition and optimistic-locking rules for ideas
 
-- Express server
-- Health check endpoint
-- Folder structure for future expansion
+## Important Data Behavior
 
----
+Storage is currently hybrid:
 
-## What Does NOT Exist Yet
+- Persistent in MongoDB (via Prisma): auth users and refresh tokens
+- In-memory only: ideas, comments, experiments, outcomes, reflections
 
-- Authentication
-- Database connection
-- Business logic
-- Permissions
+On restart, in-memory data is reset.
 
-These will be built collaboratively during OSQ.
+## Tech Stack
 
----
+- Node.js + TypeScript
+- Express
+- Prisma ORM
+- MongoDB
+- JWT (`jsonwebtoken`)
+- Password hashing (`bcryptjs`)
 
-## Running the Backend
+## Run Locally
 
 ```bash
+cd backend
 npm install
+npm run prisma:generate
 npm run dev
-http://localhost:5000/health
+```
 
-Contribution Areas
+Server default: `http://localhost:5000`
 
-API design
+Health check:
 
-State transitions
+```bash
+curl http://localhost:5000/health
+```
 
-Validation logic
+## Scripts
 
-Documentation
+- `npm run dev` - Run backend with ts-node
+- `npm run build` - Compile TypeScript to `dist/`
+- `npm run start` - Run compiled server
+- `npm run prisma:generate` - Generate Prisma client
+- `npm run prisma:migrate` - Run Prisma migrate (dev)
+- `npm run prisma:push` - Push Prisma schema to DB
+- `npm run prisma:studio` - Open Prisma Studio
+- `npm run test:experiments-contract` - Build and run experiments service contract test
 
-Testing
+## API Surface
 
-Start small and build thoughtfully 🚀
+Mounted route groups in `src/index.ts`:
 
+- `/health`
+- `/auth`
+- `/ideas`
+- `/ideas/:ideaId/comments`
+- `/experiments`
+- `/outcomes`
+- `/reflections`
 
----
+Detailed endpoint docs: `../docs/api.md`
 
+## Repo Structure
+
+```text
+backend/
+  prisma/
+    schema.prisma
+  src/
+    controllers/
+    data/
+    lib/
+    middleware/
+    routes/
+    services/
+    index.ts
+  README.md
+  SETUP.md
+```
+
+## Known Gaps
+
+- Domain resources are not yet persisted via Prisma
+- Auth/permissions middleware is not consistently enforced across domain routes
+- Insights route files exist but are not mounted in the active server

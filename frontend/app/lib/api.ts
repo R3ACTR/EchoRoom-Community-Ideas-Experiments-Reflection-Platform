@@ -9,6 +9,9 @@ interface ApiResponse<T> {
   experiments?: T;
   reflections?: T;
   outcomes?: T;
+  comments?: T;
+  comment?: T;
+  progression?: T;
 }
 
 export async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
@@ -41,7 +44,9 @@ export async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise
       data.experiments ??
       data.reflections ??
       data.outcomes ??
-      data.insights;
+      data.comments ??
+      data.comment ??
+      data.progression;
 
 
     // allow empty response for DELETE

@@ -34,7 +34,7 @@ export function ExperimentForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [aiInsights, setAiInsights] = useState<any[]>([]);
   const [isFetchingInsights, setIsFetchingInsights] = useState(false);
-  
+
   useEffect(() => {
     const fetchIdeas = async () => {
       try {
@@ -74,9 +74,9 @@ export function ExperimentForm() {
         const response: any = await apiFetch("/insights/suggest-patterns", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            title: formData.title, 
-            description: formData.description 
+          body: JSON.stringify({
+            title: formData.title,
+            description: formData.description
           }),
         });
         setAiInsights(response || []);
@@ -138,6 +138,7 @@ export function ExperimentForm() {
           falsifiability: formData.falsifiability,
           status: "planned",
           progress: 0,
+          endDate: formData.endDate,
           linkedIdeaId: formData.linkedIdeaId || null,
         }),
       });
@@ -155,17 +156,15 @@ export function ExperimentForm() {
       {STEPS.map((step, index) => (
         <div key={step.id} className="flex flex-col items-center flex-1 min-w-[80px]">
           <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors mb-2 ${
-              index <= currentStep
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors mb-2 ${index <= currentStep
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground border border-white/10"
-            }`}
+              }`}
           >
             {index < currentStep ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
           </div>
-          <span className={`text-[10px] uppercase tracking-wider font-semibold ${
-            index === currentStep ? "text-primary" : "text-muted-foreground"
-          }`}>
+          <span className={`text-[10px] uppercase tracking-wider font-semibold ${index === currentStep ? "text-primary" : "text-muted-foreground"
+            }`}>
             {step.id}
           </span>
         </div>
@@ -238,8 +237,8 @@ export function ExperimentForm() {
                         {insight.data.confidence && (
                           <div className="ml-6 mt-2 flex items-center gap-2">
                             <div className="h-1.5 w-16 bg-muted rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-primary" 
+                              <div
+                                className="h-full bg-primary"
                                 style={{ width: `${insight.data.confidence * 100}%` }}
                               />
                             </div>
@@ -282,7 +281,7 @@ export function ExperimentForm() {
                     A good hypothesis follows a predictable pattern: <strong>"If we [do X], then [Y will happen]."</strong>
                   </p>
                 </div>
-                
+
                 <div className="flex justify-between mb-2">
                   <label className="block text-sm font-medium">Hypothesis Statement</label>
                   <button
@@ -375,7 +374,7 @@ export function ExperimentForm() {
                       </div>
                     </div>
                   )}
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-2">Start Date</label>
                     <Popover>
@@ -446,7 +445,6 @@ export function ExperimentForm() {
                 disabled={currentStep === 0 || isSubmitting}
                 className="px-8"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
 
@@ -460,8 +458,7 @@ export function ExperimentForm() {
                   isSubmitting ? "Creating..." : "Finish Experiment"
                 ) : (
                   <>
-                    Next
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    Next 
                   </>
                 )}
               </Button>

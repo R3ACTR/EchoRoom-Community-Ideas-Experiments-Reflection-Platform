@@ -8,7 +8,8 @@ export type IdeaStatus =
   | "proposed"
   | "experiment"
   | "outcome"
-  | "reflection";
+  | "reflection"
+  | "discarded";
 
 export type IdeaComplexity = "LOW" | "MEDIUM" | "HIGH";
 
@@ -25,12 +26,35 @@ export interface Idea {
 
 // 🔹 Allowed transitions
 const ideaStateMachine = new StateMachine<IdeaStatus>({
-  draft: ["proposed"],
-  proposed: ["experiment"],
-  experiment: ["outcome"],
-  outcome: ["reflection"],
+  draft: ["proposed", "discarded"],
+  proposed: ["experiment", "discarded"],
+  experiment: ["outcome", "discarded"],
+  outcome: ["reflection", "discarded"],
   reflection: [],
+  discarded: [],
 });
+
+const IDEA_STATUS_ALIASES: Record<string, IdeaStatus> = {
+  draft: "draft",
+  proposed: "proposed",
+  experiment: "experiment",
+  outcome: "outcome",
+  reflection: "reflection",
+  discarded: "discarded",
+  new: "proposed",
+  "in progress": "experiment",
+  "in-progress": "experiment",
+  in_progress: "experiment",
+  implemented: "reflection",
+};
+
+export const normalizeIdeaStatus = (status: unknown): IdeaStatus | null => {
+  if (typeof status !== "string") {
+    return null;
+  }
+
+  return IDEA_STATUS_ALIASES[status.trim().toLowerCase()] ?? null;
+};
 
 // 🔹 Get all ideas
 export const getAllIdeas = (): Idea[] => {
