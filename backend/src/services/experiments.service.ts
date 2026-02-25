@@ -15,6 +15,7 @@ export interface Experiment {
   successMetric: string;
   falsifiability: string;
   status: ExperimentStatus;
+  progress: number;
   endDate: string; // ISO date string
   linkedIdeaId?: number | null;
   outcomeResult?: "Success" | "Failed" | null;
@@ -73,6 +74,7 @@ export const createExperiment = (
     successMetric,
     falsifiability,
     status,
+    progress: getProgressForExperimentStatus(status),
     endDate,
     linkedIdeaId: linkedIdeaId ?? null,
     createdAt: new Date(),
@@ -115,10 +117,13 @@ export const updateExperiment = (
       throw new Error("Completed experiments cannot be modified");
     }
     experiment.status = updates.status;
+    experiment.progress = getProgressForExperimentStatus(updates.status);
   }
 
   if (updates.outcomeResult !== undefined)
     experiment.outcomeResult = updates.outcomeResult;
+  if (updates.progress !== undefined)
+  experiment.progress = updates.progress;
 
   return experiment;
 };
