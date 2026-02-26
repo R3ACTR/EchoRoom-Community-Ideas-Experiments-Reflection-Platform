@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { PageLayout } from "../community/PageLayout";
 import { apiFetch } from "../lib/api";
@@ -9,7 +9,12 @@ import ErrorState from "../components/ErrorState";
 import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
 import ChartLineIcon from "@/components/ui/chart-line-icon";
-import { ArrowLeft, Calendar, CheckCircle, XCircle, MinusCircle, FileText, HelpCircle, PenTool, Zap, Activity, SignalLow, SignalHigh, TrendingUp, TrendingDown, Eye } from "lucide-react";
+import ActionSearchBar from "@/components/ui/action-search-bar";
+import { 
+  ArrowLeft, Calendar, CheckCircle, XCircle, MinusCircle, FileText, 
+  HelpCircle, PenTool, Zap, Activity, SignalLow, SignalHigh, 
+  TrendingUp, TrendingDown, Eye, Search, Layers 
+} from "lucide-react";
 
 interface Outcome {
   id: string;
@@ -37,6 +42,12 @@ export default function OutcomesPage() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  // --- Filter & Sort State ---
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterResult, setFilterResult] = useState<string>("ALL");
+  const [filterImpact, setFilterImpact] = useState<string>("ALL");
+  const [sortBy, setSortBy] = useState<"NEWEST" | "OLDEST">("NEWEST");
+
   useEffect(() => {
     const fetchOutcomes = async () => {
       try {
@@ -51,6 +62,32 @@ export default function OutcomesPage() {
     };
     fetchOutcomes();
   }, []);
+
+  // --- Derived Data for Display ---
+  const filteredAndSortedOutcomes = useMemo(() => {
+    return outcomes
+      .filter((outcome) => {
+        const matchesSearch = outcome.experimentTitle.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              outcome.notes?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesResult = filterResult === "ALL" || outcome.result === filterResult;
+        const matchesImpact = filterImpact === "ALL" || outcome.impactLevel === filterImpact;
+        return matchesSearch && matchesResult && matchesImpact;
+      })
+      .sort((a, b) => {
+        const timeA = new Date(a.createdAt).getTime();
+        const timeB = new Date(b.createdAt).getTime();
+        return sortBy === "NEWEST" ? timeB - timeA : timeA - timeB;
+      });
+  }, [outcomes, searchQuery, filterResult, filterImpact, sortBy]);
+
+  // --- Quick Stats ---
+  const stats = useMemo(() => {
+    return {
+      total: outcomes.length,
+      successes: outcomes.filter(o => o.result === "SUCCESS").length,
+      breakthroughs: outcomes.filter(o => o.impactLevel === "BREAKTHROUGH").length,
+    };
+  }, [outcomes]);
 
   const getResultStyle = (result?: string) => {
     switch(result) {
@@ -79,6 +116,71 @@ export default function OutcomesPage() {
     }
   };
 
+  // --- Action Search Bar Configurations ---
+  const getResultFilterIcon = (result: string, isActive: boolean) => {
+    const colorClass = isActive ? "text-blue-500" : "text-gray-400";
+    switch (result) {
+      case "ALL": return <Layers size={16} className={colorClass} />;
+      case "SUCCESS": return <CheckCircle size={16} className={isActive ? "text-blue-500" : "text-emerald-500"} />;
+      case "FAILED": return <XCircle size={16} className={isActive ? "text-blue-500" : "text-rose-500"} />;
+      case "MIXED": return <MinusCircle size={16} className={isActive ? "text-blue-500" : "text-amber-500"} />;
+      default: return <Layers size={16} className={colorClass} />;
+    }
+  };
+
+  const getImpactFilterIcon = (impact: string, isActive: boolean) => {
+    const colorClass = isActive ? "text-blue-500" : "text-gray-400";
+    switch (impact) {
+      case "ALL": return <Layers size={16} className={colorClass} />;
+      case "BREAKTHROUGH": return <Zap size={16} className={isActive ? "text-blue-500" : "text-purple-500"} />;
+      case "STRONG": return <SignalHigh size={16} className={isActive ? "text-blue-500" : "text-blue-400"} />;
+      case "MODERATE": return <Activity size={16} className={isActive ? "text-blue-500" : "text-amber-500"} />;
+      case "LOW": return <SignalLow size={16} className={isActive ? "text-blue-500" : "text-slate-400"} />;
+      default: return <Layers size={16} className={colorClass} />;
+    }
+  };
+
+  const searchActions = [
+    // Results
+    ...[
+      { value: "ALL", label: "All Results" },
+      { value: "SUCCESS", label: "Success" },
+      { value: "FAILED", label: "Failed" },
+      { value: "MIXED", label: "Mixed" },
+    ].map((opt) => ({
+      id: `res-${opt.value}`,
+      label: `Result: ${opt.label}`,
+      icon: getResultFilterIcon(opt.value, filterResult === opt.value),
+      onClick: () => setFilterResult(opt.value),
+    })),
+    // Impacts
+    ...[
+      { value: "ALL", label: "All Impacts" },
+      { value: "BREAKTHROUGH", label: "Breakthrough" },
+      { value: "STRONG", label: "Strong" },
+      { value: "MODERATE", label: "Moderate" },
+      { value: "LOW", label: "Low" },
+    ].map((opt) => ({
+      id: `imp-${opt.value}`,
+      label: `Impact: ${opt.label}`,
+      icon: getImpactFilterIcon(opt.value, filterImpact === opt.value),
+      onClick: () => setFilterImpact(opt.value),
+    })),
+    // Sorting
+    {
+      id: "sort-newest",
+      label: "Sort: Newest First",
+      icon: <Calendar size={16} className={sortBy === "NEWEST" ? "text-blue-500" : "text-slate-400"} />,
+      onClick: () => setSortBy("NEWEST"),
+    },
+    {
+      id: "sort-oldest",
+      label: "Sort: Oldest First",
+      icon: <Calendar size={16} className={sortBy === "OLDEST" ? "text-blue-500" : "text-slate-400"} />,
+      onClick: () => setSortBy("OLDEST"),
+    },
+  ];
+
   if (loading) return <PageLayout><LoadingState message="Loading outcomes..." /></PageLayout>;
   if (error) return <PageLayout><ErrorState message={error} /></PageLayout>;
 
@@ -87,7 +189,7 @@ export default function OutcomesPage() {
       <div className="section animate-in fade-in duration-500">
         
         {/* Header Area */}
-        <div className="mb-10">
+        <div className="mb-8">
           <div className="mb-6">
             <Button onClick={() => router.push("/experiments")} variant="secondary" className="text-sm">
               ← Back to experiments
@@ -101,6 +203,61 @@ export default function OutcomesPage() {
             Review experiment results, measure impact, and reflect on what moved the needle.
           </p>
         </div>
+
+        {/* Dashboard/Controls Area */}
+        {outcomes.length > 0 && (
+          <div className="mb-8 space-y-6">
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Experiments</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <Activity className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                </div>
+              </div>
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Successes</p>
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{stats.successes}</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+              </div>
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Breakthroughs</p>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.breakthroughs}</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Action Search Bar */}
+            <MagicCard
+              className="p-[1px] rounded-2xl w-full relative z-50 shadow-sm"
+              gradientColor="rgba(59,130,246,0.6)"
+            >
+              <div className="w-full p-2 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-white/10">
+                <ActionSearchBar
+                  placeholder={`Search outcomes... (Result: ${
+                    filterResult === "ALL" ? "All" : filterResult
+                  } | Impact: ${
+                    filterImpact === "ALL" ? "All" : filterImpact
+                  })`}
+                  value={searchQuery}
+                  onChange={(e: any) => setSearchQuery(e.target.value)}
+                  actions={searchActions}
+                />
+              </div>
+            </MagicCard>
+          </div>
+        )}
 
         {outcomes.length === 0 ? (
           <div className="flex justify-center mt-14">
@@ -117,9 +274,23 @@ export default function OutcomesPage() {
               </div>
             </MagicCard>
           </div>
+        ) : filteredAndSortedOutcomes.length === 0 ? (
+           <div className="py-20 text-center">
+             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
+               <Search className="w-6 h-6 text-slate-400" />
+             </div>
+             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">No matches found</h3>
+             <p className="text-slate-500">Try adjusting your filters or search query.</p>
+             <button 
+               onClick={() => { setSearchQuery(""); setFilterResult("ALL"); setFilterImpact("ALL"); }}
+               className="mt-4 text-blue-500 hover:text-blue-600 font-medium text-sm"
+             >
+               Clear all filters
+             </button>
+           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {outcomes.map((outcome) => {
+            {filteredAndSortedOutcomes.map((outcome) => {
               const resStyle = getResultStyle(outcome.result);
               const impStyle = getImpactStyle(outcome.impactLevel);
               const momStyle = getMomentumConfig(outcome.momentum);
@@ -171,7 +342,7 @@ export default function OutcomesPage() {
           </div>
         )}
 
-        {/* Premium Outcome Modal */}
+        {/* ... Outcome Modal ... */}
         {selectedOutcome && (
           <div className="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 sm:p-6" onClick={() => setSelectedOutcome(null)}>
             <div onClick={(e) => e.stopPropagation()} className="w-full max-w-2xl animate-in zoom-in-95 fade-in duration-200">
