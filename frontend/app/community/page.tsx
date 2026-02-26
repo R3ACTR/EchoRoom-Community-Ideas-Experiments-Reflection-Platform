@@ -1,5 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { apiFetch } from "../lib/api";
+import { LearningGraph } from "../components/LearningGraph";
+import LoadingState from "../components/LoadingState";
+import ErrorState from "../components/ErrorState";
 import { PageLayout } from "./PageLayout";
 import Link from "next/link";
 import HomeIcon from "@/components/ui/arrow-narrow-left-icon";
@@ -14,6 +19,25 @@ import { Users } from "lucide-react";
 import { Meteors } from "@/components/ui/meteors";
 
 const CommunityPage = () => {
+  const [graphData, setGraphData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchGraph = async () => {
+      try {
+        setLoading(true);
+        const data = await apiFetch<any>("/insights/graph");
+        setGraphData(data);
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch learning graph");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchGraph();
+  }, []);
+
   const stats = [
     {
       label: "Members",
@@ -34,6 +58,9 @@ const CommunityPage = () => {
       gradient: "rgba(16,185,129,0.6)",
     },
   ];
+
+  if (loading) return <PageLayout><LoadingState message="Loading collective intelligence..." /></PageLayout>;
+  if (error) return <PageLayout><ErrorState message={error} /></PageLayout>;
 
   return (
     <>
@@ -76,9 +103,20 @@ const CommunityPage = () => {
           </p>
 
           <p className="text-lg text-muted-foreground mb-10">
-            Future updates will include community discussions, contributor
-            profiles, and collaborative tools.
+            Below is the <strong>Community Learning Map</strong>. It connects our collective ideas, experiments, and synthesized insights to visualize our progress.
           </p>
+
+          {/* Learning Graph Section */}
+          <div className="mb-16">
+            <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+              <ChartHistogramIcon className="w-6 h-6 text-blue-500" />
+              Community Learning Map
+            </h2>
+            <LearningGraph data={graphData} />
+            <p className="text-sm text-slate-500 mt-4 text-center italic">
+              AI-Synthesized nodes (dashed) represent patterns found across multiple experiments.
+            </p>
+          </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

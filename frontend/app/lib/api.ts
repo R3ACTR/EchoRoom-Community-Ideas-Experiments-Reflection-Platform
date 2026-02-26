@@ -9,6 +9,9 @@ interface ApiResponse<T> {
   experiments?: T;
   reflections?: T;
   outcomes?: T;
+  comments?: T;
+  comment?: T;
+  progression?: T;
 }
 
 export async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
@@ -40,18 +43,21 @@ export async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise
       data.idea ??
       data.experiments ??
       data.reflections ??
-      data.outcomes;
+      data.outcomes ??
+      data.comments ??
+      data.comment ??
+      data.progression;
 
 
     // allow empty response for DELETE
-if (result === undefined) {
-  if (init?.method === "DELETE") {
-    return undefined as T;
-  }
-  throw new Error("No data returned");
-}
+    if (result === undefined) {
+      if (init?.method === "DELETE") {
+        return undefined as T;
+      }
+      throw new Error("No data returned");
+    }
 
-return result as T;
+    return result as T;
 
   } catch (error: any) {
 
