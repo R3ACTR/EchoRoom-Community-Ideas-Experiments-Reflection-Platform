@@ -53,56 +53,21 @@ http://localhost:5000/health
   "status": "ok"
 }
 
-✅ That’s it  
-✅ Do not change anything else  
-✅ Do not move existing text
+
 
 ---
 
-## 🧠 What changed? (Simple explanation)
+## Common Errors & Fixes
 
-Before:
-- README said `/health` exists
-- But didn’t say **status code**
+This section lists common setup and runtime issues contributors may encounter when working on the backend, along with quick fixes.
 
-After:
-- README clearly says:
-  - Method: `GET`
-  - Status code: `200 OK`
-  - Example response
+### Prisma client not generated
 
-This solves the issue 💯
+**Symptom**
+- Server fails to start
+- Errors related to missing Prisma client
 
----
-
-## 🟢 Step 5: Save the file
-
-Just **save `README.md`**
-
----
-
-## 🟢 Step 6: Commit the change
-
-In Git Bash:
-
+**Fix**
 ```bash
-git add README.md
-git commit -m "docs: add HTTP status code for health endpoint"
-
-Contribution Areas
-
-API design
-
-State transitions
-
-Validation logic
-
-Documentation
-
-Testing
-
-Start small and build thoughtfully 🚀
-
-
----
+npm run prisma:generate
 
