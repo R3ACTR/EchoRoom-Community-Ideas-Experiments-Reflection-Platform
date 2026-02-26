@@ -29,13 +29,6 @@ export const validateRequest = (schemas: RequestSchemas): RequestHandler => {
   };
 };
 
-export const numericIdParamSchema = (fieldName = "id") =>
-  z.object({
-    [fieldName]: z
-      .string()
-      .regex(/^\d+$/, `${fieldName} must be a valid numeric ID`),
-  });
-
 export const objectIdParamSchema = (fieldName = "id") =>
   z.object({
     [fieldName]: z

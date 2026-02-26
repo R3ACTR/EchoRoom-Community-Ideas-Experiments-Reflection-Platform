@@ -165,7 +165,7 @@ Returns only draft ideas.
 
 ### `GET /ideas/:id`
 
-Returns one idea by numeric ID.
+Returns one idea by ObjectId string.
 
 ### `POST /ideas`
 
@@ -313,7 +313,7 @@ Body (required fields):
   "falsifiability": "...",
   "status": "planned",
   "endDate": "2026-03-10",
-  "linkedIdeaId": 1
+  "linkedIdeaId": "64b7f1c9e8a1d2f3c4b5a6d7"
 }
 ```
 
@@ -337,7 +337,7 @@ Body:
 
 ```json
 {
-  "experimentId": 1,
+  "experimentId": "64b7f1c9e8a1d2f3c4b5a6d7",
   "result": "Success",
   "notes": "Observed lower drop-off"
 }
@@ -375,7 +375,7 @@ Body shape:
 
 ```json
 {
-  "outcomeId": 1,
+  "outcomeId": "64b7f1c9e8a1d2f3c4b5a6d8",
   "context": {
     "emotionBefore": 3,
     "confidenceBefore": 6

@@ -1,8 +1,5 @@
 import { z } from "zod";
-import {
-  numericIdParamSchema,
-  objectIdParamSchema,
-} from "../middleware/validate.middleware";
+import { objectIdParamSchema } from "../middleware/validate.middleware";
 
 const nonEmptyString = z.string().trim().min(1, "Field is required");
 const ideaComplexitySchema = z.enum(["LOW", "MEDIUM", "HIGH"]);
