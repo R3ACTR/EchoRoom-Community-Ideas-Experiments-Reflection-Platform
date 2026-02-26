@@ -36,17 +36,29 @@ cd backend
 npm install
 npm run prisma:generate
 npm run dev
-```
 
 Server default: `http://localhost:5000`
 
+ docs/add-common-errors-fixes
+
+---
+
+
+### Health Check Endpoint
+
+**GET /health**
+=======
 Health check:
 
 ```bash
 curl http://localhost:5000/health
 ```
+ main
 
 ## Scripts
+
+ docs/add-common-errors-fixes
+
 
 - `npm run dev` - Run backend with ts-node
 - `npm run build` - Compile TypeScript to `dist/`
@@ -73,6 +85,7 @@ Mounted route groups in `src/index.ts`:
 Detailed endpoint docs: `../docs/api.md`
 
 ## Repo Structure
+ main
 
 ```text
 backend/
@@ -90,6 +103,17 @@ backend/
   SETUP.md
 ```
 
+docs/add-common-errors-fixes
+## Common Errors & Fixes
+
+This section lists common setup and runtime issues contributors may encounter when working on the backend, along with quick fixes.
+
+### Prisma client not generated
+
+**Symptom**
+- Server fails to start
+- Errors related to missing Prisma client
+
 ## Known Gaps
 
 - Auth/permissions middleware is not consistently enforced across domain routes
@@ -101,7 +125,13 @@ The backend does not seed idea data automatically at runtime.
 Use `npm run seed:ideas` only when you explicitly want local demo data.
 
 Optional count override:
+ main
 
+**Fix**
 ```bash
+ docs/add-common-errors-fixes
+npm run prisma:generate
+
 SEED_IDEAS_COUNT=250 npm run seed:ideas
 ```
+ main
