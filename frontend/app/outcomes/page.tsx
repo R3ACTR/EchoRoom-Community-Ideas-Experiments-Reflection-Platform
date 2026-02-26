@@ -9,10 +9,11 @@ import ErrorState from "../components/ErrorState";
 import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
 import ChartLineIcon from "@/components/ui/chart-line-icon";
+import ActionSearchBar from "@/components/ui/action-search-bar";
 import { 
   ArrowLeft, Calendar, CheckCircle, XCircle, MinusCircle, FileText, 
   HelpCircle, PenTool, Zap, Activity, SignalLow, SignalHigh, 
-  TrendingUp, TrendingDown, Eye, Search, Filter, ArrowUpDown
+  TrendingUp, TrendingDown, Eye, Search, Layers 
 } from "lucide-react";
 
 interface Outcome {
@@ -115,6 +116,71 @@ export default function OutcomesPage() {
     }
   };
 
+  // --- Action Search Bar Configurations ---
+  const getResultFilterIcon = (result: string, isActive: boolean) => {
+    const colorClass = isActive ? "text-blue-500" : "text-gray-400";
+    switch (result) {
+      case "ALL": return <Layers size={16} className={colorClass} />;
+      case "SUCCESS": return <CheckCircle size={16} className={isActive ? "text-blue-500" : "text-emerald-500"} />;
+      case "FAILED": return <XCircle size={16} className={isActive ? "text-blue-500" : "text-rose-500"} />;
+      case "MIXED": return <MinusCircle size={16} className={isActive ? "text-blue-500" : "text-amber-500"} />;
+      default: return <Layers size={16} className={colorClass} />;
+    }
+  };
+
+  const getImpactFilterIcon = (impact: string, isActive: boolean) => {
+    const colorClass = isActive ? "text-blue-500" : "text-gray-400";
+    switch (impact) {
+      case "ALL": return <Layers size={16} className={colorClass} />;
+      case "BREAKTHROUGH": return <Zap size={16} className={isActive ? "text-blue-500" : "text-purple-500"} />;
+      case "STRONG": return <SignalHigh size={16} className={isActive ? "text-blue-500" : "text-blue-400"} />;
+      case "MODERATE": return <Activity size={16} className={isActive ? "text-blue-500" : "text-amber-500"} />;
+      case "LOW": return <SignalLow size={16} className={isActive ? "text-blue-500" : "text-slate-400"} />;
+      default: return <Layers size={16} className={colorClass} />;
+    }
+  };
+
+  const searchActions = [
+    // Results
+    ...[
+      { value: "ALL", label: "All Results" },
+      { value: "SUCCESS", label: "Success" },
+      { value: "FAILED", label: "Failed" },
+      { value: "MIXED", label: "Mixed" },
+    ].map((opt) => ({
+      id: `res-${opt.value}`,
+      label: `Result: ${opt.label}`,
+      icon: getResultFilterIcon(opt.value, filterResult === opt.value),
+      onClick: () => setFilterResult(opt.value),
+    })),
+    // Impacts
+    ...[
+      { value: "ALL", label: "All Impacts" },
+      { value: "BREAKTHROUGH", label: "Breakthrough" },
+      { value: "STRONG", label: "Strong" },
+      { value: "MODERATE", label: "Moderate" },
+      { value: "LOW", label: "Low" },
+    ].map((opt) => ({
+      id: `imp-${opt.value}`,
+      label: `Impact: ${opt.label}`,
+      icon: getImpactFilterIcon(opt.value, filterImpact === opt.value),
+      onClick: () => setFilterImpact(opt.value),
+    })),
+    // Sorting
+    {
+      id: "sort-newest",
+      label: "Sort: Newest First",
+      icon: <Calendar size={16} className={sortBy === "NEWEST" ? "text-blue-500" : "text-slate-400"} />,
+      onClick: () => setSortBy("NEWEST"),
+    },
+    {
+      id: "sort-oldest",
+      label: "Sort: Oldest First",
+      icon: <Calendar size={16} className={sortBy === "OLDEST" ? "text-blue-500" : "text-slate-400"} />,
+      onClick: () => setSortBy("OLDEST"),
+    },
+  ];
+
   if (loading) return <PageLayout><LoadingState message="Loading outcomes..." /></PageLayout>;
   if (error) return <PageLayout><ErrorState message={error} /></PageLayout>;
 
@@ -172,64 +238,24 @@ export default function OutcomesPage() {
               </div>
             </div>
 
-            {/* Filters Bar */}
-            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 items-center">
-              {/* Search */}
-              <div className="relative w-full md:w-1/3">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder="Search outcomes..." 
+            {/* Action Search Bar */}
+            <MagicCard
+              className="p-[1px] rounded-2xl w-full relative z-50 shadow-sm"
+              gradientColor="rgba(59,130,246,0.6)"
+            >
+              <div className="w-full p-2 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-white/10">
+                <ActionSearchBar
+                  placeholder={`Search outcomes... (Result: ${
+                    filterResult === "ALL" ? "All" : filterResult
+                  } | Impact: ${
+                    filterImpact === "ALL" ? "All" : filterImpact
+                  })`}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white transition-all"
+                  onChange={(e: any) => setSearchQuery(e.target.value)}
+                  actions={searchActions}
                 />
               </div>
-
-              {/* Select Filters */}
-              <div className="flex w-full md:w-auto flex-1 gap-3">
-                <div className="relative flex-1 md:flex-none">
-                  <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <select 
-                    value={filterResult} 
-                    onChange={(e) => setFilterResult(e.target.value)}
-                    className="w-full pl-9 pr-8 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white appearance-none cursor-pointer"
-                  >
-                    <option value="ALL">All Results</option>
-                    <option value="SUCCESS">Success</option>
-                    <option value="FAILED">Failed</option>
-                    <option value="MIXED">Mixed</option>
-                  </select>
-                </div>
-
-                <div className="relative flex-1 md:flex-none">
-                  <Zap className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <select 
-                    value={filterImpact} 
-                    onChange={(e) => setFilterImpact(e.target.value)}
-                    className="w-full pl-9 pr-8 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white appearance-none cursor-pointer"
-                  >
-                    <option value="ALL">All Impacts</option>
-                    <option value="BREAKTHROUGH">Breakthrough</option>
-                    <option value="STRONG">Strong</option>
-                    <option value="MODERATE">Moderate</option>
-                    <option value="LOW">Low</option>
-                  </select>
-                </div>
-
-                <div className="relative flex-1 md:flex-none ml-auto">
-                  <ArrowUpDown className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <select 
-                    value={sortBy} 
-                    onChange={(e) => setSortBy(e.target.value as "NEWEST" | "OLDEST")}
-                    className="w-full pl-9 pr-8 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white appearance-none cursor-pointer"
-                  >
-                    <option value="NEWEST">Newest First</option>
-                    <option value="OLDEST">Oldest First</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+            </MagicCard>
           </div>
         )}
 
@@ -271,7 +297,6 @@ export default function OutcomesPage() {
               
               return (
                 <div key={outcome.id} onClick={() => setSelectedOutcome(outcome)} className="cursor-pointer group h-full flex flex-col">
-                  {/* ... Existing Card Code ... */}
                   <MagicCard className="p-[1px] rounded-2xl relative h-full flex-grow transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-blue-500/10" gradientColor="rgba(59,130,246,0.3)">
                     <div className={`p-6 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-white/5 h-full flex flex-col overflow-hidden ${momStyle.border}`}>
                       
@@ -317,7 +342,7 @@ export default function OutcomesPage() {
           </div>
         )}
 
-        {/* ... Existing Premium Outcome Modal ... */}
+        {/* ... Outcome Modal ... */}
         {selectedOutcome && (
           <div className="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 sm:p-6" onClick={() => setSelectedOutcome(null)}>
             <div onClick={(e) => e.stopPropagation()} className="w-full max-w-2xl animate-in zoom-in-95 fade-in duration-200">
