@@ -13,31 +13,31 @@ import {
   updateIdeaStatus,
   deleteIdea,
 } from "../services/ideas.service";
-export const getIdeas = async (_req: Request, res: Response): Promise<void> => {
-  const ideas = await getPublishedIdeas();
+export const getIdeas = async (req: AuthRequest, res: Response): Promise<void> => {
+  const ideas = await getPublishedIdeas(req.userId);
   res.json({ success: true, ideas });
 };
 
 export const getAllIdeasHandler = async (
-  _req: Request,
+  req: AuthRequest,
   res: Response
 ): Promise<void> => {
-  const ideas = await getAllIdeas();
+  const ideas = await getAllIdeas(req.userId);
   res.json({ success: true, ideas });
 };
 
 export const getDrafts = async (req: AuthRequest, res: Response): Promise<void> => {
   const isAdmin = req.user?.role === "ADMIN" || req.user?.role === "MODERATOR";
-  const drafts = await getDraftIdeas(isAdmin ? undefined : req.userId);
+  const drafts = await getDraftIdeas(isAdmin ? undefined : req.userId, req.userId);
   res.json({ success: true, ideas: drafts });
 };
 
 export const getIdeaByIdHandler = async (
-  req: Request,
+  req: AuthRequest,
   res: Response
 ): Promise<void> => {
   const { id } = req.params;
-  const idea = await getIdeaById(id);
+  const idea = await getIdeaById(id, req.userId);
 
   if (!idea) {
     res.status(404).json({ success: false, message: "Idea not found" });

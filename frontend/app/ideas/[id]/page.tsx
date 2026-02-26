@@ -29,7 +29,9 @@ interface Idea {
   title: string;
   description: string;
   status: string;
-  complexity?: "LOW" | "MEDIUM" | "HIGH"; // Added for consistency with your ideas list
+  complexity?: "LOW" | "MEDIUM" | "HIGH";
+  likeCount: number;
+  likedByCurrentUser?: boolean;
 }
 
 interface LikeData {
@@ -48,45 +50,34 @@ export default function IdeaDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [likes, setLikes] = useState<LikeData>({});
   const [liking, setLiking] = useState(false);
 
-  // Load likes from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem("echoroom_likes");
-    if (stored) {
-      try {
-        setLikes(JSON.parse(stored));
-      } catch (e) {
-        console.error("Failed to parse likes", e);
-      }
-    }
-  }, []);
-
-  // Save likes to localStorage
-  const saveLikes = useCallback((newLikes: LikeData) => {
-    setLikes(newLikes);
-    localStorage.setItem("echoroom_likes", JSON.stringify(newLikes));
-  }, []);
-
   // Handle like toggle
-  const handleLike = () => {
+  const handleLike = async () => {
     if (!idea || liking) return;
-    setLiking(true);
-    const ideaId = idea.id;
-    const currentLike = likes[ideaId] || { count: 0, liked: false };
-    const newLikeState = !currentLike.liked;
-    const newCount = newLikeState ? currentLike.count + 1 : Math.max(0, currentLike.count - 1);
-    
-    const newLikes = {
-      ...likes,
-      [ideaId]: {
-        count: newCount,
-        liked: newLikeState,
-      },
-    };
-    saveLikes(newLikes);
-    setLiking(false);
+    try {
+      setLiking(true);
+      const data = await apiFetch<{ liked: boolean; likes: { count: number; likedByCurrentUser: boolean } }>(
+        `/likes/${idea.id}`,
+        { method: "POST" }
+      );
+      
+      setIdea((prev) => 
+        prev ? {
+          ...prev,
+          likeCount: data.likes.count,
+          likedByCurrentUser: data.likes.likedByCurrentUser
+        } : null
+      );
+    } catch (err: any) {
+      if (err.message === "Unauthorized") {
+        router.push("/login");
+      } else {
+        alert(err.message || "Failed to toggle like");
+      }
+    } finally {
+      setLiking(false);
+    }
   };
 
   const handleCopyLink = () => {
@@ -212,17 +203,17 @@ export default function IdeaDetailPage() {
                 onClick={handleLike}
                 disabled={liking}
                 className={`group flex items-center gap-2.5 px-5 py-2.5 rounded-xl transition-all duration-300 ${
-                  (likes[idea.id]?.liked ?? false)
+                  idea.likedByCurrentUser
                     ? "bg-red-50 dark:bg-red-500/10 text-red-500 border border-red-200 dark:border-red-500/20"
                     : "bg-gray-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 border border-transparent"
                 }`}
               >
                 <HeartIcon 
-                  filled={(likes[idea.id]?.liked ?? false)} 
-                  className={`w-6 h-6 transition-transform group-hover:scale-110 ${(likes[idea.id]?.liked ?? false) ? "text-red-500" : ""}`} 
+                  filled={idea.likedByCurrentUser || false} 
+                  className={`w-6 h-6 transition-transform group-hover:scale-110 ${idea.likedByCurrentUser ? "text-red-500" : ""}`} 
                 />
                 <span className="text-base font-semibold">
-                  {(likes[idea.id]?.count ?? 0)} {(likes[idea.id]?.count === 1) ? 'Like' : 'Likes'}
+                  {idea.likeCount || 0} {(idea.likeCount === 1) ? 'Like' : 'Likes'}
                 </span>
               </button>
             </div>

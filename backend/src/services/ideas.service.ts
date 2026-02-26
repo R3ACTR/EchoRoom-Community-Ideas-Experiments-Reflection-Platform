@@ -23,6 +23,8 @@ export interface Idea {
   createdAt: string;
   updatedAt: string;
   authorId?: string | null;
+  likeCount: number;
+  likedByCurrentUser?: boolean;
 }
 
 const ideaStateMachine = new StateMachine<IdeaStatus>({
@@ -48,7 +50,13 @@ const IDEA_STATUS_ALIASES: Record<string, IdeaStatus> = {
   implemented: "reflection",
 };
 
-const toIdea = (idea: PrismaIdea): Idea => ({
+const toIdea = (
+  idea: PrismaIdea & {
+    _count?: { likes: number };
+    likes?: { userId: string }[];
+  },
+  currentUserId?: string
+): Idea => ({
   id: idea.id,
   title: idea.title,
   description: idea.description,
@@ -58,6 +66,10 @@ const toIdea = (idea: PrismaIdea): Idea => ({
   createdAt: idea.createdAt.toISOString(),
   updatedAt: idea.updatedAt.toISOString(),
   authorId: idea.authorId ?? null,
+  likeCount: idea._count?.likes ?? 0,
+  likedByCurrentUser: currentUserId
+    ? idea.likes?.some((l) => l.userId === currentUserId)
+    : false,
 });
 
 export const normalizeIdeaStatus = (status: unknown): IdeaStatus | null => {
@@ -68,36 +80,62 @@ export const normalizeIdeaStatus = (status: unknown): IdeaStatus | null => {
   return IDEA_STATUS_ALIASES[status.trim().toLowerCase()] ?? null;
 };
 
-export const getAllIdeas = async (): Promise<Idea[]> => {
+export const getAllIdeas = async (currentUserId?: string): Promise<Idea[]> => {
   const ideas = await prisma.idea.findMany({
+    include: {
+      _count: { select: { likes: true } },
+      likes: currentUserId ? { where: { userId: currentUserId } } : false,
+    },
     orderBy: { createdAt: "desc" },
   });
 
-  return ideas.map(toIdea);
+  return ideas.map((idea) => toIdea(idea, currentUserId));
 };
 
-export const getPublishedIdeas = async (): Promise<Idea[]> => {
+export const getPublishedIdeas = async (
+  currentUserId?: string
+): Promise<Idea[]> => {
   const ideas = await prisma.idea.findMany({
     where: { status: { not: "draft" } },
+    include: {
+      _count: { select: { likes: true } },
+      likes: currentUserId ? { where: { userId: currentUserId } } : false,
+    },
     orderBy: { createdAt: "desc" },
   });
 
-  return ideas.map(toIdea);
+  return ideas.map((idea) => toIdea(idea, currentUserId));
 };
 
-export const getDraftIdeas = async (authorId?: string): Promise<Idea[]> => {
+export const getDraftIdeas = async (
+  authorId?: string,
+  currentUserId?: string
+): Promise<Idea[]> => {
   const where = authorId ? { status: "draft", authorId } : { status: "draft" };
   const ideas = await prisma.idea.findMany({
     where: where as any,
+    include: {
+      _count: { select: { likes: true } },
+      likes: currentUserId ? { where: { userId: currentUserId } } : false,
+    },
     orderBy: { createdAt: "desc" },
   });
 
-  return ideas.map(toIdea);
+  return ideas.map((idea) => toIdea(idea, currentUserId));
 };
 
-export const getIdeaById = async (id: string): Promise<Idea | null> => {
-  const idea = await prisma.idea.findUnique({ where: { id } });
-  return idea ? toIdea(idea) : null;
+export const getIdeaById = async (
+  id: string,
+  currentUserId?: string
+): Promise<Idea | null> => {
+  const idea = await prisma.idea.findUnique({
+    where: { id },
+    include: {
+      _count: { select: { likes: true } },
+      likes: currentUserId ? { where: { userId: currentUserId } } : false,
+    },
+  });
+  return idea ? toIdea(idea, currentUserId) : null;
 };
 
 export const getAvailableTransitions = async (

@@ -39,6 +39,8 @@ interface Idea {
   description: string;
   status: string;
   complexity: "LOW" | "MEDIUM" | "HIGH";
+  likeCount: number;
+  likedByCurrentUser?: boolean;
 }
 
 interface LikeData {
@@ -101,22 +103,12 @@ export default function IdeasPage() {
   const [deleteIdea, setDeleteIdea] = useState<Idea | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [likes, setLikes] = useState<LikeData>({});
   const [likingId, setLikingId] = useState<string | null>(null);
   const [bookmarks, setBookmarks] = useState<BookmarkData>({});
   const [bookmarkingId, setBookmarkingId] = useState<string | null>(null);
 
-  // Load likes from localStorage on mount
+  // Load bookmarks from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem("echoroom_likes");
-    if (stored) {
-      try {
-        setLikes(JSON.parse(stored));
-      } catch (e) {
-        console.error("Failed to parse likes", e);
-      }
-    }
-    
     // Load bookmarks from localStorage
     const storedBookmarks = localStorage.getItem("echoroom_bookmarks");
     if (storedBookmarks) {
@@ -128,12 +120,6 @@ export default function IdeasPage() {
     }
   }, []);
 
-  // Save likes to localStorage when they change
-  const saveLikes = useCallback((newLikes: LikeData) => {
-    setLikes(newLikes);
-    localStorage.setItem("echoroom_likes", JSON.stringify(newLikes));
-  }, []);
-
   // Save bookmarks to localStorage when they change
   const saveBookmarks = useCallback((newBookmarks: BookmarkData) => {
     setBookmarks(newBookmarks);
@@ -141,21 +127,34 @@ export default function IdeasPage() {
   }, []);
 
   // Toggle like for an idea
-  const handleLike = (ideaId: string) => {
-    setLikingId(ideaId);
-    const currentLike = likes[ideaId] || { count: 0, liked: false };
-    const newLikeState = !currentLike.liked;
-    const newCount = newLikeState ? currentLike.count + 1 : Math.max(0, currentLike.count - 1);
-    
-    const newLikes = {
-      ...likes,
-      [ideaId]: {
-        count: newCount,
-        liked: newLikeState,
-      },
-    };
-    saveLikes(newLikes);
-    setLikingId(null);
+  const handleLike = async (ideaId: string) => {
+    try {
+      setLikingId(ideaId);
+      const data = await apiFetch<{ liked: boolean; likes: { count: number; likedByCurrentUser: boolean } }>(
+        `/likes/${ideaId}`,
+        { method: "POST" }
+      );
+      
+      setIdeas((prev) =>
+        prev.map((idea) =>
+          idea.id === ideaId
+            ? {
+                ...idea,
+                likeCount: data.likes.count,
+                likedByCurrentUser: data.likes.likedByCurrentUser,
+              }
+            : idea
+        )
+      );
+    } catch (err: any) {
+      if (err.message === "Unauthorized") {
+        router.push("/login");
+      } else {
+        alert(err.message || "Failed to toggle like");
+      }
+    } finally {
+      setLikingId(null);
+    }
   };
 
   // Toggle bookmark for an idea
@@ -450,18 +449,18 @@ export default function IdeasPage() {
                       onClick={(e) => { e.stopPropagation(); handleLike(idea.id); }}
                       disabled={likingId === idea.id}
                       className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-all ${
-                        (likes[idea.id]?.liked ?? false)
+                        idea.likedByCurrentUser
                           ? "text-red-500 bg-red-500/10"
                           : "text-gray-400 hover:text-red-500 hover:bg-red-500/10"
                       }`}
-                      title={(likes[idea.id]?.liked ?? false) ? "Unlike" : "Like"}
+                      title={idea.likedByCurrentUser ? "Unlike" : "Like"}
                     >
                       <HeartIcon 
-                        filled={(likes[idea.id]?.liked ?? false)} 
+                        filled={idea.likedByCurrentUser || false} 
                         className="w-4 h-4" 
                       />
                       <span className="text-xs font-medium">
-                        {(likes[idea.id]?.count ?? 0)}
+                        {idea.likeCount || 0}
                       </span>
                     </button>
                   </div>

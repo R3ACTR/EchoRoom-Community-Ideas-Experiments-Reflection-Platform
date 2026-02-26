@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validateRequest } from "../middleware/validate.middleware";
 import { ideasSchemas } from "../validation/request.schemas";
-import { authenticate } from "../middleware/auth";
+import { authenticate, optionalAuth } from "../middleware/auth";
 import {
   getIdeas,
   getAllIdeasHandler,
@@ -17,8 +17,8 @@ import {
 
 const router = Router();
 
-router.get("/", getIdeas);
-router.get("/all", getAllIdeasHandler);
+router.get("/", optionalAuth, getIdeas);
+router.get("/all", optionalAuth, getAllIdeasHandler);
 router.get("/drafts", authenticate, getDrafts);
 router.post("/", authenticate, validateRequest(ideasSchemas.postIdea), postIdea);
 router.post("/drafts", authenticate, validateRequest(ideasSchemas.postDraft), postDraft);
@@ -36,7 +36,7 @@ router.patch(
   patchIdeaStatus
 );
 router.delete("/:id", authenticate, validateRequest(ideasSchemas.deleteIdeaById), deleteIdeaById);
-router.get("/:id", validateRequest(ideasSchemas.getIdeaById), getIdeaByIdHandler);
+router.get("/:id", optionalAuth, validateRequest(ideasSchemas.getIdeaById), getIdeaByIdHandler);
 
 
 export default router;
