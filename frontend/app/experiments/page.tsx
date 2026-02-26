@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "../lib/api";
 import { PageLayout } from "../community/PageLayout";
@@ -11,7 +11,11 @@ import Button from "@/app/components/ui/Button";
 import ChartHistogramIcon from "@/components/ui/chart-histogram-icon";
 import { MagicCard } from "@/components/ui/magic-card";
 import TrashIcon from "@/components/ui/trash-icon";
-import { Link2, Check, Clock, Lightbulb, Target, ShieldAlert, Copy } from "lucide-react";
+import ActionSearchBar from "@/components/ui/action-search-bar";
+import { 
+  Link2, Check, Clock, Lightbulb, Target, ShieldAlert, Copy,
+  Search, Layers, Calendar, PlayCircle, CheckCircle2
+} from "lucide-react";
 import { differenceInDays, parseISO, isAfter } from "date-fns";
 import BulbSvg from "@/components/ui/bulb-svg";
 import CopyIcon from "@/components/ui/copy-icon";
@@ -95,16 +99,11 @@ export default function ExperimentsPage() {
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
   const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  const handleCopyLink = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    const url = `${window.location.origin}/experiments/${id}`;
-    navigator.clipboard.writeText(url);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
-
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // --- Search & Filter State ---
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("All");
 
   useEffect(() => {
     const fetchExperiments = async () => {
@@ -147,7 +146,14 @@ export default function ExperimentsPage() {
     }
   };
 
-  // NEW: Shared status badge styling matching the detail page
+  const handleCopyLink = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/experiments/${id}`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   const getStatusBadge = (status: string) => {
     if (status === "completed") return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20";
     if (status === "in-progress") return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
@@ -159,6 +165,47 @@ export default function ExperimentsPage() {
     if (status === "in-progress") return "bg-blue-500";
     return "bg-slate-400";
   };
+
+  // --- Derived Data for Display ---
+  const filteredExperiments = useMemo(() => {
+    return experiments.filter((exp) => {
+      const matchesSearch =
+        exp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        exp.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (exp.hypothesis && exp.hypothesis.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      const matchesStatus =
+        statusFilter === "All" ||
+        (statusFilter === "Planned" && exp.status === "planned") ||
+        (statusFilter === "In Progress" && exp.status === "in-progress") ||
+        (statusFilter === "Completed" && exp.status === "completed");
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [experiments, searchQuery, statusFilter]);
+
+  const getFilterIcon = (status: string, isActive: boolean) => {
+    const colorClass = isActive ? "text-blue-500" : "text-slate-400";
+    switch (status) {
+      case "All": return <Layers size={16} className={colorClass} />;
+      case "Planned": return <Calendar size={16} className={isActive ? "text-blue-500" : "text-amber-500"} />;
+      case "In Progress": return <PlayCircle size={16} className={isActive ? "text-blue-500" : "text-blue-400"} />;
+      case "Completed": return <CheckCircle2 size={16} className={isActive ? "text-blue-500" : "text-emerald-500"} />;
+      default: return <Layers size={16} className={colorClass} />;
+    }
+  };
+
+  const searchActions = [
+    { value: "All", label: "All Status" },
+    { value: "Planned", label: "Planned" },
+    { value: "In Progress", label: "In Progress" },
+    { value: "Completed", label: "Completed" },
+  ].map((opt) => ({
+    id: `status-${opt.value}`,
+    label: `Filter: ${opt.label}`,
+    icon: getFilterIcon(opt.value, statusFilter === opt.value),
+    onClick: () => setStatusFilter(opt.value),
+  }));
 
   if (loading) {
     return (
@@ -187,7 +234,6 @@ export default function ExperimentsPage() {
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
-
             {/* LEFT SIDE */}
             <div className="flex items-center gap-3">
               <ChartHistogramIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
@@ -215,11 +261,29 @@ export default function ExperimentsPage() {
             </div>
           </div>
 
-          <p className="text-lg max-w-2xl text-slate-600 dark:text-slate-300">
+          <p className="text-lg max-w-2xl text-slate-600 dark:text-slate-300 mb-6">
             Track and manage experiments to test ideas and learn quickly.
           </p>
+
+          {/* Action Search Bar */}
+          {experiments.length > 0 && (
+            <MagicCard
+              className="p-[1px] rounded-2xl mb-8 w-full relative z-50 shadow-sm"
+              gradientColor="rgba(59,130,246,0.6)"
+            >
+              <div className="w-full p-2 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-white/10">
+                <ActionSearchBar
+                  placeholder={`Search experiments... (Viewing: ${statusFilter})`}
+                  value={searchQuery}
+                  onChange={(e: any) => setSearchQuery(e.target.value)}
+                  actions={searchActions}
+                />
+              </div>
+            </MagicCard>
+          )}
         </div>
 
+        {/* List & Empty States */}
         {experiments.length === 0 ? (
           <div className="flex justify-center mt-14">
             <MagicCard
@@ -248,9 +312,23 @@ export default function ExperimentsPage() {
               </div>
             </MagicCard>
           </div>
+        ) : filteredExperiments.length === 0 ? (
+          <div className="py-20 text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
+              <Search className="w-6 h-6 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">No matches found</h3>
+            <p className="text-slate-500">Try adjusting your filters or search query.</p>
+            <button 
+              onClick={() => { setSearchQuery(""); setStatusFilter("All"); }}
+              className="mt-4 text-blue-500 hover:text-blue-600 font-medium text-sm"
+            >
+              Clear all filters
+            </button>
+          </div>
         ) : (
           <div className="grid gap-6 xl:grid-cols-2">
-            {experiments.map((exp) => (
+            {filteredExperiments.map((exp) => (
               <div
                 key={exp.id}
                 onClick={() => router.push(`/experiments/${exp.id}`)}
@@ -265,7 +343,10 @@ export default function ExperimentsPage() {
                     {/* Action Buttons */}
                     <div className="absolute top-5 right-5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
-                        onClick={(e) => handleCopyLink(e, exp.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyLink(e, exp.id);
+                        }}
                         className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-500 rounded-lg transition-all"
                         title="Copy link"
                       >
@@ -296,7 +377,7 @@ export default function ExperimentsPage() {
                       </p>
                     </div>
 
-                    {/* Refined Experiment Details */}
+                    {/* Experiment Details */}
                     <div className="flex flex-col gap-3 mb-8 flex-grow">
                       {exp.hypothesis && (
                         <div className="flex items-start gap-3">
