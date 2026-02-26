@@ -89,10 +89,10 @@ curl -X POST http://localhost:5000/auth/refresh \
 
 ## Current Persistence Reality
 
-- Persistent: auth (`User`, `RefreshToken`) via Prisma + MongoDB
-- In-memory only: ideas, comments, experiments, outcomes, reflections
-
-Backend restart clears in-memory domain data.
+- Persistent via Prisma + MongoDB:
+  - auth (`User`, `RefreshToken`)
+  - ideas, comments, experiments, outcomes, reflections
+- In-memory only: synthesized insights
 
 ## Common Issues
 

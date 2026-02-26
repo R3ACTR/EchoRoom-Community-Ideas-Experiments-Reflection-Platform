@@ -13,12 +13,12 @@ The backend is no longer a minimal scaffold. It currently includes:
 
 ## Important Data Behavior
 
-Storage is currently hybrid:
+Storage is persisted in MongoDB via Prisma for:
 
-- Persistent in MongoDB (via Prisma): auth users and refresh tokens
-- In-memory only: ideas, comments, experiments, outcomes, reflections
+- auth users and refresh tokens
+- ideas, comments, experiments, outcomes, reflections
 
-On restart, in-memory data is reset.
+Only synthesized insights remain in-memory.
 
 ## Tech Stack
 
@@ -91,6 +91,5 @@ backend/
 
 ## Known Gaps
 
-- Domain resources are not yet persisted via Prisma
 - Auth/permissions middleware is not consistently enforced across domain routes
 - Insights route files exist but are not mounted in the active server

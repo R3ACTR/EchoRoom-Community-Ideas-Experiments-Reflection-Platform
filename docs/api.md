@@ -420,9 +420,7 @@ Returns reflections for an outcome ID.
 
 ## Persistence Notes
 
-Current persistence is mixed:
+Current persistence:
 
-- Persistent: auth users and refresh tokens (MongoDB via Prisma)
-- Non-persistent: ideas, experiments, outcomes, reflections, comments (in-memory only)
-
-A backend restart clears all non-persistent domain data.
+- Persistent (MongoDB via Prisma): auth users, refresh tokens, ideas, experiments, outcomes, reflections, comments
+- In-memory only: synthesized insights used by the insights service
