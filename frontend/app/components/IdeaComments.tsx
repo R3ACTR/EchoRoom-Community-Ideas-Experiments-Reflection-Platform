@@ -7,14 +7,14 @@ import Button from "./ui/Button";
 import { MessageSquare, Send, User, Clock, ArrowUpDown } from "lucide-react";
 
 interface Comment {
-    id: number;
+    id: string;
     username: string;
     content: string;
     createdAt: string;
 }
 
 interface IdeaCommentsProps {
-    ideaId: number;
+    ideaId: string;
     onCountChange?: (count: number) => void;
 }
 

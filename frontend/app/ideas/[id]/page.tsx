@@ -25,7 +25,7 @@ import {
 import CopyIcon from "@/components/ui/copy-icon";
 
 interface Idea {
-  id: number;
+  id: string;
   title: string;
   description: string;
   status: string;
@@ -33,7 +33,7 @@ interface Idea {
 }
 
 interface LikeData {
-  [ideaId: number]: {
+  [ideaId: string]: {
     count: number;
     liked: boolean;
   };

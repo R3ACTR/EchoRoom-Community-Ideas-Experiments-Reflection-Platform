@@ -29,7 +29,7 @@ export default function NewOutcomePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          experimentId: Number(experimentId),
+          experimentId,
           result,
           notes,
         }),

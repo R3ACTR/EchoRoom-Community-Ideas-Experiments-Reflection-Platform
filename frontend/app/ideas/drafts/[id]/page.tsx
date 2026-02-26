@@ -15,7 +15,7 @@ const TITLE_LIMIT = 80;
 const DESC_LIMIT = 500;
 
 interface Idea {
-  id: number;
+  id: string;
   title: string;
   description: string;
   status: string;
@@ -24,7 +24,7 @@ interface Idea {
 export default function DraftDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const id = Number(params.id);
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -59,7 +59,7 @@ export default function DraftDetailPage() {
       }
     };
 
-    if (!isNaN(id)) {
+    if (id) {
       fetchDraft();
     }
   }, [id, router]);

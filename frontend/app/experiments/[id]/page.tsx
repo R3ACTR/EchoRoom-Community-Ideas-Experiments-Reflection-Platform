@@ -14,7 +14,7 @@ import ShareButton from "@/app/components/ShareButton";
 import { Lightbulb, Target, ShieldAlert, Play, CheckCircle, Link2, AlertTriangle } from "lucide-react";
 
 interface Experiment {
-  id: number;
+  id: string;
   title: string;
   description: string;
   hypothesis: string;
@@ -22,7 +22,7 @@ interface Experiment {
   falsifiability: string;
   status: "planned" | "in-progress" | "completed";
   progress: number;
-  linkedIdeaId?: number | null; 
+  linkedIdeaId?: string | null; 
 }
 
 export default function ExperimentDetailPage() {

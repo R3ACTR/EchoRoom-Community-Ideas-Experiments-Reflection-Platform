@@ -14,7 +14,7 @@ import { CiBookmark } from "react-icons/ci";
 
 
 interface Idea {
-  id: number;
+  id: string;
   title: string;
   description: string;
   status: string;
@@ -22,7 +22,7 @@ interface Idea {
 }
 
 interface BookmarkData {
-  [ideaId: number]: boolean;
+  [ideaId: string]: boolean;
 }
 
 export default function BookmarksPage() {
@@ -69,7 +69,7 @@ export default function BookmarksPage() {
   }, [allIdeas, bookmarks]);
 
   // Toggle bookmark (remove from bookmarks)
-  const handleRemoveBookmark = useCallback((ideaId: number) => {
+  const handleRemoveBookmark = useCallback((ideaId: string) => {
     const newBookmarks = { ...bookmarks };
     delete newBookmarks[ideaId];
     setBookmarks(newBookmarks);

@@ -10,8 +10,8 @@ import { RetroGrid } from "@/components/ui/retro-grid";
 import SmoothSlider from "@/components/ui/SmoothSlider"; 
 
 interface Outcome {
-  id: number;
-  experimentId: number;
+  id: string;
+  experimentId: string;
   experimentTitle: string;
   result: string;
 }
@@ -48,7 +48,7 @@ export default function NewReflectionPage() {
   });
 
   const [form, setForm] = useState({
-    outcomeId: null as number | null,
+    outcomeId: null as string | null,
     context: {
       emotionBefore: 3,
       confidenceBefore: 5,
@@ -281,7 +281,7 @@ export default function NewReflectionPage() {
                 <select
                   className="w-full p-3 rounded-xl border bg-white dark:bg-zinc-950 focus:ring-2 focus:ring-blue-500 outline-none transition"
                   value={form.outcomeId ?? ""}
-                  onChange={(e) => setForm({ ...form, outcomeId: Number(e.target.value) })}
+                  onChange={(e) => setForm({ ...form, outcomeId: e.target.value || null })}
                 >
                   <option value="">Choose outcome</option>
                   {outcomes.map((o) => (
