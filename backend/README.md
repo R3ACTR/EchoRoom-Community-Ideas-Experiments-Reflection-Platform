@@ -33,16 +33,10 @@ npm run dev
 http://localhost:5000/health
 
 
-⚠️ **Do NOT edit or remove this**
 
 ---
 
-## 🟢 Step 4: ADD this BELOW it (very important)
 
-👉 Go to the **next empty line after the code block**  
-👉 Paste the following **exactly as it is**
-
-```md
 ### Health Check Endpoint
 
 **GET /health**
