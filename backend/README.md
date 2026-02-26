@@ -132,7 +132,11 @@ Optional count override:
  docs/add-common-errors-fixes
 npm run prisma:generate
 
+docs/backend-local-development-checklist
+docs/backend-local-development-checklist
+
  docs/add-env-vars-table
+ main
 ---
 
 ## Environment Variables
@@ -144,8 +148,24 @@ Make sure these are defined in your `.env` file before starting the server.
 |----------------|----------|-------------|
 | JWT_SECRET     | ✅       | Used to sign and verify JWT access tokens |
 | DATABASE_URL   | ✅       | MongoDB connection string used by Prisma |
+ docs/backend-local-development-checklist
+## Local Development Checklist
+
+Before running the backend, ensure:
+
+- MongoDB is running
+- `.env` file exists
+- `npm run prisma:generate` has been executed
+- `JWT_SECRET` is set
 
 SEED_IDEAS_COUNT=250 npm run seed:ideas
 ```
+ main
+main
+=======
+
+SEED_IDEAS_COUNT=250 npm run seed:ideas
+```
+ main
  main
  main
