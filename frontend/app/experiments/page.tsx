@@ -14,11 +14,10 @@ import TrashIcon from "@/components/ui/trash-icon";
 import ActionSearchBar from "@/components/ui/action-search-bar";
 import { 
   Link2, Check, Clock, Lightbulb, Target, ShieldAlert, Copy,
-  Search, Layers, Calendar, PlayCircle, CheckCircle2
+  Search, Layers, Calendar, PlayCircle, CheckCircle2, Activity
 } from "lucide-react";
 import { differenceInDays, parseISO, isAfter } from "date-fns";
 import BulbSvg from "@/components/ui/bulb-svg";
-import CopyIcon from "@/components/ui/copy-icon";
 
 interface Experiment {
   id: string;
@@ -166,7 +165,14 @@ export default function ExperimentsPage() {
     return "bg-slate-400";
   };
 
-  // --- Derived Data for Display ---
+  // --- Quick Stats ---
+  const stats = useMemo(() => {
+    return {
+      total: experiments.length,
+      inProgress: experiments.filter(e => e.status === "in-progress").length,
+      completed: experiments.filter(e => e.status === "completed").length,
+    };
+  }, [experiments]);
   const filteredExperiments = useMemo(() => {
     return experiments.filter((exp) => {
       const matchesSearch =
@@ -184,6 +190,7 @@ export default function ExperimentsPage() {
     });
   }, [experiments, searchQuery, statusFilter]);
 
+  // --- Action Search Bar Configurations ---
   const getFilterIcon = (status: string, isActive: boolean) => {
     const colorClass = isActive ? "text-blue-500" : "text-slate-400";
     switch (status) {
@@ -265,21 +272,57 @@ export default function ExperimentsPage() {
             Track and manage experiments to test ideas and learn quickly.
           </p>
 
-          {/* Action Search Bar */}
+          {/* Dashboard/Controls Area */}
           {experiments.length > 0 && (
-            <MagicCard
-              className="p-[1px] rounded-2xl mb-8 w-full relative z-50 shadow-sm"
-              gradientColor="rgba(59,130,246,0.6)"
-            >
-              <div className="w-full p-2 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-white/10">
-                <ActionSearchBar
-                  placeholder={`Search experiments... (Viewing: ${statusFilter})`}
-                  value={searchQuery}
-                  onChange={(e: any) => setSearchQuery(e.target.value)}
-                  actions={searchActions}
-                />
+            <div className="mb-8 space-y-6">
+              {/* Quick Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+                  <div>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Experiments</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <Activity className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                  </div>
+                </div>
+                
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => setStatusFilter("In Progress")}>
+                  <div>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">In Progress</p>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.inProgress}</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                    <PlayCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => setStatusFilter("Completed")}>
+                  <div>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Completed</p>
+                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{stats.completed}</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                </div>
               </div>
-            </MagicCard>
+
+              {/* Action Search Bar */}
+              <MagicCard
+                className="p-[1px] rounded-2xl w-full relative z-40 shadow-sm"
+                gradientColor="rgba(59,130,246,0.6)"
+              >
+                <div className="w-full p-2 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-white/10">
+                  <ActionSearchBar
+                    placeholder={`Search experiments... (Viewing: ${statusFilter})`}
+                    value={searchQuery}
+                    onChange={(e: any) => setSearchQuery(e.target.value)}
+                    actions={searchActions}
+                  />
+                </div>
+              </MagicCard>
+            </div>
           )}
         </div>
 
