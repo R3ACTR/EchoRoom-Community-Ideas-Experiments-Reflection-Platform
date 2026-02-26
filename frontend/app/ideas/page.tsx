@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import TrashIcon from "@/components/ui/trash-icon";
 import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Share2 } from "lucide-react";
 import { PageLayout } from "../community/PageLayout";
 import LoadingState from "../components/LoadingState";
 import ErrorState from "../components/ErrorState";
@@ -260,8 +260,20 @@ export default function IdeasPage() {
                     {idea.description}
                   </p>
 
-                  <div className="text-sm text-gray-400 mt-auto pt-4 border-t border-white/10">
-                    Status: {idea.status}
+                  <div className="flex justify-between items-center text-sm text-gray-400 mt-auto pt-4 border-t border-white/10">
+                    <span>Status: {idea.status}</span>
+                    <button
+                      onClick={() => {
+                        const shareText = `Check out this idea: ${idea.title}`;
+                        const shareUrl = `${window.location.origin}/ideas`;
+                        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+                      }}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg transition-colors cursor-pointer"
+                      title="Share on Twitter"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      <span className="hidden sm:inline font-medium text-xs">Share</span>
+                    </button>
                   </div>
                 </div>
               </MagicCard>
