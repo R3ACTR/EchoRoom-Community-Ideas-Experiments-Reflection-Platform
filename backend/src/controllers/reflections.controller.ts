@@ -3,6 +3,7 @@ import {
   createReflection,
   getAllReflections,
   getReflectionsByOutcomeId,
+  getReflectionById,
 } from "../services/reflections.service";
 
 export const postReflection = (
@@ -10,26 +11,38 @@ export const postReflection = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const { outcomeId, content } = req.body;
+  void (async () => {
+    try {
+      const {
+        outcomeId,
+        context,
+        breakdown,
+        growth,
+        result,
+        tags,
+        evidenceLink,
+        visibility,
+      } = req.body;
 
-    if (!outcomeId || !content) {
-      res.status(400).json({
-        success: false,
-        message: "outcomeId and content are required",
+      const reflection = await createReflection({
+        outcomeId: String(outcomeId),
+        context,
+        breakdown,
+        growth,
+        result,
+        tags,
+        evidenceLink,
+        visibility,
       });
-      return;
+
+      res.status(201).json({
+        success: true,
+        data: reflection,
+      });
+    } catch (error) {
+      next(error);
     }
-
-    const reflection = createReflection(Number(outcomeId), String(content));
-
-    res.status(201).json({
-      success: true,
-      data: reflection,
-    });
-  } catch (error) {
-    next(error);
-  }
+  })();
 };
 
 export const getReflections = (
@@ -37,17 +50,19 @@ export const getReflections = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const reflections = getAllReflections();
+  void (async () => {
+    try {
+      const reflections = await getAllReflections();
 
-    res.json({
-      success: true,
-      count: reflections.length,
-      data: reflections,
-    });
-  } catch (error) {
-    next(error);
-  }
+      res.json({
+        success: true,
+        count: reflections.length,
+        data: reflections,
+      });
+    } catch (error) {
+      next(error);
+    }
+  })();
 };
 
 export const getReflectionsByOutcome = (
@@ -55,24 +70,45 @@ export const getReflectionsByOutcome = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const outcomeId = Number(req.params.outcomeId);
+  void (async () => {
+    try {
+      const { outcomeId } = req.params;
+      const reflections = await getReflectionsByOutcomeId(outcomeId);
 
-    if (Number.isNaN(outcomeId)) {
-      res.status(400).json({
-        success: false,
-        message: "Invalid outcomeId",
+      res.json({
+        success: true,
+        data: reflections,
       });
-      return;
+    } catch (error) {
+      next(error);
     }
+  })();
+};
 
-    const reflections = getReflectionsByOutcomeId(outcomeId);
+export const getReflectionByIdController = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  void (async () => {
+    try {
+      const { id } = req.params;
+      const reflection = await getReflectionById(id);
 
-    res.json({
-      success: true,
-      data: reflections,
-    });
-  } catch (error) {
-    next(error);
-  }
+      if (!reflection) {
+        res.status(404).json({
+          success: false,
+          message: "Reflection not found",
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: reflection,
+      });
+    } catch (error) {
+      next(error);
+    }
+  })();
 };

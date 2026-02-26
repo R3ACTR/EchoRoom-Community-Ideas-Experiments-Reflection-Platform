@@ -16,6 +16,9 @@ import {
   validateDate,
   isFormValid,
   getFirstError,
+  normalizeIdeaStatus,
+  getIdeaStatusLabel,
+  isIdeaStatus,
   TITLE_MIN_LENGTH,
   TITLE_MAX_LENGTH,
   DESCRIPTION_MAX_LENGTH,
@@ -28,6 +31,26 @@ import {
   MIN_REFLECTION_LENGTH,
   MAX_REFLECTION_LENGTH,
 } from "./validation";
+
+describe("idea status helpers", () => {
+  it("normalizes UI and backend status values", () => {
+    expect(normalizeIdeaStatus("New")).toBe("proposed");
+    expect(normalizeIdeaStatus("in_progress")).toBe("experiment");
+    expect(normalizeIdeaStatus("reflection")).toBe("reflection");
+  });
+
+  it("validates status values", () => {
+    expect(isIdeaStatus("implemented")).toBe(true);
+    expect(isIdeaStatus("discarded")).toBe(true);
+    expect(isIdeaStatus("unknown")).toBe(false);
+  });
+
+  it("returns user-facing labels for canonical statuses", () => {
+    expect(getIdeaStatusLabel("proposed")).toBe("New");
+    expect(getIdeaStatusLabel("outcome")).toBe("In Progress");
+    expect(getIdeaStatusLabel("discarded")).toBe("Discarded");
+  });
+});
 
 describe("isValidString", () => {
   it("returns true for valid strings", () => {

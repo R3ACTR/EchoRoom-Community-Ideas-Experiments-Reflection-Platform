@@ -1,98 +1,69 @@
-# EchoRoom – Project Roadmap
+# EchoRoom Roadmap
 
-This roadmap outlines the planned development phases for EchoRoom.
-It serves as a guiding plan for contributors during OSQ and beyond.
+This roadmap reflects the current codebase state as of February 2026.
 
----
+## Phase 1: Core Backend and Frontend Foundations
 
-## 🚧 Phase 1: Foundation (MVP)
+Status: Mostly complete
 
-🎯 Goal: Establish the core idea-experiment-reflection loop
+- [x] Frontend pages for ideas, experiments, outcomes, reflections
+- [x] Express backend with route groups for core resources
+- [x] Idea lifecycle state transitions
+- [x] Basic health endpoint and local dev setup
+- [x] Initial tests for selected services
 
-### Frontend
-- [ ] Idea submission page
-- [ ] Experiment creation UI
-- [ ] Basic timeline view
+## Phase 2: Authentication and Access Control
 
-### Backend
-- [ ] Idea CRUD APIs
-- [ ] Experiment CRUD APIs
-- [ ] Simple state transitions
+Status: In progress
 
-### Documentation
-- [ ] Setup guide
-- [ ] Core workflow explanation
+- [x] User registration and login endpoints
+- [x] JWT access token and refresh token flow
+- [x] Password hashing and token persistence with Prisma
+- [ ] Enforce authentication on write endpoints across all domain routes
+- [ ] Enforce role/permission checks consistently
+- [ ] Connect frontend auth screens to backend auth API
 
----
+## Phase 3: Persistence Unification
 
-## 🔄 Phase 2: Outcomes & Reflection
+Status: In progress
 
-🎯 Goal: Capture learning from experiments
+- [x] Prisma + MongoDB integration started
+- [x] Prisma schema includes core models
+- [ ] Move ideas to persistent storage
+- [ ] Move experiments to persistent storage
+- [ ] Move outcomes to persistent storage
+- [ ] Move reflections to persistent storage
+- [ ] Move comments to persistent storage
+- [ ] Remove in-memory-only runtime stores
 
-### Features
-- [ ] Outcome recording
-- [ ] Reflection notes
-- [ ] Status indicators (success / failure / mixed)
+## Phase 4: Insights and Graph Features
 
-### UI/UX
-- [ ] Clear state visualization
-- [ ] Readable reflection layouts
+Status: Planned
 
-### Docs
-- [ ] Reflection templates
-- [ ] Example experiments
+- [ ] Mount insights routes in active server
+- [ ] Persist synthesized insight data
+- [ ] Connect graph output to frontend visualizations
+- [ ] Add quality tests for graph and suggestion outputs
 
----
+## Phase 5: Reliability and Contributor Experience
 
-## 🛡️ Phase 3: Community & Moderation
+Status: Planned
 
-🎯 Goal: Make EchoRoom safe and scalable
+- [ ] Normalize API response shapes across all routes
+- [ ] Improve backend error handling consistency
+- [ ] Expand integration and contract testing
+- [ ] Harden setup docs and environment config handling
+- [ ] Add CI checks for backend and frontend
 
-### Backend
-- [ ] Permissions & roles
-- [ ] Moderation flags
-- [ ] Content validation
+## Contribution Focus Right Now
 
-### Frontend
-- [ ] Reporting UI
-- [ ] Moderation views
+Highest-value contribution areas:
 
-### Documentation
-- [ ] Community guidelines
-- [ ] Moderation rules
+1. Persistence migration from in-memory services to Prisma-backed repositories
+2. Auth and permission middleware rollout across domain write routes
+3. Frontend and backend auth integration (replace local demo auth)
+4. API documentation updates alongside behavior changes
 
----
+## Updating This Roadmap
 
-## 📊 Phase 4: Insights & Polish (Optional)
-
-🎯 Goal: Improve understanding and usability
-
-- [ ] Filters & tags
-- [ ] Search functionality
-- [ ] Accessibility improvements
-- [ ] Performance optimizations
-
----
-
-## 🧭 Contribution Guidance
-
-- Beginners should start with Phase 1 issues
-- Intermediate contributors can take Phase 2
-- Advanced contributors can explore Phase 3+
-- Documentation is valuable in all phases
-
----
-
-## 🔄 Roadmap Updates
-
-This roadmap is:
-- Flexible
-- Community-driven
-- Updated as the project evolves
-
----
-
-## 🌟 Final Note
-
-EchoRoom is about **learning through action**.
-Clarity, kindness, and reflection matter more than feature count 🚀
+When backend or frontend behavior changes, update this file in the same PR so roadmap status stays accurate.

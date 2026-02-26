@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")
+  url      = "mongodb://localhost:27017/echoroom?authSource=admin"
 }
 
 model User {
@@ -17,6 +17,7 @@ model User {
   updatedAt    DateTime @updatedAt
   
   refreshTokens RefreshToken[]
+  likes         Like[]
 }
 
 model RefreshToken {
@@ -39,32 +40,91 @@ model Idea {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String
-  status      String // Using String for now as per SETUP.md it is likely just a field
+  status      String
+  complexity  IdeaComplexity @default(MEDIUM)
+  version     Int      @default(1)
+  comments    Comment[]
+  experiments Experiment[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  authorId    String @db.ObjectId
-  // author    User   @relation... omitted for simplicity unless required by code
-  // experiments...
+  authorId    String? @db.ObjectId
+  likes       Like[]
+}
+
+enum IdeaComplexity {
+  LOW
+  MEDIUM
+  HIGH
 }
 
 model Experiment {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String
+  hypothesis  String
+  successMetric String
+  falsifiability String
   status      String
+  endDate     DateTime?
+  linkedIdeaId String? @db.ObjectId
+  linkedIdea   Idea?   @relation(fields: [linkedIdeaId], references: [id])
+  outcomeResult String?
+  outcomes    Outcome[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
 model Outcome {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String
-  createdAt   DateTime @default(now())
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  experimentId  String   @db.ObjectId
+  experiment    Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  result        String
+  notes         String
+
+  impactLevel   String?   // LOW | MODERATE | STRONG | BREAKTHROUGH
+  wasExpected   Boolean?  // true / false
+  momentum      String?   // RISING | STABLE | DROPPING
+
+  reflections   Reflection[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Reflection {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  outcomeId String   @db.ObjectId
+  outcome   Outcome  @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+  context   Json
+  breakdown Json
+  growth    Json
+  result    Json
+  tags      String[]
+  evidenceLink String
+  visibility String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  ideaId    String   @db.ObjectId
+  idea      Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  userId    String
+  username  String
   content   String
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Like {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  ideaId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  idea      Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, ideaId])
 }

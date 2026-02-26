@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageLayout } from "../../community/PageLayout";
-import  Button  from "@/app/components/ui/Button";
+import Button from "@/app/components/ui/Button";
 import { RetroGrid } from "@/components/ui/retro-grid";
 import { MagicCard } from "@/components/ui/magic-card";
 
@@ -17,6 +17,7 @@ export default function CreateIdeaPage() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [complexity, setComplexity] = useState("MEDIUM");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,13 +35,13 @@ export default function CreateIdeaPage() {
       setError(null);
 
       const endpoint = publish ? "/ideas" : "/ideas/drafts";
-      
+
       const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ title, description })
+        body: JSON.stringify({ title, description, complexity })
       });
 
       const data = await res.json();
@@ -81,11 +82,11 @@ export default function CreateIdeaPage() {
         {/* Back button — lift-off blue style like your home button */}
         <div className="mb-6">
           <Button
-  onClick={() => router.push("/ideas")}
-  className="primary"
->
-  ← Back to Ideas
-</Button>
+            onClick={() => router.push("/ideas")}
+            className="primary"
+          >
+            ← Back to Ideas
+          </Button>
 
         </div>
 
@@ -98,8 +99,8 @@ export default function CreateIdeaPage() {
         </p>
 
         <MagicCard
-  gradientColor="rgba(99,102,241,0.8)"
-  className="
+          gradientColor="rgba(99,102,241,0.8)"
+          className="
     p-8
     rounded-3xl
     bg-white/75 dark:bg-zinc-900/70
@@ -107,7 +108,7 @@ export default function CreateIdeaPage() {
     border border-gray-200 dark:border-white/10
     shadow-xl
   "
->
+        >
 
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -139,8 +140,9 @@ export default function CreateIdeaPage() {
                 onChange={(e) => setTitle(e.target.value)}
               />
 
-              <div className="text-xs text-right mt-1 text-gray-500">
-                {title.length}/{TITLE_LIMIT}
+              <div className="flex justify-between text-xs mt-1 text-gray-500">
+                <span>{title.trim() === "" ? 0 : title.trim().split(/\s+/).length} words</span>
+                <span>{title.length}/{TITLE_LIMIT} chars</span>
               </div>
             </div>
 
@@ -165,33 +167,63 @@ export default function CreateIdeaPage() {
                 onChange={(e) => setDescription(e.target.value)}
               />
 
-              <div className="text-xs text-right mt-1 text-gray-500">
-                {description.length}/{DESC_LIMIT}
+              <div className="flex justify-between text-xs mt-1 text-gray-500">
+                <span>{description.trim() === "" ? 0 : description.trim().split(/\s+/).length} words</span>
+                <span>{description.length}/{DESC_LIMIT} chars</span>
               </div>
             </div>
 
-{/* Submit — same lift-off style */}
+            {/* Complexity */}
+            <div>
+              <label className="block text-sm font-medium mb-3 text-gray-800 dark:text-gray-200">
+                Complexity
+              </label>
+              <div className="flex gap-4">
+                {["LOW", "MEDIUM", "HIGH"].map((level) => (
+                  <label key={level} className="flex-1 cursor-pointer group">
+                    <input
+                      type="radio"
+                      name="complexity"
+                      value={level}
+                      checked={complexity === level}
+                      onChange={(e) => setComplexity(e.target.value)}
+                      className="sr-only"
+                    />
+                    <div className={`
+                      p-3 rounded-xl text-center border transition-all duration-200
+                      ${complexity === level
+                        ? "bg-blue-600 border-blue-600 text-white shadow-lg scale-105"
+                        : "bg-white dark:bg-zinc-950 border-gray-300 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:border-blue-500"}
+                    `}>
+                      <span className="text-xs font-bold">{level}</span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Submit — same lift-off style */}
             <div className="flex gap-4">
               <Button
-  type="button"
-  variant="primary"
-  onClick={handleSaveDraft}
-  disabled={loading}
-  className="flex-1 rounded-full px-6 py-3 text-base font-normal tracking-tight"
->
-  {loading ? "Saving..." : "Save as Draft"}
-</Button>
+                type="button"
+                variant="primary"
+                onClick={handleSaveDraft}
+                disabled={loading}
+                className="flex-1 rounded-full px-6 py-3 text-base font-normal tracking-tight"
+              >
+                {loading ? "Saving..." : "Save as Draft"}
+              </Button>
 
 
               <Button
-  type="button"
-  variant="primary"
-  onClick={handlePublish}
-  disabled={loading}
-  className="flex-1 rounded-full px-6 py-3 text-base font-normal tracking-tight"
->
-  {loading ? "Publishing..." : "+ Publish Idea"}
-</Button>
+                type="button"
+                variant="primary"
+                onClick={handlePublish}
+                disabled={loading}
+                className="flex-1 rounded-full px-6 py-3 text-base font-normal tracking-tight"
+              >
+                {loading ? "Publishing..." : "+ Publish Idea"}
+              </Button>
 
             </div>
 

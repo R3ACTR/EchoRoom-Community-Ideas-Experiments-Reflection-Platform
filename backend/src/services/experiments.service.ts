@@ -1,6 +1,9 @@
-// backend/src/services/experiments.service.ts
+import prisma from "../lib/prisma";
+import { Experiment as PrismaExperiment } from "@prisma/client";
 import { hasOutcomeForExperiment } from "./outcomes.service";
+
 export type ExperimentStatus = "planned" | "in-progress" | "completed";
+
 export const EXPERIMENT_PROGRESS_BY_STATUS: Record<ExperimentStatus, number> = {
   planned: 0,
   "in-progress": 50,
@@ -8,18 +11,32 @@ export const EXPERIMENT_PROGRESS_BY_STATUS: Record<ExperimentStatus, number> = {
 };
 
 export interface Experiment {
-  id: number;
+  id: string;
   title: string;
   description: string;
+  hypothesis: string;
+  successMetric: string;
+  falsifiability: string;
   status: ExperimentStatus;
-  linkedIdeaId?: number | null; 
+  endDate: string;
+  linkedIdeaId?: string | null;
   outcomeResult?: "Success" | "Failed" | null;
   createdAt: Date;
 }
 
-// in-memory storage
-let experiments: Experiment[] = [];
-let nextId = 1;
+const toExperiment = (experiment: PrismaExperiment): Experiment => ({
+  id: experiment.id,
+  title: experiment.title,
+  description: experiment.description,
+  hypothesis: experiment.hypothesis,
+  successMetric: experiment.successMetric,
+  falsifiability: experiment.falsifiability,
+  status: experiment.status as ExperimentStatus,
+  endDate: experiment.endDate?.toISOString() ?? "",
+  linkedIdeaId: experiment.linkedIdeaId ?? null,
+  outcomeResult: (experiment.outcomeResult as "Success" | "Failed" | null) ?? null,
+  createdAt: experiment.createdAt,
+});
 
 export const isExperimentStatus = (value: unknown): value is ExperimentStatus => {
   return (
@@ -35,84 +52,84 @@ export const getProgressForExperimentStatus = (
   return EXPERIMENT_PROGRESS_BY_STATUS[status];
 };
 
+export const getAllExperiments = async (): Promise<Experiment[]> => {
+  const experiments = await prisma.experiment.findMany({
+    orderBy: { createdAt: "desc" },
+  });
 
-// Get all experiments
-export const getAllExperiments = (): Experiment[] => {
-  return experiments;
+  return experiments.map(toExperiment);
 };
 
-
-// Get experiment by ID
-export const getExperimentById = (id: number): Experiment | null => {
-  const experiment = experiments.find(e => e.id === id);
-  return experiment || null;
+export const getExperimentById = async (id: string): Promise<Experiment | null> => {
+  const experiment = await prisma.experiment.findUnique({ where: { id } });
+  return experiment ? toExperiment(experiment) : null;
 };
 
-
-// Create experiment
-export const createExperiment = (
+export const createExperiment = async (
   title: string,
   description: string,
+  hypothesis: string,
+  successMetric: string,
+  falsifiability: string,
   status: ExperimentStatus,
-  linkedIdeaId?: number
-): Experiment => {
+  endDate: string,
+  linkedIdeaId?: string
+): Promise<Experiment> => {
+  const experiment = await prisma.experiment.create({
+    data: {
+      title,
+      description,
+      hypothesis,
+      successMetric,
+      falsifiability,
+      status,
+      endDate: new Date(endDate),
+      linkedIdeaId: linkedIdeaId ?? null,
+    },
+  });
 
-  const newExperiment: Experiment = {
-    id: nextId++,
-    title,
-    description,
-    status,
-    linkedIdeaId: linkedIdeaId ?? null,
-    createdAt: new Date(),
-  };
-
-  experiments.push(newExperiment);
-
-  return newExperiment;
+  return toExperiment(experiment);
 };
 
-
-// Update experiment
-export const updateExperiment = (
-  id: number,
+export const updateExperiment = async (
+  id: string,
   updates: Partial<Experiment>
-): Experiment | null => {
+): Promise<Experiment | null> => {
+  const experiment = await prisma.experiment.findUnique({ where: { id } });
+  if (!experiment) {
+    return null;
+  }
 
-  const experiment = experiments.find(e => e.id === id);
-
-  if (!experiment) return null;
-
-  if (updates.title !== undefined)
-    experiment.title = updates.title;
-
-  if (updates.description !== undefined)
-    experiment.description = updates.description;
-
-  if (updates.status !== undefined) {
-  // If already completed block any status change
-  if (experiment.status === "completed") {
+  if (updates.status !== undefined && experiment.status === "completed") {
     throw new Error("Completed experiments cannot be modified");
   }
-  experiment.status = updates.status;
-}
 
-  if (updates.outcomeResult !== undefined)
-  experiment.outcomeResult = updates.outcomeResult;
+  const updated = await prisma.experiment.update({
+    where: { id },
+    data: {
+      title: updates.title,
+      description: updates.description,
+      hypothesis: updates.hypothesis,
+      successMetric: updates.successMetric,
+      falsifiability: updates.falsifiability,
+      status: updates.status,
+      endDate: updates.endDate ? new Date(updates.endDate) : undefined,
+      linkedIdeaId:
+        updates.linkedIdeaId === undefined ? undefined : updates.linkedIdeaId ?? null,
+      outcomeResult:
+        updates.outcomeResult === undefined ? undefined : updates.outcomeResult ?? null,
+    },
+  });
 
-  return experiment;
+  return toExperiment(updated);
 };
 
-
-export const deleteExperiment = (id: number): boolean => {
-
-  const index = experiments.findIndex(e => e.id === id);
-  if (index === -1) return false;
-
-  // 🔒 Prevent deletion if outcome exists
-  if (hasOutcomeForExperiment(id)) {
+export const deleteExperiment = async (id: string): Promise<boolean> => {
+  const existsOutcome = await hasOutcomeForExperiment(id);
+  if (existsOutcome) {
     throw new Error("Cannot delete experiment with a recorded outcome.");
   }
 
-  experiments.splice(index, 1);
-  return true;
+  const deleted = await prisma.experiment.deleteMany({ where: { id } });
+  return deleted.count > 0;
 };

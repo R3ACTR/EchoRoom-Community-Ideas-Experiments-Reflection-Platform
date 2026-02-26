@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { ZodError } from "zod";
 import { ConflictError } from "../lib/conflictError";
 
 export const notFoundMiddleware = (
@@ -20,7 +21,18 @@ export const errorMiddleware = (
 ): void => {
   console.error(error);
 
-  // 🔹 Optimistic Lock Conflict
+  if (error instanceof ZodError) {
+    res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      errors: error.issues.map((issue) => ({
+        field: issue.path.join("."),
+        message: issue.message,
+      })),
+    });
+    return;
+  }
+
   if (error instanceof ConflictError) {
     res.status(409).json({
       success: false,
@@ -29,7 +41,6 @@ export const errorMiddleware = (
     return;
   }
 
-  // 🔹 Default error
   const message =
     error instanceof Error ? error.message : "Internal server error";
 
