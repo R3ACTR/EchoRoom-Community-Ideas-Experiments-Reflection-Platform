@@ -20,6 +20,21 @@ interface Idea {
   status: string;
 }
 
+const getStatusBadgeStyle = (status: string) => {
+  switch (status) {
+    case "New":
+      return "bg-green-500/10 text-green-400 border-green-500/20";
+    case "In Progress":
+      return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
+    case "Implemented":
+      return "bg-blue-500/10 text-blue-400 border-blue-500/20";
+    case "Discarded":
+      return "bg-red-500/10 text-red-400 border-red-500/20";
+    default:
+      return "bg-slate-500/10 text-slate-400 border-slate-500/20";
+  }
+};
+
 export default function IdeasPage() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
@@ -261,7 +276,9 @@ export default function IdeasPage() {
                   </p>
 
                   <div className="flex justify-between items-center text-sm text-gray-400 mt-auto pt-4 border-t border-white/10">
-                    <span>Status: {idea.status}</span>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeStyle(idea.status)}`}>
+                      {idea.status}
+                    </span>
                     <button
                       onClick={() => {
                         const shareText = `Check out this idea: ${idea.title}`;
