@@ -22,6 +22,7 @@ export interface Idea {
   version: number;
   createdAt: string;
   updatedAt: string;
+  authorId?: string | null;
 }
 
 const ideaStateMachine = new StateMachine<IdeaStatus>({
@@ -56,6 +57,7 @@ const toIdea = (idea: PrismaIdea): Idea => ({
   version: idea.version,
   createdAt: idea.createdAt.toISOString(),
   updatedAt: idea.updatedAt.toISOString(),
+  authorId: idea.authorId ?? null,
 });
 
 export const normalizeIdeaStatus = (status: unknown): IdeaStatus | null => {
@@ -83,9 +85,10 @@ export const getPublishedIdeas = async (): Promise<Idea[]> => {
   return ideas.map(toIdea);
 };
 
-export const getDraftIdeas = async (): Promise<Idea[]> => {
+export const getDraftIdeas = async (authorId?: string): Promise<Idea[]> => {
+  const where = authorId ? { status: "draft", authorId } : { status: "draft" };
   const ideas = await prisma.idea.findMany({
-    where: { status: "draft" },
+    where: where as any,
     orderBy: { createdAt: "desc" },
   });
 
@@ -111,7 +114,8 @@ export const getAvailableTransitions = async (
 export const createIdea = async (
   title: string,
   description: string,
-  complexity: IdeaComplexity = "MEDIUM"
+  complexity: IdeaComplexity = "MEDIUM",
+  authorId?: string
 ): Promise<Idea> => {
   const idea = await prisma.idea.create({
     data: {
@@ -119,6 +123,7 @@ export const createIdea = async (
       description,
       complexity,
       status: "proposed",
+      authorId,
     },
   });
 
@@ -128,7 +133,8 @@ export const createIdea = async (
 export const createDraft = async (
   title: string,
   description: string,
-  complexity: IdeaComplexity = "MEDIUM"
+  complexity: IdeaComplexity = "MEDIUM",
+  authorId?: string
 ): Promise<Idea> => {
   const idea = await prisma.idea.create({
     data: {
@@ -136,6 +142,7 @@ export const createDraft = async (
       description,
       complexity,
       status: "draft",
+      authorId,
     },
   });
 

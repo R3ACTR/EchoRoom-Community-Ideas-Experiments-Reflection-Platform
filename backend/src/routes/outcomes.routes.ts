@@ -1,19 +1,21 @@
 import { Router, Request, Response } from "express";
 import { validateRequest } from "../middleware/validate.middleware";
 import { outcomesSchemas } from "../validation/request.schemas";
+import { authenticate, AuthRequest } from "../middleware/auth";
 
 import {
   createOutcome,
   getAllOutcomes,
   getOutcomesByExperimentId,
   updateOutcome,
-  getOutcomeAnalytics
+  getOutcomeAnalytics,
+  getOutcomeById
 } from "../services/outcomes.service";
 
 const router = Router();
 
 // POST /outcomes
-router.post("/", validateRequest(outcomesSchemas.create), (req: Request, res: Response) => {
+router.post("/", authenticate, validateRequest(outcomesSchemas.create), (req: AuthRequest, res: Response) => {
   void (async () => {
     try {
       const { experimentId, result, notes, impactLevel, wasExpected } = req.body;
@@ -23,7 +25,8 @@ router.post("/", validateRequest(outcomesSchemas.create), (req: Request, res: Re
         result,
         notes,
         impactLevel,
-        wasExpected
+        wasExpected,
+        req.userId
       );
 
       return res.status(201).json({
@@ -100,11 +103,27 @@ router.get(
 );
 
 // PUT /outcomes/:id
-router.put("/:id", validateRequest(outcomesSchemas.update), (req: Request, res: Response) => {
+router.put("/:id", authenticate, validateRequest(outcomesSchemas.update), (req: AuthRequest, res: Response) => {
   void (async () => {
     try {
       const { id } = req.params;
       const { result, notes, impactLevel, wasExpected } = req.body;
+
+      const existing = await getOutcomeById(id);
+      if (!existing) {
+        return res.status(404).json({
+          success: false,
+          message: "Outcome not found",
+        });
+      }
+
+      if (
+        existing.authorId !== req.userId &&
+        req.user?.role !== "ADMIN" &&
+        req.user?.role !== "MODERATOR"
+      ) {
+        return res.status(403).json({ success: false, message: "Permission denied" });
+      }
 
       const updated = await updateOutcome(id, {
         result,
@@ -112,13 +131,6 @@ router.put("/:id", validateRequest(outcomesSchemas.update), (req: Request, res: 
         impactLevel,
         wasExpected,
       });
-
-      if (!updated) {
-        return res.status(404).json({
-          success: false,
-          message: "Outcome not found",
-        });
-      }
 
       return res.json({
         success: true,

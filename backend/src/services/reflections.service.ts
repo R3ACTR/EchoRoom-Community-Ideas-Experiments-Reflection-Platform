@@ -33,6 +33,7 @@ export interface Reflection {
   evidenceLink?: string;
   visibility: "private" | "public";
   createdAt: Date;
+  authorId?: string | null;
 }
 
 export interface ReflectionInput {
@@ -44,6 +45,7 @@ export interface ReflectionInput {
   tags?: string[];
   evidenceLink?: string;
   visibility: "private" | "public";
+  authorId?: string;
 }
 
 const toReflection = (reflection: PrismaReflection): Reflection => ({
@@ -57,6 +59,7 @@ const toReflection = (reflection: PrismaReflection): Reflection => ({
   evidenceLink: reflection.evidenceLink,
   visibility: reflection.visibility as "private" | "public",
   createdAt: reflection.createdAt,
+  authorId: reflection.authorId ?? null,
 });
 
 export const createReflection = async (
@@ -72,6 +75,7 @@ export const createReflection = async (
       tags: data.tags ?? [],
       evidenceLink: data.evidenceLink ?? "",
       visibility: data.visibility,
+      authorId: data.authorId,
     },
   });
 

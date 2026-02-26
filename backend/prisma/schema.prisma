@@ -72,6 +72,7 @@ model Experiment {
   outcomes    Outcome[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  authorId    String? @db.ObjectId
 }
 
 model Outcome {
@@ -90,6 +91,7 @@ model Outcome {
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  authorId      String? @db.ObjectId
 }
 
 model Reflection {
@@ -105,6 +107,7 @@ model Reflection {
   visibility String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  authorId  String? @db.ObjectId
 }
 
 model Comment {

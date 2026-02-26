@@ -13,6 +13,7 @@ export interface Outcome {
   wasExpected: boolean | null;
   momentum: string | null;
   createdAt: Date;
+  authorId?: string | null;
 }
 
 type OutcomeWithTitle = Outcome & {
@@ -32,6 +33,7 @@ const toOutcome = (outcome: {
   wasExpected: boolean | null;
   momentum: string | null;
   createdAt: Date;
+  authorId?: string | null;
 }): Outcome => ({
   id: outcome.id,
   experimentId: outcome.experimentId,
@@ -41,6 +43,7 @@ const toOutcome = (outcome: {
   wasExpected: outcome.wasExpected ?? null,
   momentum: outcome.momentum ?? null,
   createdAt: outcome.createdAt,
+  authorId: outcome.authorId ?? null,
 });
 
 /* =========================
@@ -77,7 +80,8 @@ export const createOutcome = async (
   result: string,
   notes?: string,
   impactLevel?: string,
-  wasExpected?: boolean
+  wasExpected?: boolean,
+  authorId?: string
 ): Promise<Outcome> => {
   const momentum = computeMomentum(result, impactLevel ?? null);
 
@@ -89,6 +93,7 @@ export const createOutcome = async (
       impactLevel: impactLevel ?? null,
       wasExpected: wasExpected ?? null,
       momentum,
+      authorId,
     },
     select: {
       id: true,
@@ -99,6 +104,7 @@ export const createOutcome = async (
       wasExpected: true,
       momentum: true,
       createdAt: true,
+      authorId: true,
     },
   });
 
@@ -120,6 +126,7 @@ export const getAllOutcomes = async (): Promise<OutcomeWithTitle[]> => {
       wasExpected: true,
       momentum: true,
       createdAt: true,
+      authorId: true,
       experiment: {
         select: { title: true },
       },
@@ -151,6 +158,7 @@ export const getOutcomesByExperimentId = async (
       wasExpected: true,
       momentum: true,
       createdAt: true,
+      authorId: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -206,6 +214,7 @@ export const updateOutcome = async (
       wasExpected: true,
       momentum: true,
       createdAt: true,
+      authorId: true,
     },
   });
 
@@ -223,6 +232,25 @@ export const hasOutcomeForExperiment = async (
   });
 
   return count > 0;
+};
+
+export const getOutcomeById = async (id: string): Promise<Outcome | null> => {
+  const outcome = await prisma.outcome.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      experimentId: true,
+      result: true,
+      notes: true,
+      impactLevel: true,
+      wasExpected: true,
+      momentum: true,
+      createdAt: true,
+      authorId: true,
+    },
+  });
+
+  return outcome ? toOutcome(outcome) : null;
 };
 
 /* =========================

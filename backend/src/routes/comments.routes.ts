@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { getCommentsHandler, postCommentHandler } from "../controllers/comments.controller";
-import { optionalAuth } from "../middleware/auth";
+import { authenticate } from "../middleware/auth";
 import { validateRequest } from "../middleware/validate.middleware";
 import { commentsSchemas } from "../validation/request.schemas";
 
@@ -10,7 +10,7 @@ const router = Router({ mergeParams: true });
 router.get("/", validateRequest(commentsSchemas.list), getCommentsHandler);
 router.post(
   "/",
-  optionalAuth,
+  authenticate,
   validateRequest(commentsSchemas.create),
   postCommentHandler
 );

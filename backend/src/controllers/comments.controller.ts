@@ -20,9 +20,8 @@ export const postCommentHandler = (req: AuthRequest, res: Response): void => {
             const { ideaId } = req.params;
             const { content } = req.body;
 
-            // Fallback for demo/mock login where no token is provided
-            const userId = req.user?.userId || "anonymous";
-            const username = req.user?.username || "Community Member";
+            const userId = req.userId!;
+            const username = req.user!.username;
 
             const comment = await addComment(
                 ideaId,

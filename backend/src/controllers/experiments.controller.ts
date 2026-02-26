@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { AuthRequest } from "../middleware/auth";
 import {
   createExperiment,
   deleteExperiment,
@@ -61,7 +62,7 @@ export const getExperiment = (
 };
 
 export const postExperiment = (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction
 ): void => {
@@ -86,7 +87,8 @@ export const postExperiment = (
         String(falsifiability),
         status,
         String(endDate),
-        linkedIdeaId ? String(linkedIdeaId) : undefined
+        linkedIdeaId ? String(linkedIdeaId) : undefined,
+        req.userId
       );
 
       res.status(201).json({
@@ -100,7 +102,7 @@ export const postExperiment = (
 };
 
 export const putExperiment = (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction
 ): void => {
@@ -108,8 +110,8 @@ export const putExperiment = (
     try {
       const { id } = req.params;
 
-      const updatedExperiment = await updateExperiment(id, req.body);
-      if (!updatedExperiment) {
+      const existing = await getExperimentById(id);
+      if (!existing) {
         res.status(404).json({
           success: false,
           message: "Experiment not found",
@@ -117,9 +119,19 @@ export const putExperiment = (
         return;
       }
 
+      if (
+        existing.authorId !== req.userId &&
+        req.user?.role !== "ADMIN" &&
+        req.user?.role !== "MODERATOR"
+      ) {
+        res.status(403).json({ success: false, message: "Permission denied" });
+        return;
+      }
+
+      const updatedExperiment = await updateExperiment(id, req.body);
       res.json({
         success: true,
-        data: toExperimentResponse(updatedExperiment),
+        data: toExperimentResponse(updatedExperiment!),
       });
     } catch (error) {
       next(error);
@@ -128,7 +140,7 @@ export const putExperiment = (
 };
 
 export const removeExperiment = (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   _next: NextFunction
 ): void => {
@@ -136,9 +148,8 @@ export const removeExperiment = (
     try {
       const { id } = req.params;
 
-      const deleted = await deleteExperiment(id);
-
-      if (!deleted) {
+      const existing = await getExperimentById(id);
+      if (!existing) {
         res.status(404).json({
           success: false,
           message: "Experiment not found",
@@ -146,6 +157,16 @@ export const removeExperiment = (
         return;
       }
 
+      if (
+        existing.authorId !== req.userId &&
+        req.user?.role !== "ADMIN" &&
+        req.user?.role !== "MODERATOR"
+      ) {
+        res.status(403).json({ success: false, message: "Permission denied" });
+        return;
+      }
+
+      const deleted = await deleteExperiment(id);
       res.json({
         success: true,
         message: "Experiment deleted",

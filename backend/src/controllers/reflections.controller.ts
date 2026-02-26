@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { AuthRequest } from "../middleware/auth";
 import {
   createReflection,
   getAllReflections,
@@ -7,7 +8,7 @@ import {
 } from "../services/reflections.service";
 
 export const postReflection = (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction
 ): void => {
@@ -33,6 +34,7 @@ export const postReflection = (
         tags,
         evidenceLink,
         visibility,
+        authorId: req.userId,
       });
 
       res.status(201).json({

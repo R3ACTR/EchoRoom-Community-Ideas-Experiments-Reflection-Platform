@@ -22,6 +22,7 @@ export interface Experiment {
   linkedIdeaId?: string | null;
   outcomeResult?: "Success" | "Failed" | null;
   createdAt: Date;
+  authorId?: string | null;
 }
 
 const toExperiment = (experiment: PrismaExperiment): Experiment => ({
@@ -36,6 +37,7 @@ const toExperiment = (experiment: PrismaExperiment): Experiment => ({
   linkedIdeaId: experiment.linkedIdeaId ?? null,
   outcomeResult: (experiment.outcomeResult as "Success" | "Failed" | null) ?? null,
   createdAt: experiment.createdAt,
+  authorId: experiment.authorId ?? null,
 });
 
 export const isExperimentStatus = (value: unknown): value is ExperimentStatus => {
@@ -73,7 +75,8 @@ export const createExperiment = async (
   falsifiability: string,
   status: ExperimentStatus,
   endDate: string,
-  linkedIdeaId?: string
+  linkedIdeaId?: string,
+  authorId?: string
 ): Promise<Experiment> => {
   const experiment = await prisma.experiment.create({
     data: {
@@ -85,6 +88,7 @@ export const createExperiment = async (
       status,
       endDate: new Date(endDate),
       linkedIdeaId: linkedIdeaId ?? null,
+      authorId,
     },
   });
 

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { validateRequest } from "../middleware/validate.middleware";
 import { reflectionsSchemas } from "../validation/request.schemas";
+import { authenticate } from "../middleware/auth";
 import {
   getReflections,
   getReflectionsByOutcome,
@@ -10,7 +11,7 @@ import {
 
 const router = Router();
 
-router.post("/", validateRequest(reflectionsSchemas.create), postReflection);
+router.post("/", authenticate, validateRequest(reflectionsSchemas.create), postReflection);
 router.get("/", getReflections);
 router.get(
   "/id/:id",
