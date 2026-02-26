@@ -69,6 +69,8 @@ export function GlobalNavbar({ showLearningFlow = true }: { showLearningFlow?: b
 
   const handleLogout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     setUser(null);
     setUserMenuOpen(false);
     window.location.href = "/";

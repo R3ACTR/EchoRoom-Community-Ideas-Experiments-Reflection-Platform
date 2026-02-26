@@ -7,10 +7,7 @@ import { MagicCard } from "@/components/ui/magic-card";
 import { Meteors } from "@/components/ui/meteors";
 import { ShinyButton } from "@/components/ui/shiny-button";
 import HomeIcon from "@/components/ui/home-icon";
-
-const demoAccounts = [
-  { role: "User", email: "user@echoroom.dev", password: "user123", name: "Demo User" },
-];
+import { apiFetch } from "@/app/lib/api";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -25,31 +22,29 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // 1. Check Demo Accounts
-      let account = demoAccounts.find(
-        (acc) => acc.email === email && acc.password === password
-      );
+      // Call backend login API
+      const result = await apiFetch<any>("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // 2. If not a demo, check localStorage (Signup data)
-      if (!account) {
-        const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
-        account = storedUsers.find(
-          (acc: any) => acc.email === email && acc.password === password
-        );
-      }
+      // result contains { user, tokens } as per auth.routes.ts
+      const { user, tokens } = result;
 
-      if (account) {
-        localStorage.setItem("user", JSON.stringify({ 
-            email: account.email, 
-            name: account.name, 
-            role: account.role 
-        }));
-        router.push("/ideas");
-      } else {
-        setError("Invalid email or password.");
-      }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
+      // Store tokens and user data
+      localStorage.setItem("token", tokens.accessToken);
+      localStorage.setItem("refreshToken", tokens.refreshToken);
+      localStorage.setItem("user", JSON.stringify({ 
+          email: user.email, 
+          name: user.username, 
+          role: user.role,
+          id: user.id
+      }));
+
+      router.push("/ideas");
+    } catch (err: any) {
+      setError(err.message || "Invalid email or password.");
     } finally {
       setLoading(false);
     }

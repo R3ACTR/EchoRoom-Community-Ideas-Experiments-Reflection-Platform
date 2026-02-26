@@ -53,15 +53,6 @@ export default function ProfilePage() {
     setSaving(true);
 
     try {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const userIndex = users.findIndex((u: UserData) => u.email === user?.email);
-
-      if (userIndex !== -1) {
-        users[userIndex].name = formData.name;
-        users[userIndex].email = formData.email;
-        localStorage.setItem("users", JSON.stringify(users));
-      }
-
       const updatedUser: UserData = { 
         ...user!, 
         name: formData.name, 

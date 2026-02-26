@@ -7,6 +7,7 @@ import { MagicCard } from "@/components/ui/magic-card";
 import { Meteors } from "@/components/ui/meteors";
 import { ShinyButton } from "@/components/ui/shiny-button";
 import HomeIcon from "@/components/ui/home-icon";
+import { apiFetch } from "@/app/lib/api";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -28,26 +29,33 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      // Call backend register API
+      const result = await apiFetch<any>("/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          username: name, // Using 'name' as 'username'
+          password,
+        }),
+      });
 
-      // Check if user exists
-      if (users.find((u: any) => u.email === email)) {
-        setError("An account with this email already exists.");
-        setLoading(false);
-        return;
-      }
-
-      // Add new user
-      const newUser = { name, email, password, role: "User" };
-      users.push(newUser);
+      // result contains { user, tokens } as per auth.routes.ts
+      const { user, tokens } = result;
       
-      localStorage.setItem("users", JSON.stringify(users));
-      // Log them in immediately
-      localStorage.setItem("user", JSON.stringify({ email, name, role: "User" }));
+      // Store token and user data
+      localStorage.setItem("token", tokens.accessToken);
+      localStorage.setItem("refreshToken", tokens.refreshToken);
+      localStorage.setItem("user", JSON.stringify({ 
+        email: user.email, 
+        name: user.username, 
+        role: user.role,
+        id: user.id
+      }));
 
       router.push("/ideas");
-    } catch (err) {
-      setError("An error occurred. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }

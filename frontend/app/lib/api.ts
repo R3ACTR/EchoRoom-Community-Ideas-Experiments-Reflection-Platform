@@ -16,7 +16,17 @@ interface ApiResponse<T> {
 
 export async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
   try {
-    const res = await fetch(`${API_BASE_URL}${endpoint}`, init);
+    // Automatically add Authorization header if token exists
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const headers = new Headers(init?.headers);
+    if (token && !headers.has("Authorization")) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...init,
+      headers,
+    });
 
     let data: ApiResponse<T>;
 
