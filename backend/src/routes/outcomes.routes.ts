@@ -16,8 +16,14 @@ const router = Router();
 router.post("/", validateRequest(outcomesSchemas.create), (req: Request, res: Response) => {
   void (async () => {
     try {
-      const { experimentId, result, notes } = req.body;
-      const outcome = await createOutcome(experimentId, result, notes);
+      const { experimentId, result, notes, impactLevel, wasExpected } = req.body;
+      const outcome = await createOutcome(
+        experimentId,
+        result,
+        notes,
+        impactLevel,
+        wasExpected
+      );
 
       return res.status(201).json({
         success: true,
