@@ -34,7 +34,7 @@ import CopyIcon from "@/components/ui/copy-icon";
 import BookmarkIcon from "@/components/ui/bookmark-icon";
 
 interface Idea {
-  id: number;
+  id: string;
   title: string;
   description: string;
   status: string;
@@ -42,14 +42,14 @@ interface Idea {
 }
 
 interface LikeData {
-  [ideaId: number]: {
+  [ideaId: string]: {
     count: number;
     liked: boolean;
   };
 }
 
 interface BookmarkData {
-  [ideaId: number]: boolean;
+  [ideaId: string]: boolean;
 }
 
 const STATUS_OPTIONS = [
@@ -100,11 +100,11 @@ export default function IdeasPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleteIdea, setDeleteIdea] = useState<Idea | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [likes, setLikes] = useState<LikeData>({});
-  const [likingId, setLikingId] = useState<number | null>(null);
+  const [likingId, setLikingId] = useState<string | null>(null);
   const [bookmarks, setBookmarks] = useState<BookmarkData>({});
-  const [bookmarkingId, setBookmarkingId] = useState<number | null>(null);
+  const [bookmarkingId, setBookmarkingId] = useState<string | null>(null);
 
   // Load likes from localStorage on mount
   useEffect(() => {
@@ -141,7 +141,7 @@ export default function IdeasPage() {
   }, []);
 
   // Toggle like for an idea
-  const handleLike = (ideaId: number) => {
+  const handleLike = (ideaId: string) => {
     setLikingId(ideaId);
     const currentLike = likes[ideaId] || { count: 0, liked: false };
     const newLikeState = !currentLike.liked;
@@ -159,7 +159,7 @@ export default function IdeasPage() {
   };
 
   // Toggle bookmark for an idea
-  const handleBookmark = (ideaId: number) => {
+  const handleBookmark = (ideaId: string) => {
     setBookmarkingId(ideaId);
     const currentBookmark = bookmarks[ideaId] || false;
     const newBookmarkState = !currentBookmark;
@@ -172,7 +172,7 @@ export default function IdeasPage() {
     setBookmarkingId(null);
   };
 
-  const handleCopyLink = (id: number) => {
+  const handleCopyLink = (id: string) => {
     const url = `${window.location.origin}/ideas/${id}`;
     navigator.clipboard.writeText(url);
     setCopiedId(id);

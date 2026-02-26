@@ -20,8 +20,8 @@ import {
 } from "lucide-react";
 
 interface ReflectionApiResponse {
-  id: number;
-  outcomeId: number;
+  id: string;
+  outcomeId: string;
   context: {
     emotionBefore: number;
     confidenceBefore: number;
@@ -45,14 +45,14 @@ interface ReflectionApiResponse {
 }
 
 interface OutcomeApiResponse {
-  id: number;
-  experimentId: number;
+  id: string;
+  experimentId: string;
   experimentTitle: string;
   result: string;
 }
 
 interface ReflectionViewModel {
-  id: number;
+  id: string;
   title: string;
   outcome: string;
   lesson: string;
@@ -60,6 +60,7 @@ interface ReflectionViewModel {
   emotionBefore: number;
   emotionAfter: number;
   date: string;
+  createdAt: string;
 }
 
 // Sleek aesthetic badge colors
@@ -94,7 +95,7 @@ const formatDate = (createdAt?: string): string => {
 
 const mapReflection = (
   reflection: ReflectionApiResponse,
-  outcomeMap: Map<number, OutcomeApiResponse>
+  outcomeMap: Map<string, OutcomeApiResponse>
 ): ReflectionViewModel => {
   const outcome = outcomeMap.get(reflection.outcomeId);
 
@@ -108,6 +109,7 @@ const mapReflection = (
     emotionBefore: reflection.context.emotionBefore,
     emotionAfter: reflection.result.emotionAfter,
     date: formatDate(reflection.createdAt),
+    createdAt: reflection.createdAt,
   };
 };
 
@@ -131,8 +133,13 @@ export default function ReflectionPage() {
         const outcomeMap = new Map(outcomesData.map((o) => [o.id, o]));
         const mapped = reflectionsData.map((r) => mapReflection(r, outcomeMap));
 
-        // Sort by newest first based on ID as fallback if date parsing is identical
-        setReflections(mapped.sort((a, b) => b.id - a.id));
+        setReflections(
+          mapped.sort((a, b) => {
+            const dateDiff =
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            return dateDiff !== 0 ? dateDiff : b.id.localeCompare(a.id);
+          })
+        );
       } catch (err: any) {
         setError(err.message || "Failed to fetch reflections");
       } finally {

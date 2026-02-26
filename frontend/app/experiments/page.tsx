@@ -17,7 +17,7 @@ import BulbSvg from "@/components/ui/bulb-svg";
 import CopyIcon from "@/components/ui/copy-icon";
 
 interface Experiment {
-  id: number;
+  id: string;
   title: string;
   description: string;
   hypothesis: string;
@@ -30,7 +30,7 @@ interface Experiment {
 }
 
 interface BackendExperiment {
-  id: number;
+  id: string;
   title: string;
   description: string;
   hypothesis: string;
@@ -94,9 +94,9 @@ export default function ExperimentsPage() {
   const [deleteExperiment, setDeleteExperiment] = useState<Experiment | null>(null);
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
-  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const handleCopyLink = (e: React.MouseEvent, id: number) => {
+  const handleCopyLink = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     const url = `${window.location.origin}/experiments/${id}`;
     navigator.clipboard.writeText(url);

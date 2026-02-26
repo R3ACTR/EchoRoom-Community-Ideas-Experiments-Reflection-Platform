@@ -24,8 +24,8 @@ import {
 import BulbSvg from "@/components/ui/bulb-svg";
 
 interface Reflection {
-  id: number;
-  outcomeId: number;
+  id: string;
+  outcomeId: string;
   context: {
     emotionBefore: number;
     confidenceBefore: number;

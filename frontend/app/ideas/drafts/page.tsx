@@ -13,7 +13,7 @@ import { MagicCard } from "@/components/ui/magic-card";
 import FileDescriptionIcon from "@/components/ui/file-description-icon";
 
 interface Idea {
-  id: number;
+  id: string;
   title: string;
   description: string;
   status: string;
