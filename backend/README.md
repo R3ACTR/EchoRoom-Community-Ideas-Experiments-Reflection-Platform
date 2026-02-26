@@ -132,6 +132,20 @@ Optional count override:
  docs/add-common-errors-fixes
 npm run prisma:generate
 
+ docs/add-env-vars-table
+---
+
+## Environment Variables
+
+The backend depends on the following environment variables to run correctly.
+Make sure these are defined in your `.env` file before starting the server.
+
+| Variable       | Required | Description |
+|----------------|----------|-------------|
+| JWT_SECRET     | ✅       | Used to sign and verify JWT access tokens |
+| DATABASE_URL   | ✅       | MongoDB connection string used by Prisma |
+
 SEED_IDEAS_COUNT=250 npm run seed:ideas
 ```
+ main
  main
