@@ -6,7 +6,8 @@ import {
   createOutcome,
   getAllOutcomes,
   getOutcomesByExperimentId,
-  updateOutcome
+  updateOutcome,
+  getOutcomeAnalytics
 } from "../services/outcomes.service";
 
 const router = Router();
@@ -55,6 +56,23 @@ router.get("/", (_req: Request, res: Response) => {
       });
     }
   })();
+});
+
+// GET /outcomes/analytics
+router.get("/analytics", async (_req: Request, res: Response) => {
+  try {
+    const analytics = await getOutcomeAnalytics();
+
+    return res.json({
+      success: true,
+      data: analytics,
+    });
+  } catch {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch analytics",
+    });
+  }
 });
 
 // GET /outcomes/:experimentId

@@ -224,3 +224,58 @@ export const hasOutcomeForExperiment = async (
 
   return count > 0;
 };
+
+/* =========================
+   Outcome Analytics
+========================= */
+
+export const getOutcomeAnalytics = async () => {
+  const outcomes = await prisma.outcome.findMany({
+    select: {
+      result: true,
+      impactLevel: true,
+      momentum: true,
+    },
+  });
+
+  const total = outcomes.length;
+
+  const resultCount = {
+    SUCCESS: 0,
+    FAILED: 0,
+    MIXED: 0,
+  };
+
+  const impactDistribution: Record<string, number> = {};
+  const momentumDistribution: Record<string, number> = {};
+
+  for (const o of outcomes) {
+    // Count result
+    if (o.result in resultCount) {
+      resultCount[o.result as keyof typeof resultCount]++;
+    }
+
+    // Count impact
+    if (o.impactLevel) {
+      impactDistribution[o.impactLevel] =
+        (impactDistribution[o.impactLevel] || 0) + 1;
+    }
+
+    // Count momentum
+    if (o.momentum) {
+      momentumDistribution[o.momentum] =
+        (momentumDistribution[o.momentum] || 0) + 1;
+    }
+  }
+
+  const successRate =
+    total > 0 ? ((resultCount.SUCCESS / total) * 100).toFixed(2) : "0";
+
+  return {
+    totalOutcomes: total,
+    results: resultCount,
+    successRate: `${successRate}%`,
+    impactDistribution,
+    momentumDistribution,
+  };
+};
