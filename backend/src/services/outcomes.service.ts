@@ -162,28 +162,39 @@ export const getOutcomesByExperimentId = async (
    Update Outcome Result
 ========================= */
 
-export const updateOutcomeResult = async (
+export const updateOutcome = async (
   id: string,
-  result: string
+  updates: {
+    result?: string;
+    notes?: string;
+    impactLevel?: string;
+    wasExpected?: boolean;
+  }
 ): Promise<Outcome | null> => {
   const existing = await prisma.outcome.findUnique({
     where: { id },
     select: {
+      result: true,
+      notes: true,
       impactLevel: true,
+      wasExpected: true,
     },
   });
 
   if (!existing) return null;
 
-  const newMomentum = computeMomentum(
-    result,
-    existing.impactLevel ?? null
-  );
+  const newResult = updates.result ?? existing.result;
+  const newImpact = updates.impactLevel ?? existing.impactLevel ?? null;
+
+  const newMomentum = computeMomentum(newResult, newImpact);
 
   const updated = await prisma.outcome.update({
     where: { id },
     data: {
-      result,
+      result: newResult,
+      notes: updates.notes ?? existing.notes,
+      impactLevel: newImpact,
+      wasExpected: updates.wasExpected ?? existing.wasExpected,
       momentum: newMomentum,
     },
     select: {
@@ -200,7 +211,6 @@ export const updateOutcomeResult = async (
 
   return toOutcome(updated);
 };
-
 /* =========================
    Check Existence
 ========================= */

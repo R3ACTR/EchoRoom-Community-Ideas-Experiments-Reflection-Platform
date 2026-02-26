@@ -158,11 +158,9 @@ export const outcomesSchemas = {
       experimentId: z.string().regex(/^[a-fA-F0-9]{24}$/),
       result: z.enum(["SUCCESS", "FAILED", "MIXED"]),
       notes: z.string().optional(),
-
       impactLevel: z
         .enum(["LOW", "MODERATE", "STRONG", "BREAKTHROUGH"])
         .optional(),
-
       wasExpected: z.boolean().optional(),
     }),
   },
@@ -171,11 +169,18 @@ export const outcomesSchemas = {
     params: objectIdParamSchema("experimentId"),
   },
 
-  updateResult: {
+  update: {
     params: objectIdParamSchema("id"),
-    body: z.object({
-      result: z.enum(["SUCCESS", "FAILED", "MIXED"]),
-    }),
+    body: z
+      .object({
+        result: z.enum(["SUCCESS", "FAILED", "MIXED"]).optional(),
+        notes: z.string().optional(),
+        impactLevel: z
+          .enum(["LOW", "MODERATE", "STRONG", "BREAKTHROUGH"])
+          .optional(),
+        wasExpected: z.boolean().optional(),
+      })
+      .strict(),
   },
 };
 
