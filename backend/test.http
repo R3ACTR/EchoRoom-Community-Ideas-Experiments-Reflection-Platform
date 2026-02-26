@@ -2,20 +2,33 @@
   POST http://localhost:5000/outcomes                                                                                                                                                                    
   Content-Type: application/json                                                                                                                                                                         
                                                                                                                                                                                                          
-  {                                                                                                                                                                                                      
-    "experimentId":1,                                                                                                                                                                                   
-    "result": "Success",                                                                                                                                                                                 
-    "notes": "Worked in test"                                                                                                                                                                            
-  }                                                                                                                                                                                                      
+  {
+    "experimentId":"64b7f1c9e8a1d2f3c4b5a6d7",
+    "result": "Success",
+    "notes": "Worked in test"
+  }
                                                                                                                                                                                                          
-  ### Create Reflection (match outcomeId from above response, usually 1)                                                                                                                                 
-  POST http://localhost:5000/reflections                                                                                                                                                                 
-  Content-Type: application/json                                                                                                                                                                         
-                                                                                                                                                                                                         
-  {                                                                                                                                                                                                      
-    "outcomeId": 1,                                                                                                                                                                                      
-    "content": "We learned to validate input early."                                                                                                                                                     
-  }                                                                                                                                                                                                      
+  ### Create Reflection (match outcomeId from above response)
+  POST http://localhost:5000/reflections
+  Content-Type: application/json
+
+  {
+    "outcomeId": "64b7f1c9e8a1d2f3c4b5a6d8",
+    "context": { "emotionBefore": 3, "confidenceBefore": 6 },
+    "breakdown": {
+      "whatHappened": "A/B test reached statistical significance.",
+      "whatWorked": "Early user segmentation improved signal quality.",
+      "whatDidntWork": "Sample ramp-up was slower than expected."
+    },
+    "growth": {
+      "lessonLearned": "Define guardrails before launching experiments.",
+      "nextAction": "Automate experiment cohort checks."
+    },
+    "result": { "emotionAfter": 4, "confidenceAfter": 8 },
+    "tags": ["experiment", "validation"],
+    "evidenceLink": "https://example.com/report",
+    "visibility": "public"
+  }
                                                                                                                                                                                                          
   Then verify with:                                                                                                                                                                                      
                                                                                                                                                                                                          

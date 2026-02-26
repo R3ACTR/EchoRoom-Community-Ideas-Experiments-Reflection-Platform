@@ -224,8 +224,9 @@ export default function DraftDetailPage() {
                 onChange={(e) => setTitle(e.target.value)}
               />
 
-              <div className="text-xs text-right mt-1 text-gray-500">
-                {title.length}/{TITLE_LIMIT}
+              <div className="flex justify-between text-xs mt-1 text-gray-500">
+                <span>{title.trim() === "" ? 0 : title.trim().split(/\s+/).length} words</span>
+                <span>{title.length}/{TITLE_LIMIT} chars</span>
               </div>
             </div>
 
@@ -249,8 +250,9 @@ export default function DraftDetailPage() {
                 onChange={(e) => setDescription(e.target.value)}
               />
 
-              <div className="text-xs text-right mt-1 text-gray-500">
-                {description.length}/{DESC_LIMIT}
+              <div className="flex justify-between text-xs mt-1 text-gray-500">
+                <span>{description.trim() === "" ? 0 : description.trim().split(/\s+/).length} words</span>
+                <span>{description.length}/{DESC_LIMIT} chars</span>
               </div>
             </div>
 

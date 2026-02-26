@@ -5,7 +5,6 @@ import {
   getProgressForExperimentStatus,
   getAllExperiments,
   getExperimentById,
-  isExperimentStatus,
   updateExperiment,
   Experiment,
 } from "../services/experiments.service";
@@ -20,15 +19,17 @@ export const getExperiments = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const experiments = getAllExperiments();
-    res.json({
-      success: true,
-      data: experiments.map(toExperimentResponse),
-    });
-  } catch (error) {
-    next(error);
-  }
+  void (async () => {
+    try {
+      const experiments = await getAllExperiments();
+      res.json({
+        success: true,
+        data: experiments.map(toExperimentResponse),
+      });
+    } catch (error) {
+      next(error);
+    }
+  })();
 };
 
 export const getExperiment = (
@@ -36,32 +37,27 @@ export const getExperiment = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const id = Number(req.params.id);
-    if (Number.isNaN(id)) {
-      res.status(400).json({
-        success: false,
-        message: "Invalid experiment ID",
-      });
-      return;
-    }
+  void (async () => {
+    try {
+      const { id } = req.params;
 
-    const experiment = getExperimentById(id);
-    if (!experiment) {
-      res.status(404).json({
-        success: false,
-        message: "Experiment not found",
-      });
-      return;
-    }
+      const experiment = await getExperimentById(id);
+      if (!experiment) {
+        res.status(404).json({
+          success: false,
+          message: "Experiment not found",
+        });
+        return;
+      }
 
-    res.json({
-      success: true,
-      data: toExperimentResponse(experiment),
-    });
-  } catch (error) {
-    next(error);
-  }
+      res.json({
+        success: true,
+        data: toExperimentResponse(experiment),
+      });
+    } catch (error) {
+      next(error);
+    }
+  })();
 };
 
 export const postExperiment = (
@@ -69,39 +65,38 @@ export const postExperiment = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const { title, description, status, linkedIdeaId } = req.body;
+  void (async () => {
+    try {
+      const {
+        title,
+        description,
+        hypothesis,
+        successMetric,
+        falsifiability,
+        status,
+        endDate,
+        linkedIdeaId,
+      } = req.body;
 
-    if (!title || !description || !status) {
-      res.status(400).json({
-        success: false,
-        message: "title, description, and status are required",
+      const experiment = await createExperiment(
+        String(title),
+        String(description),
+        String(hypothesis),
+        String(successMetric),
+        String(falsifiability),
+        status,
+        String(endDate),
+        linkedIdeaId ? String(linkedIdeaId) : undefined
+      );
+
+      res.status(201).json({
+        success: true,
+        data: toExperimentResponse(experiment),
       });
-      return;
+    } catch (error) {
+      next(error);
     }
-
-    if (!isExperimentStatus(status)) {
-      res.status(400).json({
-        success: false,
-        message: "status must be one of: planned, in-progress, completed",
-      });
-      return;
-    }
-
-    const experiment = createExperiment(
-      String(title),
-      String(description),
-      status,
-      linkedIdeaId ? Number(linkedIdeaId) : undefined
-    );
-
-    res.status(201).json({
-      success: true,
-      data: toExperimentResponse(experiment),
-    });
-  } catch (error) {
-    next(error);
-  }
+  })();
 };
 
 export const putExperiment = (
@@ -109,79 +104,57 @@ export const putExperiment = (
   res: Response,
   next: NextFunction
 ): void => {
-  try {
-    const id = Number(req.params.id);
-    if (Number.isNaN(id)) {
-      res.status(400).json({
-        success: false,
-        message: "Invalid experiment ID",
-      });
-      return;
-    }
+  void (async () => {
+    try {
+      const { id } = req.params;
 
-    if (
-      Object.prototype.hasOwnProperty.call(req.body, "status") &&
-      !isExperimentStatus(req.body.status)
-    ) {
-      res.status(400).json({
-        success: false,
-        message: "status must be one of: planned, in-progress, completed",
-      });
-      return;
-    }
+      const updatedExperiment = await updateExperiment(id, req.body);
+      if (!updatedExperiment) {
+        res.status(404).json({
+          success: false,
+          message: "Experiment not found",
+        });
+        return;
+      }
 
-    const updatedExperiment = updateExperiment(id, req.body);
-    if (!updatedExperiment) {
-      res.status(404).json({
-        success: false,
-        message: "Experiment not found",
+      res.json({
+        success: true,
+        data: toExperimentResponse(updatedExperiment),
       });
-      return;
+    } catch (error) {
+      next(error);
     }
-
-    res.json({
-      success: true,
-      data: toExperimentResponse(updatedExperiment),
-    });
-  } catch (error) {
-    next(error);
-  }
+  })();
 };
 
 export const removeExperiment = (
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
-  try {
-    const id = Number(req.params.id);
-    if (Number.isNaN(id)) {
+  void (async () => {
+    try {
+      const { id } = req.params;
+
+      const deleted = await deleteExperiment(id);
+
+      if (!deleted) {
+        res.status(404).json({
+          success: false,
+          message: "Experiment not found",
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: "Experiment deleted",
+      });
+    } catch (err: any) {
       res.status(400).json({
         success: false,
-        message: "Invalid experiment ID",
+        message: err.message,
       });
-      return;
     }
-
-    const deleted = deleteExperiment(id);
-
-    if (!deleted) {
-      res.status(404).json({
-        success: false,
-        message: "Experiment not found",
-      });
-      return;
-    }
-
-    res.json({
-      success: true,
-      message: "Experiment deleted",
-    });
-
-  } catch (err: any) {
-    res.status(400).json({
-      success: false,
-      message: err.message,
-    });
-  }
+  })();
 };

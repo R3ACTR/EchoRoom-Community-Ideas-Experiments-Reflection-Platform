@@ -1,207 +1,93 @@
 # Contributing to EchoRoom
 
-Thank you for your interest in contributing to EchoRoom 🎉
-EchoRoom is an Open Source Quest (OSQ) project focused on collaborative learning through ideas, experiments, outcomes, and reflection.
+Thanks for contributing to EchoRoom.
 
-We welcome contributors of all skill levels.
+This project is active and evolving. Please use current behavior as the source of truth, especially for backend persistence and auth.
 
----
+## Code of Conduct
 
-## 📜 Code of Conduct
+All contributors must follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
-By participating in this repository, you agree to abide by our
-[Code of Conduct](CODE_OF_CONDUCT.md).
+## Project Snapshot
 
-We are committed to maintaining a respectful, inclusive, and welcoming
-environment for everyone.
+EchoRoom includes:
 
----
-## 🧭 What Is EchoRoom?
+- Frontend in `frontend/` (Next.js)
+- Backend in `backend/` (Express + TypeScript)
+- Docs in `docs/`
 
-EchoRoom is a community platform where:
+Current backend data model is hybrid:
 
-Ideas are shared
+- Persistent: auth users and refresh tokens (Prisma + MongoDB)
+- In-memory: ideas, experiments, outcomes, reflections, comments
 
-Small experiments are conducted
+When changing behavior, update documentation in the same PR.
 
-Outcomes are recorded
+## Good Contribution Areas
 
-Learnings are reflected upon openly
+- Persistence migration to Prisma for domain entities
+- Auth and permission enforcement on write routes
+- API consistency and error handling improvements
+- Frontend integration with backend auth
+- Tests (service, route, and integration)
+- Documentation quality and accuracy
 
-The project is intentionally minimal at the start so contributors can help build it collaboratively during OSQ.
+## Contribution Workflow
 
----
+1. Find or open an issue.
+2. Confirm scope and assumptions in the issue thread.
+3. Create a focused branch from `main`.
+4. Implement changes with tests and docs.
+5. Open a PR with clear summary and validation notes.
 
-## 🧑‍💻 Who Can Contribute?
+## Development Setup
 
-You can contribute if you are interested in:
+- Frontend setup: `frontend/README.md`
+- Backend setup: `backend/SETUP.md`
+- API reference: `docs/api.md`
+- Architecture: `docs/architecture.md`
 
-Frontend development (UI / UX)
+## PR Expectations
 
-Backend development (APIs, logic)
+Each PR should include:
 
-Documentation & technical writing
+- Linked issue (if available)
+- What changed and why
+- How it was tested
+- Any API/schema/documentation changes
 
-Testing & validation
+For UI changes, include screenshots. For backend changes, include request/response examples when helpful.
 
-Design & user experience
+## Quality Bar
 
-You do not need to be an expert to contribute.
+Before opening a PR:
 
----
+- Run relevant tests locally
+- Build succeeds for changed package(s)
+- No unrelated refactors mixed into the same PR
+- Docs updated when behavior changes
 
-## 🗂️ Project Structure
+## Docs Requirement
 
-frontend/   → Next.js + Tailwind UI\
-backend/    → Node.js + Express backend\
-docs/       → Documentation
+If you change API behavior, route mounting, setup steps, or architecture assumptions, update:
 
----
+- `docs/api.md`
+- `docs/architecture.md`
+- `backend/README.md` and/or `backend/SETUP.md` (if setup/runtime changed)
+- `ROADMAP.md` if milestone status changes
 
-## 🚀 Contribution Workflow
+## Communication
 
-### Choosing an Issue
+If you are blocked:
 
-1. Go to the Issues tab
+- Comment in the issue with concrete blocker details
+- Propose one or two options to unblock
+- Ask maintainers for direction early
 
-2. Look for issues labeled:
+## Branch and Review Rules
 
-  - good first issue
+- Do not push directly to `main`
+- Keep commits focused and descriptive
+- Address review comments with code or clear rationale
 
-  - beginner-friendly
-
-  - frontend, backend, or documentation
-
-3. Read the issue description carefully
-
-4. Comment on the issue to indicate you want to work on it
-
----
-
-### Fork & Create a Branch
-Fork the repository and create a new branch from `main`:
-
-
----
-
-### Make Your Changes
-- Keep changes focused on the assigned issue
-- Follow the existing project structure and coding style
-- Write clear, readable, and maintainable code
-- Update or add documentation where applicable
-
----
-
-### Commit Message Guidelines
-
-Use clear and meaningful commit messages:
-
-
----
-
-### Open a Pull Request (PR)
-
-When ready:
-- Push your branch to your fork
-- Open a Pull Request to the `main` branch
-- Fill in the Pull Request template completely
-
-Your PR must include:
-- A link to the related issue
-- A clear explanation of the changes
-- Screenshots or recordings for UI changes
-- Documentation updates if relevant
-
----
-
-## 🔍 Review Process
-
-- Maintainers and mentors will review your PR
-- Feedback may be requested — this is part of the learning process
-- Please respond to review comments politely and promptly
-- Approved PRs will be merged by a maintainer
-
----
-
-## 🌱 Contribution Guidelines
-
-Please follow these principles:
-
-  - Keep changes small and focused
-
-  - Do not add large features without discussion
-
-  - Write clear commit messages
-
-  - Update documentation when necessary
-
-  - Be respectful in discussions and reviews
-
----
-
-## 🔒 Branch Protection Rules
-
-- The `main` branch is protected
-- ❌ No direct commits to `main`
-- ✅ All changes must go through Pull Requests
-- PR approval is required before merging
-
----
-
-## 🧪 Testing & Quality Standards
-
-Before submitting a PR:
-- Test your changes locally
-- Ensure builds and tests pass
-- Avoid breaking existing functionality
-- Follow basic security and performance best practices
-
----
-
-## 📚 Documentation Contributions
-
-Documentation is highly valued.
-
-You can contribute by:
-- Improving setup or installation guides
-- Writing API documentation
-- Adding architecture explanations
-- Fixing typos or unclear sections
-
-Documentation-only pull requests are welcome.
-
----
-
-## 🧠 Important Notes for OSQ Contributors
-
-  - Many features are intentionally incomplete
-
-  - Placeholder UI and APIs are expected
-
-  - Focus on learning, clarity, and collaboration
-
-  - Quality matters more than quantity
-
----
-## 🆘 Need Help?
-
-If you are unsure about anything:
-- Ask questions in the issue discussion
-- Reach out to mentors or maintainers
-- Contact the OSQ team at:
-
-**osq@r3actr.work**
-
-We encourage asking questions early.
-
----
-
-## 🏁 Final Notes
-
-- Quality and clarity matter more than quantity
-- Follow mentor guidance and project rules
-- Be respectful and collaborative — open source is a team effort
-
-Happy contributing 🚀  
-
-# EchoRoom | Open Source Quest
+Consistent, small, well-tested PRs are preferred over large multi-topic changes.

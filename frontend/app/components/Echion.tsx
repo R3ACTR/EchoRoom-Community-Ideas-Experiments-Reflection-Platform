@@ -7,7 +7,7 @@ import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
 import { AnimatedGradientText } from "@/components/ui/animated-gradient-text"
 import { useEffect } from "react";
-import EchionIcon from "@/components/ui/echion-icon";
+import SiriOrb from "@/components/ui/echion-icon";
 import UsersIcon from "@/components/ui/users-icon";
 export default function Echion() {
   const [open, setOpen] = useState(false);
@@ -178,7 +178,7 @@ const words = text.split(/\s+/);
     {/* Glow ring */}
     <div className="absolute inset-0 rounded-full bg-blue-500/30 blur-xl animate-pulse"></div>
 
-  <EchionIcon
+  <SiriOrb size="40px"
   className="relative w-14 h-14 drop-shadow-lg animate-breathe group-hover:scale-110 transition-transform duration-300"
 />
   </div>
