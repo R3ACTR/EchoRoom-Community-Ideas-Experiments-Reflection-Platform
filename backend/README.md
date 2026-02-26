@@ -51,6 +51,7 @@ curl http://localhost:5000/health
 - `npm run dev` - Run backend with ts-node
 - `npm run build` - Compile TypeScript to `dist/`
 - `npm run start` - Run compiled server
+- `npm run seed:ideas` - Optional: seed 180 demo ideas into MongoDB
 - `npm run prisma:generate` - Generate Prisma client
 - `npm run prisma:migrate` - Run Prisma migrate (dev)
 - `npm run prisma:push` - Push Prisma schema to DB
@@ -94,3 +95,14 @@ backend/
 - Domain resources are not yet persisted via Prisma
 - Auth/permissions middleware is not consistently enforced across domain routes
 - Insights route files exist but are not mounted in the active server
+
+## Seeding
+
+The backend does not seed idea data automatically at runtime.
+Use `npm run seed:ideas` only when you explicitly want local demo data.
+
+Optional count override:
+
+```bash
+SEED_IDEAS_COUNT=250 npm run seed:ideas
+```
