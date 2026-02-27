@@ -33,29 +33,37 @@ export default function NewOutcomePage() {
   }, [result, impactLevel]);
 
   const handleSubmit = async () => {
-    if (!experimentId) return;
+  if (!experimentId) return;
 
-    try {
-      setIsSubmitting(true);
-      await apiFetch("/outcomes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          experimentId,
-          result,
-          impactLevel,
-          wasExpected,
-          momentum,
-          notes,
-        }),
-      });
-      router.push("/outcomes");
-    } catch (err: any) {
-      alert(err.message || "Failed to create outcome");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  try {
+    setIsSubmitting(true);
+    await apiFetch("/outcomes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        experimentId,
+        result,
+        impactLevel,
+        wasExpected,
+        momentum,
+        notes,
+      }),
+    });
+    await apiFetch(`/experiments/${experimentId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        status: "completed",
+        progress: 100,
+      }),
+    });
+    router.push("/outcomes");
+  } catch (err: any) {
+    alert(err.message || "Failed to create outcome");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const RESULT_OPTIONS: { value: ResultType; label: string; icon: any; color: string; bg: string; border: string }[] = [
     { value: "SUCCESS", label: "Success", icon: <CheckCircle className="w-5 h-5" />, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/30 dark:border-emerald-500/30" },
