@@ -24,6 +24,11 @@ export const ideasSchemas = {
       title: nonEmptyString,
       description: nonEmptyString,
       complexity: ideaComplexitySchema.optional(),
+      goal: z.string().optional(),
+      category: z.string().optional(),
+      expectedImpact: z.enum(["Low", "Medium", "High", "Game-Changing"]).optional(),
+      effort: z.enum(["Low", "Medium", "High"]).optional(),
+      timeHorizon: z.enum(["Short-term", "Mid-term", "Long-term"]).optional(),
     }),
   },
   postDraft: {
@@ -31,6 +36,11 @@ export const ideasSchemas = {
       title: nonEmptyString,
       description: nonEmptyString,
       complexity: ideaComplexitySchema.optional(),
+      goal: z.string().optional(),
+      category: z.string().optional(),
+      expectedImpact: z.enum(["Low", "Medium", "High", "Game-Changing"]).optional(),
+      effort: z.enum(["Low", "Medium", "High"]).optional(),
+      timeHorizon: z.enum(["Short-term", "Mid-term", "Long-term"]).optional(),
     }),
   },
   putDraft: {
