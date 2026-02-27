@@ -254,7 +254,7 @@ export default function ExperimentsPage() {
               <Button
                 onClick={() => router.push("/outcomes")}
                 className="rounded-full px-6 py-2"
-                variant="secondary"
+                variant="primary"
               >
                 View Outcomes
               </Button>
