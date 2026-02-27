@@ -127,6 +127,7 @@ export default function CreateIdeaPage() {
               <input
                 type="text"
                 maxLength={TITLE_LIMIT}
+                autoFocus
                 className="
                   w-full p-3 rounded-xl
                   bg-white dark:bg-zinc-950
