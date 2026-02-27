@@ -22,8 +22,10 @@ app.use(express.json());
 
 // Health check endpoint used to verify backend availability
 // Returns 200 OK if server is healthy
-app.get("/health", (_req: Request, res: Response) => {
-res.status(200).json({ success: true, message: "Backend is running" });});
+app.get("/health", (req: Request, res: Response) => {
+  // Returns 200 OK if server is healthy
+  res.status(200).json({ success: true, message: "Backend is running" });
+});
 
 // Authentication routes (register, login, token refresh, logout)
 app.use("/auth", authRoutes);
