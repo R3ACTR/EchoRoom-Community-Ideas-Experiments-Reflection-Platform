@@ -22,6 +22,12 @@ export interface Idea {
   version: number;
   createdAt: string;
   updatedAt: string;
+
+  goal?: string;
+  category?: string;
+  expectedImpact?: string;
+  effort?: string;
+  timeHorizon?: string;
 }
 
 const ideaStateMachine = new StateMachine<IdeaStatus>({
@@ -56,6 +62,12 @@ const toIdea = (idea: PrismaIdea): Idea => ({
   version: idea.version,
   createdAt: idea.createdAt.toISOString(),
   updatedAt: idea.updatedAt.toISOString(),
+
+  goal: idea.goal ?? undefined,
+  category: idea.category ?? undefined,
+  expectedImpact: idea.expectedImpact ?? undefined,
+  effort: idea.effort ?? undefined,
+  timeHorizon: idea.timeHorizon ?? undefined,
 });
 
 export const normalizeIdeaStatus = (status: unknown): IdeaStatus | null => {

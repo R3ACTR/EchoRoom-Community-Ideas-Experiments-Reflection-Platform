@@ -49,6 +49,12 @@ model Idea {
   updatedAt   DateTime @updatedAt
   authorId    String? @db.ObjectId
   likes       Like[]
+
+  goal           String?
+  category       String?
+  expectedImpact String?
+  effort         String?
+  timeHorizon    String?
 }
 
 enum IdeaComplexity {
