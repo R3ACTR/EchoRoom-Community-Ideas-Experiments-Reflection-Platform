@@ -123,7 +123,12 @@ export const getAvailableTransitions = async (
 export const createIdea = async (
   title: string,
   description: string,
-  complexity: IdeaComplexity = "MEDIUM"
+  complexity: IdeaComplexity = "MEDIUM",
+  goal?: string,
+  category?: string,
+  expectedImpact?: string,
+  effort?: string,
+  timeHorizon?: string
 ): Promise<Idea> => {
   const idea = await prisma.idea.create({
     data: {
@@ -131,6 +136,11 @@ export const createIdea = async (
       description,
       complexity,
       status: "proposed",
+      goal,
+      category,
+      expectedImpact,
+      effort,
+      timeHorizon,
     },
   });
 
@@ -140,7 +150,12 @@ export const createIdea = async (
 export const createDraft = async (
   title: string,
   description: string,
-  complexity: IdeaComplexity = "MEDIUM"
+  complexity: IdeaComplexity = "MEDIUM",
+  goal?: string,
+  category?: string,
+  expectedImpact?: string,
+  effort?: string,
+  timeHorizon?: string
 ): Promise<Idea> => {
   const idea = await prisma.idea.create({
     data: {
@@ -148,6 +163,11 @@ export const createDraft = async (
       description,
       complexity,
       status: "draft",
+      goal,
+      category,
+      expectedImpact,
+      effort,
+      timeHorizon,
     },
   });
 
