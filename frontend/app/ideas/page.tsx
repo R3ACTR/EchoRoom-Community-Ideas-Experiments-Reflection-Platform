@@ -347,7 +347,7 @@ export default function IdeasPage() {
                 gradientColor="rgba(59,130,246,0.6)"
               >
                 <div
-                  className="relative h-[340px] p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 flex flex-col transition-colors hover:bg-white/20 dark:hover:bg-slate-900/60"
+                  className="relative h-[300px] p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 flex flex-col transition-colors hover:bg-white/20 dark:hover:bg-slate-900/60"
                   onClick={() => router.push(`/ideas/${idea.id}`)}
                 >
                   {/* Top Right Quick Actions */}
@@ -427,47 +427,55 @@ export default function IdeasPage() {
                         {idea.description}
                       </p>
                     </div>
-                    {(idea.goal || idea.expectedImpact || idea.effort || idea.timeHorizon) && (
-                      <div className="mt-auto flex flex-col gap-2 pt-2">
-                        {idea.goal && (
+                    <div className="mt-auto flex flex-col gap-2 pt-2 min-h-[72px]">
+
+                      {idea.goal ? (
                           <div className="text-xs text-slate-500 dark:text-slate-400 border-l-2 border-blue-500/40 pl-2 py-0.5">
-                            <span className="font-semibold text-slate-700 dark:text-slate-300">
-                              Goal:
-                            </span>
+      <span className="font-semibold text-slate-700 dark:text-slate-300">
+        Goal:
+      </span>
                             <span className="ml-1 line-clamp-1">{idea.goal}</span>
                           </div>
-                        )}
+                      ) : (
+                          <div className="text-xs text-slate-400/60  pl-2 py-0.5">
+                            No goal specified
+                          </div>
+                      )}
 
-                        {(idea.expectedImpact || idea.effort || idea.timeHorizon) && (
+                      {(idea.expectedImpact || idea.effort || idea.timeHorizon) ? (
                           <div className="flex flex-wrap gap-1.5">
                             {idea.expectedImpact && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
-                                Impact:
-                                <strong className="ml-1 text-slate-700 dark:text-slate-200">
-                                  {idea.expectedImpact}
-                               </strong>
-                              </span>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
+          Impact:
+          <strong className="ml-1 text-slate-700 dark:text-slate-200">
+            {idea.expectedImpact}
+          </strong>
+        </span>
                             )}
                             {idea.effort && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
-                                Effort:
-                                <strong className="ml-1 text-slate-700 dark:text-slate-200">
-                                  {idea.effort}
-                                </strong>
-                              </span>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
+          Effort:
+          <strong className="ml-1 text-slate-700 dark:text-slate-200">
+            {idea.effort}
+          </strong>
+        </span>
                             )}
                             {idea.timeHorizon && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
-                                Time:
-                                <strong className="ml-1 text-slate-700 dark:text-slate-200">
-                                  {idea.timeHorizon}
-                                </strong>
-                              </span>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
+          Time:
+          <strong className="ml-1 text-slate-700 dark:text-slate-200">
+            {idea.timeHorizon}
+          </strong>
+        </span>
                             )}
                           </div>
-                        )}
-                      </div>
-                    )}
+                      ) : (
+                          <div className="text-[10px] text-slate-400/60 ">
+                            No additional metadata
+                          </div>
+                      )}
+
+                    </div>
                   </div>
 
                   {/* ===== FOOTER ===== */}
