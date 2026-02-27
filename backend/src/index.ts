@@ -1,8 +1,7 @@
-// backend/src/index.ts
-import express, { Request, Response } from "express";
-import cors from "cors";
+import app from "./app";
 import "dotenv/config";
 
+ chore/explicit-health-status-200
 import ideasRoutes from "./routes/ideas.routes";
 import experimentsRoutes from "./routes/experiments.routes";
 import outcomesRoutes from "./routes/outcomes.routes";
@@ -47,9 +46,9 @@ app.use((err: any, _req: Request, res: Response, _next: any) => {
   console.error("Unhandled error:", err);
   res.status(500).json({ success: false, message: "Internal server error" });
 });
-
+ main
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(` Backend running on http://localhost:${PORT}`);
 });

@@ -7,10 +7,7 @@ import { MagicCard } from "@/components/ui/magic-card";
 import { Meteors } from "@/components/ui/meteors";
 import { ShinyButton } from "@/components/ui/shiny-button";
 import HomeIcon from "@/components/ui/home-icon";
-
-const demoAccounts = [
-  { role: "User", email: "user@echoroom.dev", password: "user123" },
-];
+import { apiFetch } from "@/app/lib/api";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -25,18 +22,29 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const account = demoAccounts.find(
-        (acc) => acc.email === email && acc.password === password
-      );
+      // Call backend login API
+      const result = await apiFetch<any>("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-      if (account) {
-        localStorage.setItem("user", JSON.stringify({ email, role: account.role }));
-        router.push("/ideas");
-      } else {
-        setError("Invalid email or password.");
-      }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
+      // result contains { user, tokens } as per auth.routes.ts
+      const { user, tokens } = result;
+
+      // Store tokens and user data
+      localStorage.setItem("token", tokens.accessToken);
+      localStorage.setItem("refreshToken", tokens.refreshToken);
+      localStorage.setItem("user", JSON.stringify({ 
+          email: user.email, 
+          name: user.username, 
+          role: user.role,
+          id: user.id
+      }));
+
+      router.push("/ideas");
+    } catch (err: any) {
+      setError(err.message || "Invalid email or password.");
     } finally {
       setLoading(false);
     }
@@ -44,26 +52,17 @@ export default function LoginPage() {
 
   return (
     <main className="relative min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center px-4 py-16">
-
-      {/* Meteors */}
       <Meteors number={18} className="opacity-40 dark:opacity-60" />
 
       <div className="relative z-10 w-full max-w-md">
-        <MagicCard
-          className="p-[1px] rounded-xl"
-          gradientColor="rgba(99,102,241,0.8)"
-        >
+        <MagicCard className="p-[1px] rounded-xl" gradientColor="rgba(99,102,241,0.8)">
           <div className="p-6 bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl rounded-xl shadow-xl">
-            <Link
-    href="/"
-    className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition"
-  >
-    <HomeIcon className="w-5 h-5" />
-  </Link> <br />
+            <Link href="/" className="inline-block mb-4 text-slate-500 hover:text-slate-900 dark:hover:text-white transition">
+              <HomeIcon className="w-6 h-6" />
+            </Link>
+            
             <div className="mb-5">
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                Sign In
-              </h1>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Sign In</h1>
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                 Access EchoRoom to explore ideas and experiments
               </p>
@@ -75,65 +74,49 @@ export default function LoginPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-slate-900 dark:text-white mb-1.5 block">
-                  Email
-                </label>
+                <label className="text-sm font-medium text-slate-900 dark:text-white mb-1.5 block">Email</label>
                 <input
                   type="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition"
+                  className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-slate-900 dark:text-white mb-1.5 block">
-                  Password
-                </label>
+                <label className="text-sm font-medium text-slate-900 dark:text-white mb-1.5 block">Password</label>
                 <input
                   type="password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition"
+                  className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition"
                 />
               </div>
 
-              <ShinyButton
-  type="submit"
-  disabled={loading}
-  className="w-full mt-2 text-white font-semibold"
->
-  {loading ? "Signing in..." : "Sign In"}
-</ShinyButton>
-
+              <ShinyButton type="submit" disabled={loading} className="w-full mt-2">
+                {loading ? "Signing in..." : "Sign In"}
+              </ShinyButton>
             </form>
 
-            <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-5">
-              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                Demo Account:
-              </p>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
+            <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-4">
+              <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-2">Demo Access</p>
+              <code className="text-xs bg-slate-100 dark:bg-slate-800 p-2 rounded block text-slate-600 dark:text-slate-300">
                 user@echoroom.dev / user123
-              </p>
+              </code>
             </div>
 
-            <p className="text-sm text-slate-600 dark:text-slate-400 text-center mt-5">
+            <p className="text-sm text-slate-600 dark:text-slate-400 text-center mt-6">
               Don’t have an account?{" "}
-              <Link
-                href="/community"
-                className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-              >
+              <Link href="/signup" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
                 Join the community
               </Link>
             </p>
-
-            
           </div>
         </MagicCard>
       </div>

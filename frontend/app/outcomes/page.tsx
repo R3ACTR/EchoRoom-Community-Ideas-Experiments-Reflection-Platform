@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { PageLayout } from "../community/PageLayout";
 import { apiFetch } from "../lib/api";
@@ -9,12 +9,21 @@ import ErrorState from "../components/ErrorState";
 import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
 import ChartLineIcon from "@/components/ui/chart-line-icon";
+import ActionSearchBar from "@/components/ui/action-search-bar";
+import { 
+  ArrowLeft, Calendar, CheckCircle, XCircle, MinusCircle, FileText, 
+  HelpCircle, PenTool, Zap, Activity, SignalLow, SignalHigh, 
+  TrendingUp, TrendingDown, Eye, Search, Layers 
+} from "lucide-react";
 
 interface Outcome {
-  id: number;
-  experimentId: number;
+  id: string;
+  experimentId: string;
   experimentTitle: string;
-  result: string;
+  result: "SUCCESS" | "FAILED" | "MIXED";
+  impactLevel: "LOW" | "MODERATE" | "STRONG" | "BREAKTHROUGH";
+  wasExpected: boolean;
+  momentum: "RISING" | "STABLE" | "DROPPING";
   notes: string;
   createdAt: string;
 }
@@ -23,12 +32,7 @@ const formatDate = (dateString?: string): string => {
   if (!dateString) return "Unknown date";
   const parsed = new Date(dateString);
   if (Number.isNaN(parsed.getTime())) return "Unknown date";
-
-  return parsed.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  return parsed.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 };
 
 export default function OutcomesPage() {
@@ -36,15 +40,18 @@ export default function OutcomesPage() {
   const [selectedOutcome, setSelectedOutcome] = useState<Outcome | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const router = useRouter();
+
+  // --- Filter & Sort State ---
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterResult, setFilterResult] = useState<string>("ALL");
+  const [filterImpact, setFilterImpact] = useState<string>("ALL");
+  const [sortBy, setSortBy] = useState<"NEWEST" | "OLDEST">("NEWEST");
 
   useEffect(() => {
     const fetchOutcomes = async () => {
       try {
         setLoading(true);
-        setError(null);
-
         const data = await apiFetch<Outcome[]>("/outcomes");
         setOutcomes(data);
       } catch (err: any) {
@@ -53,176 +60,358 @@ export default function OutcomesPage() {
         setLoading(false);
       }
     };
-
     fetchOutcomes();
   }, []);
 
-  const updateResult = async (result: "Success" | "Failed") => {
-    if (!selectedOutcome) return;
-
-    try {
-      await apiFetch(`/outcomes/${selectedOutcome.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ result }),
+  // --- Derived Data for Display ---
+  const filteredAndSortedOutcomes = useMemo(() => {
+    return outcomes
+      .filter((outcome) => {
+        const matchesSearch = outcome.experimentTitle.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              outcome.notes?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesResult = filterResult === "ALL" || outcome.result === filterResult;
+        const matchesImpact = filterImpact === "ALL" || outcome.impactLevel === filterImpact;
+        return matchesSearch && matchesResult && matchesImpact;
+      })
+      .sort((a, b) => {
+        const timeA = new Date(a.createdAt).getTime();
+        const timeB = new Date(b.createdAt).getTime();
+        return sortBy === "NEWEST" ? timeB - timeA : timeA - timeB;
       });
+  }, [outcomes, searchQuery, filterResult, filterImpact, sortBy]);
 
-      const refreshed = await apiFetch<Outcome[]>("/outcomes");
-      setOutcomes(refreshed);
-      setSelectedOutcome(null);
-    } catch {
-      alert("Failed to update outcome result");
+  // --- Quick Stats ---
+  const stats = useMemo(() => {
+    return {
+      total: outcomes.length,
+      successes: outcomes.filter(o => o.result === "SUCCESS").length,
+      breakthroughs: outcomes.filter(o => o.impactLevel === "BREAKTHROUGH").length,
+    };
+  }, [outcomes]);
+
+  const getResultStyle = (result?: string) => {
+    switch(result) {
+      case "SUCCESS": return { wrapper: "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400", icon: <CheckCircle className="w-3.5 h-3.5" />, label: "Success" };
+      case "FAILED": return { wrapper: "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400", icon: <XCircle className="w-3.5 h-3.5" />, label: "Failed" };
+      case "MIXED": return { wrapper: "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400", icon: <MinusCircle className="w-3.5 h-3.5" />, label: "Mixed" };
+      default: return { wrapper: "bg-slate-500/10 border-slate-500/20 text-slate-600 dark:text-slate-400", icon: <HelpCircle className="w-3.5 h-3.5" />, label: "Pending" };
     }
   };
 
-  if (loading) {
-    return (
-      <PageLayout>
-        <LoadingState message="Loading outcomes..." />
-      </PageLayout>
-    );
-  }
+  const getImpactStyle = (impact?: string) => {
+    switch(impact) {
+      case "BREAKTHROUGH": return { icon: <Zap className="w-3.5 h-3.5 text-purple-500" />, label: "Breakthrough" };
+      case "STRONG": return { icon: <SignalHigh className="w-3.5 h-3.5 text-blue-500" />, label: "Strong" };
+      case "MODERATE": return { icon: <Activity className="w-3.5 h-3.5 text-amber-500" />, label: "Moderate" };
+      case "LOW": return { icon: <SignalLow className="w-3.5 h-3.5 text-slate-400" />, label: "Low" };
+      default: return { icon: <Activity className="w-3.5 h-3.5 text-slate-400" />, label: "Unknown" };
+    }
+  };
 
-  if (error) {
-    return (
-      <PageLayout>
-        <ErrorState message={error} />
-      </PageLayout>
-    );
-  }
+  const getMomentumConfig = (momentum?: string) => {
+    switch(momentum) {
+      case "RISING": return { text: "Momentum: RISING", desc: "This experiment is moving in the right direction.", icon: <TrendingUp className="w-5 h-5 text-emerald-500" />, bg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400", border: "border-l-4 border-l-emerald-500" };
+      case "DROPPING": return { text: "Momentum: DROPPING", desc: "Results suggest a need to pivot or re-evaluate.", icon: <TrendingDown className="w-5 h-5 text-rose-500" />, bg: "bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-400", border: "border-l-4 border-l-rose-500" };
+      default: return { text: "Momentum: STABLE", desc: "Metrics are holding steady for now.", icon: <MinusCircle className="w-5 h-5 text-blue-500" />, bg: "bg-blue-500/10 border-blue-500/20 text-blue-700 dark:text-blue-400", border: "border-l-4 border-l-blue-500" };
+    }
+  };
+
+  // --- Action Search Bar Configurations ---
+  const getResultFilterIcon = (result: string, isActive: boolean) => {
+    const colorClass = isActive ? "text-blue-500" : "text-gray-400";
+    switch (result) {
+      case "ALL": return <Layers size={16} className={colorClass} />;
+      case "SUCCESS": return <CheckCircle size={16} className={isActive ? "text-blue-500" : "text-emerald-500"} />;
+      case "FAILED": return <XCircle size={16} className={isActive ? "text-blue-500" : "text-rose-500"} />;
+      case "MIXED": return <MinusCircle size={16} className={isActive ? "text-blue-500" : "text-amber-500"} />;
+      default: return <Layers size={16} className={colorClass} />;
+    }
+  };
+
+  const getImpactFilterIcon = (impact: string, isActive: boolean) => {
+    const colorClass = isActive ? "text-blue-500" : "text-gray-400";
+    switch (impact) {
+      case "ALL": return <Layers size={16} className={colorClass} />;
+      case "BREAKTHROUGH": return <Zap size={16} className={isActive ? "text-blue-500" : "text-purple-500"} />;
+      case "STRONG": return <SignalHigh size={16} className={isActive ? "text-blue-500" : "text-blue-400"} />;
+      case "MODERATE": return <Activity size={16} className={isActive ? "text-blue-500" : "text-amber-500"} />;
+      case "LOW": return <SignalLow size={16} className={isActive ? "text-blue-500" : "text-slate-400"} />;
+      default: return <Layers size={16} className={colorClass} />;
+    }
+  };
+
+  const searchActions = [
+    // Results
+    ...[
+      { value: "ALL", label: "All Results" },
+      { value: "SUCCESS", label: "Success" },
+      { value: "FAILED", label: "Failed" },
+      { value: "MIXED", label: "Mixed" },
+    ].map((opt) => ({
+      id: `res-${opt.value}`,
+      label: `Result: ${opt.label}`,
+      icon: getResultFilterIcon(opt.value, filterResult === opt.value),
+      onClick: () => setFilterResult(opt.value),
+    })),
+    // Impacts
+    ...[
+      { value: "ALL", label: "All Impacts" },
+      { value: "BREAKTHROUGH", label: "Breakthrough" },
+      { value: "STRONG", label: "Strong" },
+      { value: "MODERATE", label: "Moderate" },
+      { value: "LOW", label: "Low" },
+    ].map((opt) => ({
+      id: `imp-${opt.value}`,
+      label: `Impact: ${opt.label}`,
+      icon: getImpactFilterIcon(opt.value, filterImpact === opt.value),
+      onClick: () => setFilterImpact(opt.value),
+    })),
+    // Sorting
+    {
+      id: "sort-newest",
+      label: "Sort: Newest First",
+      icon: <Calendar size={16} className={sortBy === "NEWEST" ? "text-blue-500" : "text-slate-400"} />,
+      onClick: () => setSortBy("NEWEST"),
+    },
+    {
+      id: "sort-oldest",
+      label: "Sort: Oldest First",
+      icon: <Calendar size={16} className={sortBy === "OLDEST" ? "text-blue-500" : "text-slate-400"} />,
+      onClick: () => setSortBy("OLDEST"),
+    },
+  ];
+
+  if (loading) return <PageLayout><LoadingState message="Loading outcomes..." /></PageLayout>;
+  if (error) return <PageLayout><ErrorState message={error} /></PageLayout>;
 
   return (
     <PageLayout>
-      <div className="section">
-
-        <div className="mb-4">
-          <Button
-            onClick={() => router.push("/experiments")}
-            className="rounded-full px-6 py-2"
-          >
-            ← Back to Experiments
-          </Button>
+      <div className="section animate-in fade-in duration-500">
+        
+        {/* Header Area */}
+        <div className="mb-8">
+          <div className="mb-6">
+            <Button onClick={() => router.push("/experiments")} variant="secondary" className="text-sm">
+              ← Back to experiments
+            </Button>
+          </div>
+          <div className="flex items-center gap-3 mb-3">
+            <ChartLineIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">Outcomes</h1>
+          </div>
+          <p className="text-lg max-w-2xl text-slate-600 dark:text-slate-300">
+            Review experiment results, measure impact, and reflect on what moved the needle.
+          </p>
         </div>
 
-        <div className="flex items-center gap-3 mb-6">
-          <ChartLineIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-          <h1 className="text-4xl font-bold text-black dark:text-white">
-            Outcomes
-          </h1>
-        </div>
+        {/* Dashboard/Controls Area */}
+        {outcomes.length > 0 && (
+          <div className="mb-8 space-y-6">
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Experiments</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <Activity className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                </div>
+              </div>
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Successes</p>
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{stats.successes}</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+              </div>
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Breakthroughs</p>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.breakthroughs}</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+              </div>
+            </div>
 
-        {outcomes.length === 0 ? (
-          <div className="flex justify-center mt-14">
+            {/* Action Search Bar */}
             <MagicCard
-              className="p-[1px] rounded-xl w-full"
+              className="p-[1px] rounded-2xl w-full relative z-50 shadow-sm"
               gradientColor="rgba(59,130,246,0.6)"
             >
-              <div className="bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 px-10 py-12 text-center">
-                <ChartLineIcon className="w-10 h-10 mx-auto mb-5 text-blue-400 opacity-80" />
-                <h3 className="text-xl font-semibold text-black dark:text-white mb-2">
-                  No outcomes yet
-                </h3>
-                <p className="text-slate-500 text-sm mb-6">
-                  Complete experiments to generate outcomes.
-                </p>
+              <div className="w-full p-2 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-white/10">
+                <ActionSearchBar
+                  placeholder={`Search outcomes... (Result: ${
+                    filterResult === "ALL" ? "All" : filterResult
+                  } | Impact: ${
+                    filterImpact === "ALL" ? "All" : filterImpact
+                  })`}
+                  value={searchQuery}
+                  onChange={(e: any) => setSearchQuery(e.target.value)}
+                  actions={searchActions}
+                />
               </div>
             </MagicCard>
           </div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2">
-            {outcomes.map((outcome) => (
-              <div
-                key={outcome.id}
-                onClick={() => setSelectedOutcome(outcome)}
-                className="cursor-pointer hover:scale-[1.02] transition"
-              >
-                <MagicCard
-                  className="p-[1px] rounded-xl"
-                  gradientColor="rgba(59,130,246,0.6)"
-                >
-                  <div className="p-6 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10">
+        )}
 
-                    <h3 className="text-xl font-semibold text-black dark:text-white mb-2">
-                      
-                      {outcome.experimentTitle}
-                    
-                    </h3>
-
-                    <div className="text-sm text-gray-500 mb-3">
-                      {formatDate(outcome.createdAt)}
-                    </div>
-
-                    <div className="text-sm">
-                      Result:{" "}
-                      <span className="font-medium">
-                        {outcome.result}
-                      </span>
-                    </div>
-                   <div className="mt-3 text-sm text-gray-600 dark:text-gray-300">
-                    <span className="font-medium">Notes:</span>
-                    <p className="mt-1 whitespace-pre-wrap">
-                      {outcome.notes?.trim() ? outcome.notes : "No notes added."}
-                    </p>
-                  </div>
-
-                  </div>
-                </MagicCard>
+        {outcomes.length === 0 ? (
+          <div className="flex justify-center mt-14">
+            <MagicCard className="p-[1px] rounded-2xl w-full" gradientColor="rgba(59,130,246,0.5)">
+              <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-white/10 px-10 py-16 text-center">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 bg-blue-500/10 border border-blue-500/20">
+                  <ChartLineIcon className="w-8 h-8 text-blue-500" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">No outcomes yet</h3>
+                <p className="text-slate-500 text-sm max-w-sm mx-auto leading-relaxed mb-8">Complete experiments to log their results and start generating insights here.</p>
+                <Button onClick={() => router.push("/experiments")} className="rounded-xl px-8 py-3 shadow-lg shadow-blue-500/20">
+                  View Active Experiments
+                </Button>
               </div>
-            ))}
+            </MagicCard>
+          </div>
+        ) : filteredAndSortedOutcomes.length === 0 ? (
+           <div className="py-20 text-center">
+             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
+               <Search className="w-6 h-6 text-slate-400" />
+             </div>
+             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">No matches found</h3>
+             <p className="text-slate-500">Try adjusting your filters or search query.</p>
+             <button 
+               onClick={() => { setSearchQuery(""); setFilterResult("ALL"); setFilterImpact("ALL"); }}
+               className="mt-4 text-blue-500 hover:text-blue-600 font-medium text-sm"
+             >
+               Clear all filters
+             </button>
+           </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredAndSortedOutcomes.map((outcome) => {
+              const resStyle = getResultStyle(outcome.result);
+              const impStyle = getImpactStyle(outcome.impactLevel);
+              const momStyle = getMomentumConfig(outcome.momentum);
+              
+              return (
+                <div key={outcome.id} onClick={() => setSelectedOutcome(outcome)} className="cursor-pointer group h-full flex flex-col">
+                  <MagicCard className="p-[1px] rounded-2xl relative h-full flex-grow transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-blue-500/10" gradientColor="rgba(59,130,246,0.3)">
+                    <div className={`p-6 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-white/5 h-full flex flex-col overflow-hidden ${momStyle.border}`}>
+                      
+                      <div className="mb-4">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {outcome.experimentTitle}
+                        </h3>
+                      </div>
+
+                      {/* Badges Row */}
+                      <div className="flex flex-wrap items-center gap-2 mb-5">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${resStyle.wrapper}`}>
+                          {resStyle.icon} {resStyle.label}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          {impStyle.icon} {impStyle.label}
+                        </span>
+                      </div>
+
+                      {/* Notes Preview */}
+                      <div className="flex-grow mb-5">
+                        <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed">
+                          {outcome.notes?.trim() ? outcome.notes : <span className="italic opacity-60">No notes recorded.</span>}
+                        </p>
+                      </div>
+
+                      {/* Footer */}
+                      <div className="mt-auto pt-4 border-t border-slate-200/50 dark:border-white/5 flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
+                        <div className="flex items-center">
+                          <Calendar className="w-3.5 h-3.5 mr-1.5" />
+                          {formatDate(outcome.createdAt)}
+                        </div>
+                        <div className="flex items-center text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0 duration-300">
+                          View Details <ArrowLeft className="w-3.5 h-3.5 ml-1 rotate-180" />
+                        </div>
+                      </div>
+
+                    </div>
+                  </MagicCard>
+                </div>
+              );
+            })}
           </div>
         )}
 
-        {/* Modal */}
+        {/* ... Outcome Modal ... */}
         {selectedOutcome && (
-          <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
-            onClick={() => setSelectedOutcome(null)}
-          >
-            <div onClick={(e) => e.stopPropagation()}>
-              <MagicCard
-                className="p-[1px] rounded-2xl w-[400px]"
-                gradientColor="rgba(59,130,246,0.6)"
-              >
-                <div className="bg-white/10 dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl p-8 space-y-6">
-
-                  <h2 className="text-xl font-bold text-black dark:text-white">
-                  {selectedOutcome.experimentTitle}
-                </h2>
-                  {selectedOutcome.notes && (
-                    <div className="text-sm text-gray-600 dark:text-gray-300">
-                      <span className="font-medium">Notes:</span>
-                      <p className="mt-1 whitespace-pre-wrap">
-                        {selectedOutcome.notes}
-                      </p>
+          <div className="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 sm:p-6" onClick={() => setSelectedOutcome(null)}>
+            <div onClick={(e) => e.stopPropagation()} className="w-full max-w-2xl animate-in zoom-in-95 fade-in duration-200">
+              <MagicCard className="p-[1px] rounded-3xl w-full shadow-2xl" gradientColor="rgba(59,130,246,0.6)">
+                <div className="bg-white dark:bg-[#0B1120] rounded-3xl flex flex-col max-h-[90vh] overflow-hidden">
+                  
+                  {/* Momentum Banner (Top) */}
+                  <div className={`px-6 py-4 flex items-center gap-3 border-b border-white/10 ${getMomentumConfig(selectedOutcome.momentum).bg}`}>
+                    {getMomentumConfig(selectedOutcome.momentum).icon}
+                    <div>
+                      <h4 className="font-bold text-sm tracking-wide">{getMomentumConfig(selectedOutcome.momentum).text}</h4>
+                      <p className="text-xs opacity-80 mt-0.5">{getMomentumConfig(selectedOutcome.momentum).desc}</p>
                     </div>
-                  )}
-
-                  <div className="flex gap-4">
-                    <Button
-                      onClick={() => updateResult("Success")}
-                      className="w-full"
-                    >
-                      Mark Success
-                    </Button>
-
-                    <Button
-                      onClick={() => updateResult("Failed")}
-                      className="w-full"
-                    >
-                      Mark Failed
-                    </Button>
                   </div>
 
-                  <Button
-                    onClick={() =>
-                      router.push(
-                        `/reflection/new?outcomeId=${selectedOutcome.id}`
-                      )
-                    }
-                    className="w-full rounded-full"
-                  >
-                    + Write Reflection
-                  </Button>
+                  <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar">
+                    {/* Header */}
+                    <div className="flex justify-between items-start mb-6">
+                      <h2 className="text-2xl font-bold text-slate-900 dark:text-white pr-8 tracking-tight leading-tight">
+                        {selectedOutcome.experimentTitle}
+                      </h2>
+                      <button onClick={() => setSelectedOutcome(null)} className="p-2 -mr-2 -mt-2 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors absolute top-20 right-6 bg-white dark:bg-[#0B1120]">
+                        <XCircle className="w-6 h-6" />
+                      </button>
+                    </div>
+
+                    {/* Meta Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Result</p>
+                        <div className={`inline-flex items-center gap-1.5 font-semibold text-sm ${getResultStyle(selectedOutcome.result).wrapper.replace('border', '').replace('bg-', 'text-')}`}>
+                          {getResultStyle(selectedOutcome.result).icon} {getResultStyle(selectedOutcome.result).label}
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Impact</p>
+                        <div className="flex items-center gap-1.5 font-semibold text-sm text-slate-900 dark:text-white">
+                          {getImpactStyle(selectedOutcome.impactLevel).icon} {getImpactStyle(selectedOutcome.impactLevel).label}
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 col-span-2 md:col-span-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Expected?</p>
+                        <div className="flex items-center gap-1.5 font-semibold text-sm text-slate-900 dark:text-white">
+                          {selectedOutcome.wasExpected ? <CheckCircle className="w-4 h-4 text-emerald-500" /> : <Eye className="w-4 h-4 text-amber-500" />}
+                          {selectedOutcome.wasExpected ? "Yes, validated" : "No, surprising"}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Notes Area */}
+                    <div className="mb-2">
+                      <div className="flex items-center gap-2 mb-3 text-slate-900 dark:text-white">
+                        <FileText className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm font-bold tracking-wide">Analyst Notes</span>
+                      </div>
+                      <div className="bg-slate-50/50 dark:bg-slate-900/50 rounded-xl p-5 border border-slate-100 dark:border-slate-800">
+                        <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed text-sm">
+                          {selectedOutcome.notes?.trim() ? selectedOutcome.notes : <span className="italic text-slate-400">No notes were recorded for this outcome.</span>}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions Footer */}
+                  <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-900/20">
+                    <Button onClick={() => router.push(`/reflection/new?outcomeId=${selectedOutcome.id}`)} className="w-full rounded-xl py-3.5 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10 transition-all hover:scale-[1.01]">
+                      <PenTool className="w-4 h-4" /> Write Final Reflection
+                    </Button>
+                  </div>
 
                 </div>
               </MagicCard>

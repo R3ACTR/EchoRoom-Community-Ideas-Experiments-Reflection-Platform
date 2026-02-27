@@ -1,123 +1,136 @@
 import { Router, Request, Response } from "express";
+import { validateRequest } from "../middleware/validate.middleware";
+import { outcomesSchemas } from "../validation/request.schemas";
 
 import {
   createOutcome,
   getAllOutcomes,
   getOutcomesByExperimentId,
-  updateOutcomeResult
+  updateOutcome,
+  getOutcomeAnalytics
 } from "../services/outcomes.service";
 
 const router = Router();
 
-
 // POST /outcomes
-router.post("/", (req: Request, res: Response) => {
+router.post("/", validateRequest(outcomesSchemas.create), (req: Request, res: Response) => {
+  void (async () => {
+    try {
+      const { experimentId, result, notes, impactLevel, wasExpected } = req.body;
 
-  try {
+      const outcome = await createOutcome(
+        experimentId,
+        result,
+        notes,
+        impactLevel,
+        wasExpected
+      );
 
-    const { experimentId, result, notes } = req.body;
-
-    // 1. Validate required fields
-    if (!experimentId || !result) {
-      return res.status(400).json({
+      return res.status(201).json({
+        success: true,
+        data: outcome,
+      });
+    } catch {
+      res.status(500).json({
         success: false,
-        message: "experimentId and result are required",
+        message: "Failed to create outcome",
       });
     }
-
-    const outcome = createOutcome(
-      experimentId,
-      result,
-      notes
-    );
-
-    // 5. Return response
-    return res.status(201).json({
-      success: true,
-      data: outcome,
-    });
-
-  } catch {
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to create outcome",
-    });
-
-  }
-
+  })();
 });
-
 
 // GET /outcomes
 router.get("/", (_req: Request, res: Response) => {
-  const outcomes = getAllOutcomes();
-  return res.json({
-    success: true,
-    count: outcomes.length,
-    data: outcomes,
-  });
-
+  void (async () => {
+    try {
+      const outcomes = await getAllOutcomes();
+      return res.json({
+        success: true,
+        count: outcomes.length,
+        data: outcomes,
+      });
+    } catch {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch outcomes",
+      });
+    }
+  })();
 });
 
-
-// GET /outcomes/:experimentId
-router.get("/:experimentId", (req: Request, res: Response) => {
+// GET /outcomes/analytics
+router.get("/analytics", async (_req: Request, res: Response) => {
   try {
-    const experimentId = Number(req.params.experimentId);
-
-    if (!experimentId) {
-      return res.status(400).json({
-        success: false,
-        message: "Valid experimentId is required",
-      });
-    }
-
-  const outcomes = getOutcomesByExperimentId(experimentId);
-
-  res.json({
-    success: true,
-    data: outcomes,
-  });
-
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch outcomes",
-    });
-  }
-});
-router.put("/:id", (req: Request, res: Response) => {
-  try {
-    const id = Number(req.params.id);
-    const { result } = req.body;
-
-    if (!id || !result) {
-      return res.status(400).json({
-        success: false,
-        message: "id and result are required",
-      });
-    }
-
-    const updated = updateOutcomeResult(id, result);
-
-    if (!updated) {
-      return res.status(404).json({
-        success: false,
-        message: "Outcome not found",
-      });
-    }
+    const analytics = await getOutcomeAnalytics();
 
     return res.json({
       success: true,
-      data: updated,
+      data: analytics,
     });
-
   } catch {
     return res.status(500).json({
       success: false,
-      message: "Failed to update outcome",
+      message: "Failed to fetch analytics",
     });
   }
 });
+
+// GET /outcomes/:experimentId
+router.get(
+  "/:experimentId",
+  validateRequest(outcomesSchemas.listByExperiment),
+  (req: Request, res: Response) => {
+    void (async () => {
+      try {
+        const { experimentId } = req.params;
+        const outcomes = await getOutcomesByExperimentId(experimentId);
+
+        res.json({
+          success: true,
+          data: outcomes,
+        });
+      } catch {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to fetch outcomes",
+        });
+      }
+    })();
+  }
+);
+
+// PUT /outcomes/:id
+router.put("/:id", validateRequest(outcomesSchemas.update), (req: Request, res: Response) => {
+  void (async () => {
+    try {
+      const { id } = req.params;
+      const { result, notes, impactLevel, wasExpected } = req.body;
+
+      const updated = await updateOutcome(id, {
+        result,
+        notes,
+        impactLevel,
+        wasExpected,
+      });
+
+      if (!updated) {
+        return res.status(404).json({
+          success: false,
+          message: "Outcome not found",
+        });
+      }
+
+      return res.json({
+        success: true,
+        data: updated,
+      });
+    } catch {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to update outcome",
+      });
+    }
+  })();
+});
+
 export default router;

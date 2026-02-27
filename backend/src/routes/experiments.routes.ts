@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { validateRequest } from "../middleware/validate.middleware";
+import { experimentsSchemas } from "../validation/request.schemas";
 import {
   getExperiment,
   getExperiments,
@@ -10,9 +12,9 @@ import {
 const router = Router();
 
 router.get("/", getExperiments);
-router.get("/:id", getExperiment);
-router.post("/", postExperiment);
-router.put("/:id", putExperiment);
-router.delete("/:id", removeExperiment);
+router.get("/:id", validateRequest(experimentsSchemas.getById), getExperiment);
+router.post("/", validateRequest(experimentsSchemas.create), postExperiment);
+router.put("/:id", validateRequest(experimentsSchemas.update), putExperiment);
+router.delete("/:id", validateRequest(experimentsSchemas.remove), removeExperiment);
 
 export default router;
