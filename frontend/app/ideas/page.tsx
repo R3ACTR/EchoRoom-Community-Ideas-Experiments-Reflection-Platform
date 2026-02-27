@@ -40,7 +40,6 @@ interface Idea {
   description: string;
   status: string;
   complexity: "LOW" | "MEDIUM" | "HIGH";
-  // New Strategic Fields
   goal?: string;
   category?: string;
   expectedImpact?: string;
@@ -134,8 +133,6 @@ export default function IdeasPage() {
       }
     }
   }, []);
-
-  // Save changes to localStorage
   const saveLikes = useCallback((newLikes: LikeData) => {
     setLikes(newLikes);
     localStorage.setItem("echoroom_likes", JSON.stringify(newLikes));
@@ -198,7 +195,6 @@ export default function IdeasPage() {
     const normalizedStatus = normalizeIdeaStatus(idea.status);
     const query = searchQuery.toLowerCase();
     
-    // Search now intelligently checks category and goal too
     const matchesSearch =
       idea.title.toLowerCase().includes(query) ||
       idea.description.toLowerCase().includes(query) ||
@@ -350,11 +346,10 @@ export default function IdeasPage() {
                 className="p-[1px] rounded-xl relative group cursor-pointer"
                 gradientColor="rgba(59,130,246,0.6)"
               >
-                <div 
-                  className="relative p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 h-full flex flex-col transition-colors hover:bg-white/20 dark:hover:bg-slate-900/60"
+                <div
+                  className="relative h-[340px] p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 flex flex-col transition-colors hover:bg-white/20 dark:hover:bg-slate-900/60"
                   onClick={() => router.push(`/ideas/${idea.id}`)}
                 >
-
                   {/* Top Right Quick Actions */}
                   <div className="absolute top-4 right-4 flex items-center gap-1 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <button
@@ -382,11 +377,10 @@ export default function IdeasPage() {
                           ? "text-amber-500 hover:text-amber-600"
                           : "text-gray-400 hover:text-amber-500"
                       }`}
-                      title={(bookmarks[idea.id] ?? false) ? "Remove bookmark" : "Bookmark"}
                     >
-                      <BookmarkIcon 
-                        filled={(bookmarks[idea.id] ?? false)} 
-                        className="w-4 h-4" 
+                      <BookmarkIcon
+                        filled={(bookmarks[idea.id] ?? false)}
+                        className="w-4 h-4"
                       />
                     </button>
 
@@ -401,85 +395,105 @@ export default function IdeasPage() {
                     </button>
                   </div>
 
-                  {/* Title */}
-                  <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white pr-20 mb-2 line-clamp-2">
-                    {idea.title}
-                  </h3>
+                  {/* ===== MAIN CONTENT ZONE  ===== */}
+                  <div className="flex-1 flex flex-col overflow-hidden">
+                    {/* Top Content (Title, Badges, Desc) */}
+                    <div className="flex flex-col gap-3 pr-16 mb-2">
+                      <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white line-clamp-2">
+                        {idea.title}
+                      </h3>
 
-                  {/* Badges */}
-                  <div className="mb-3 flex flex-wrap gap-2">
-                    <span 
-                      className={`inline-flex items-center text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-semibold border ${
-                        idea.complexity === 'HIGH' 
-                          ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' 
-                          : idea.complexity === 'MEDIUM' 
-                          ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' 
-                          : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                      }`}
-                    >
-                      {idea.complexity}
-                    </span>
-                    {idea.category && (
-                      <span className="inline-flex items-center text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-semibold border bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20">
-                        {idea.category}
-                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        <span
+                          className={`inline-flex items-center text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-semibold border ${
+                            idea.complexity === "HIGH"
+                              ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                              : idea.complexity === "MEDIUM"
+                              ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                              : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                          }`}
+                        >
+                          {idea.complexity}
+                        </span>
+
+                        {idea.category && (
+                          <span className="inline-flex items-center text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-semibold border bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20">
+                            {idea.category}
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-slate-600 dark:text-slate-200 text-sm line-clamp-3">
+                        {idea.description}
+                      </p>
+                    </div>
+                    {(idea.goal || idea.expectedImpact || idea.effort || idea.timeHorizon) && (
+                      <div className="mt-auto flex flex-col gap-2 pt-2">
+                        {idea.goal && (
+                          <div className="text-xs text-slate-500 dark:text-slate-400 border-l-2 border-blue-500/40 pl-2 py-0.5">
+                            <span className="font-semibold text-slate-700 dark:text-slate-300">
+                              Goal:
+                            </span>
+                            <span className="ml-1 line-clamp-1">{idea.goal}</span>
+                          </div>
+                        )}
+
+                        {(idea.expectedImpact || idea.effort || idea.timeHorizon) && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {idea.expectedImpact && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
+                                Impact:
+                                <strong className="ml-1 text-slate-700 dark:text-slate-200">
+                                  {idea.expectedImpact}
+                               </strong>
+                              </span>
+                            )}
+                            {idea.effort && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
+                                Effort:
+                                <strong className="ml-1 text-slate-700 dark:text-slate-200">
+                                  {idea.effort}
+                                </strong>
+                              </span>
+                            )}
+                            {idea.timeHorizon && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
+                                Time:
+                                <strong className="ml-1 text-slate-700 dark:text-slate-200">
+                                  {idea.timeHorizon}
+                                </strong>
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
 
-                  {/* Main Description */}
-                  <p className="text-slate-600 dark:text-slate-200 text-sm mb-3 flex-grow line-clamp-3">
-                    {idea.description}
-                  </p>
+                  {/* ===== FOOTER ===== */}
+                  <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/10 flex items-center justify-between shrink-0">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-400">
+                      {idea.status}
+                    </span>
 
-                  {/* Goal Snippet (NEW) */}
-                  {idea.goal && (
-                    <div className="mb-4 text-xs text-slate-500 dark:text-slate-400 border-l-2 border-blue-500/40 pl-2 py-0.5">
-                      <span className="font-semibold text-slate-700 dark:text-slate-300">Goal:</span> <span className="line-clamp-1 inline">{idea.goal}</span>
-                    </div>
-                  )}
-
-                  <div className="flex-grow" />
-
-                  {/* Strategic Attributes Footer (NEW) */}
-                  {(idea.expectedImpact || idea.effort || idea.timeHorizon) && (
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                      {idea.expectedImpact && (
-                        <span className="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
-                          Impact: <strong className="ml-1 text-slate-700 dark:text-slate-200">{idea.expectedImpact}</strong>
-                        </span>
-                      )}
-                      {idea.effort && (
-                        <span className="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
-                          Effort: <strong className="ml-1 text-slate-700 dark:text-slate-200">{idea.effort}</strong>
-                        </span>
-                      )}
-                      {idea.timeHorizon && (
-                        <span className="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
-                          Time: <strong className="ml-1 text-slate-700 dark:text-slate-200">{idea.timeHorizon}</strong>
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Footer Stats & Status */}
-                  <div className="text-sm text-gray-400 mt-auto pt-4 border-t border-black/5 dark:border-white/10 flex items-center justify-between">
-                    <span className="font-medium text-slate-700 dark:text-slate-400">{idea.status}</span>
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleLike(idea.id); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLike(idea.id);
+                      }}
                       disabled={likingId === idea.id}
                       className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-all ${
-                        (likes[idea.id]?.liked ?? false)
+                        likes[idea.id]?.liked
                           ? "text-red-500 bg-red-500/10"
                           : "text-gray-400 hover:text-red-500 hover:bg-red-500/10"
                       }`}
-                      title={(likes[idea.id]?.liked ?? false) ? "Unlike" : "Like"}
                     >
-                      <HeartIcon 
-                        filled={(likes[idea.id]?.liked ?? false)} 
-                        className="w-4 h-4" 
+                      <HeartIcon
+                        filled={likes[idea.id]?.liked ?? false}
+                        className="w-4 h-4"
                       />
                       <span className="text-xs font-bold">
-                        {(likes[idea.id]?.count ?? 0)}
+                        {likes[idea.id]?.count ?? 0}
                       </span>
                     </button>
                   </div>
