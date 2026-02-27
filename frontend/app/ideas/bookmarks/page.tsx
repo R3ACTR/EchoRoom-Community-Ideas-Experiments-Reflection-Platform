@@ -12,13 +12,17 @@ import Button from "@/app/components/ui/Button";
 import { MagicCard } from "@/components/ui/magic-card";
 import { CiBookmark } from "react-icons/ci";
 
-
 interface Idea {
   id: string;
   title: string;
   description: string;
   status: string;
   complexity: "LOW" | "MEDIUM" | "HIGH";
+  goal?: string;
+  category?: string;
+  expectedImpact?: string;
+  effort?: string;
+  timeHorizon?: string;
 }
 
 interface BookmarkData {
@@ -33,7 +37,6 @@ export default function BookmarksPage() {
   const [bookmarks, setBookmarks] = useState<BookmarkData>({});
   const router = useRouter();
 
-  // Load bookmarks from localStorage
   useEffect(() => {
     const storedBookmarks = localStorage.getItem("echoroom_bookmarks");
     if (storedBookmarks) {
@@ -45,7 +48,6 @@ export default function BookmarksPage() {
     }
   }, []);
 
-  // Fetch all ideas to find bookmarked ones
   useEffect(() => {
     const fetchIdeas = async () => {
       try {
@@ -62,20 +64,21 @@ export default function BookmarksPage() {
     fetchIdeas();
   }, []);
 
-  // Filter to only bookmarked ideas
   useEffect(() => {
     const bookmarked = allIdeas.filter((idea) => bookmarks[idea.id]);
     setBookmarkedIdeas(bookmarked);
   }, [allIdeas, bookmarks]);
 
-  // Toggle bookmark (remove from bookmarks)
-  const handleRemoveBookmark = useCallback((ideaId: string) => {
-    const newBookmarks = { ...bookmarks };
-    delete newBookmarks[ideaId];
-    setBookmarks(newBookmarks);
-    localStorage.setItem("echoroom_bookmarks", JSON.stringify(newBookmarks));
-    setBookmarkedIdeas((prev) => prev.filter((i) => i.id !== ideaId));
-  }, [bookmarks]);
+  const handleRemoveBookmark = useCallback(
+    (ideaId: string) => {
+      const newBookmarks = { ...bookmarks };
+      delete newBookmarks[ideaId];
+      setBookmarks(newBookmarks);
+      localStorage.setItem("echoroom_bookmarks", JSON.stringify(newBookmarks));
+      setBookmarkedIdeas((prev) => prev.filter((i) => i.id !== ideaId));
+    },
+    [bookmarks]
+  );
 
   if (loading) {
     return (
@@ -101,10 +104,9 @@ export default function BookmarksPage() {
             <BackButton />
           </div>
 
-          {/* Header */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
             <div className="flex items-center gap-3">
-              <CiBookmark className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-400"/>
+              <CiBookmark className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-400" />
               <h1 className="text-3xl sm:text-4xl font-bold text-black dark:text-white">
                 My Bookmarks
               </h1>
@@ -119,11 +121,10 @@ export default function BookmarksPage() {
           </div>
 
           <p className="text-base sm:text-lg max-w-2xl text-black dark:text-white mb-6 sm:mb-8">
-            Ideas you've saved for later. Bookmark ideas you want to revisit or experiment with.
+            Ideas you've saved for later.
           </p>
         </div>
 
-        {/* EMPTY STATE */}
         {bookmarkedIdeas.length === 0 ? (
           <div className="flex justify-center mt-14">
             <MagicCard
@@ -136,7 +137,7 @@ export default function BookmarksPage() {
                   No bookmarks yet
                 </h3>
                 <p className="text-slate-500 text-sm leading-relaxed mb-7">
-                  Save ideas you want to revisit later by clicking the bookmark icon.
+                  Bookmark ideas you want to revisit.
                 </p>
                 <Button onClick={() => router.push("/ideas")}>
                   Browse Ideas
@@ -154,10 +155,9 @@ export default function BookmarksPage() {
               >
                 <MagicCard
                   className="p-[1px] rounded-xl relative group"
-                  gradientColor="rgba(245,158,11,0.6)"
+                  gradientColor="rgba(59,130,246,0.6)"
                 >
                   <div className="relative p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 h-full flex flex-col">
-                    {/* Bookmark button */}
                     <div className="absolute top-4 right-4 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={(e) => {
@@ -171,31 +171,49 @@ export default function BookmarksPage() {
                       </button>
                     </div>
 
-                    <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white pr-10 mb-1">
+                    <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white pr-10 mb-2">
                       {idea.title}
                     </h3>
 
-                    {/* Complexity Badge */}
-                    <div className="mb-3">
-                      <span 
-                        className={`inline-flex items-center text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-semibold border ${
-                          idea.complexity === 'HIGH' 
-                            ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' 
-                            : idea.complexity === 'MEDIUM' 
-                            ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' 
-                            : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${
+                          idea.complexity === "HIGH"
+                            ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                            : idea.complexity === "MEDIUM"
+                            ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                            : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                         }`}
                       >
-                        {idea.complexity} COMPLEXITY
+                        {idea.complexity}
                       </span>
+
+                      {idea.expectedImpact && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                          {idea.expectedImpact}
+                        </span>
+                      )}
+
+                      {idea.timeHorizon && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-500 border border-purple-500/20">
+                          {idea.timeHorizon}
+                        </span>
+                      )}
                     </div>
 
-                    <p className="text-slate-600 dark:text-slate-100 text-sm mb-4 flex-grow">
+                    <p className="text-slate-600 dark:text-slate-100 text-sm mb-4 flex-grow line-clamp-4">
                       {idea.description}
                     </p>
 
+                    {(idea.goal || idea.category) && (
+                      <div className="text-xs text-gray-400 space-y-1 mb-4">
+                        {idea.goal && <div>Goal: {idea.goal}</div>}
+                        {idea.category && <div>Category: {idea.category}</div>}
+                      </div>
+                    )}
+
                     <div className="text-sm text-gray-400 mt-auto pt-4 border-t border-white/10">
-                      <span>Status: {idea.status}</span>
+                      Status: {idea.status}
                     </div>
                   </div>
                 </MagicCard>
