@@ -21,6 +21,12 @@ export default function CreateIdeaPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const getCounterColor = (current: number, max: number) => {
+    if (current >= max) return "text-red-600 font-bold dark:text-red-400";
+    if (current >= max * 0.8) return "text-orange-500 dark:text-orange-400";
+    return "text-gray-500";
+  };
+
   const handleSubmit = async (e: React.FormEvent, publish: boolean = true) => {
     e.preventDefault();
 
@@ -139,7 +145,7 @@ export default function CreateIdeaPage() {
                 onChange={(e) => setTitle(e.target.value)}
               />
 
-              <div className="text-xs text-right mt-1 text-gray-500">
+              <div className={`text-xs text-right mt-1 ${getCounterColor(title.length, TITLE_LIMIT)}`}>
                 {title.length}/{TITLE_LIMIT}
               </div>
             </div>
@@ -165,7 +171,7 @@ export default function CreateIdeaPage() {
                 onChange={(e) => setDescription(e.target.value)}
               />
 
-              <div className="text-xs text-right mt-1 text-gray-500">
+              <div className={`text-xs text-right mt-1 ${getCounterColor(description.length, DESC_LIMIT)}`}>
                 {description.length}/{DESC_LIMIT}
               </div>
             </div>
