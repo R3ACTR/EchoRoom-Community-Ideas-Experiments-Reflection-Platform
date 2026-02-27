@@ -378,10 +378,10 @@ export default function ExperimentsPage() {
                 className="cursor-pointer group h-full flex flex-col"
               >
                 <MagicCard
-                  className="p-[1px] rounded-2xl relative h-full flex-grow transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10"
+                  className="flex flex-col w-full p-[1px] rounded-2xl relative h-full flex-grow transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10"
                   gradientColor="rgba(59,130,246,0.4)"
                 >
-                  <div className="relative p-6 md:p-7 bg-white/40 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-white/5 h-full flex flex-col">
+                  <div className="flex-1 w-full relative p-6 md:p-7 bg-white/40 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-white/5 flex flex-col">
 
                     {/* Action Buttons */}
                     <div className="absolute top-5 right-5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -460,39 +460,48 @@ export default function ExperimentsPage() {
                     {/* Progress Section */}
                     <div className="mt-auto pt-5 border-t border-slate-200 dark:border-white/5">
                       <div className="flex justify-between items-center mb-3">
-                        <span className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border ${getStatusBadge(exp.status)}`}>
-                          {exp.statusLabel}
-                        </span>
+                      <span className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border ${getStatusBadge(exp.status)}`}>
+                        {exp.statusLabel}
+                      </span>
                         <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                          {exp.progress}%
-                        </span>
+                      {exp.progress}%
+                    </span>
                       </div>
 
                       <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 mb-4 overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all duration-500 ease-out ${getProgressColor(exp.status)}`}
-                          style={{ width: `${exp.progress}%` }}
+                            className={`h-full rounded-full transition-all duration-500 ease-out ${getProgressColor(exp.status)}`}
+                            style={{ width: `${exp.progress}%` }}
                         />
                       </div>
 
-                      {exp.endDate && exp.status !== "completed" && (
-                        <div className="flex items-center justify-between mt-2">
-                          <div className="flex items-center gap-1.5 text-xs">
-                            <Clock className={`w-3.5 h-3.5 ${differenceInDays(parseISO(exp.endDate), new Date()) <= 3
-                                ? "text-red-500 animate-pulse"
-                                : "text-blue-400"
+                      {/* REPLACED: Real content for active items, Invisible Spacer for completed items */}
+                      {exp.endDate && exp.status !== "completed" ? (
+                          <div className="flex items-center justify-between mt-2">
+                            <div className="flex items-center gap-1.5 text-xs">
+                              <Clock className={`w-3.5 h-3.5 ${differenceInDays(parseISO(exp.endDate), new Date()) <= 3
+                                  ? "text-red-500 animate-pulse"
+                                  : "text-blue-400"
                               }`} />
-                            <span className={`font-medium ${
-                              differenceInDays(parseISO(exp.endDate), new Date()) <= 3
-                                ? "text-red-500"
-                                : "text-slate-500 dark:text-slate-400"
-                            }`}>
+                              <span className={`font-medium ${
+                                  differenceInDays(parseISO(exp.endDate), new Date()) <= 3
+                                      ? "text-red-500"
+                                      : "text-slate-500 dark:text-slate-400"
+                              }`}>
                               {isAfter(new Date(), parseISO(exp.endDate))
-                                ? "Deadline passed"
-                                : `${differenceInDays(parseISO(exp.endDate), new Date())} days remaining`}
+                                  ? "Deadline passed"
+                                  : `${differenceInDays(parseISO(exp.endDate), new Date())} days remaining`}
                             </span>
+                            </div>
                           </div>
-                        </div>
+                      ) : (
+                          /* INVISIBLE SPACER TO MAINTAIN EQUAL HEIGHT */
+                          <div className="flex items-center justify-between mt-2 invisible select-none" aria-hidden="true">
+                            <div className="flex items-center gap-1.5 text-xs">
+                              <Clock className="w-3.5 h-3.5" />
+                              <span className="font-medium">Spacer text</span>
+                            </div>
+                          </div>
                       )}
                     </div>
 
