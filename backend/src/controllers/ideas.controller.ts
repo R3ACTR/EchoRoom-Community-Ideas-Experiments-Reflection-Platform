@@ -12,6 +12,7 @@ import {
   updateIdeaStatus,
   deleteIdea,
 } from "../services/ideas.service";
+
 export const getIdeas = async (_req: Request, res: Response): Promise<void> => {
   const ideas = await getPublishedIdeas();
   res.json({ success: true, ideas });
@@ -46,9 +47,28 @@ export const getIdeaByIdHandler = async (
 };
 
 export const postDraft = async (req: Request, res: Response): Promise<void> => {
-  const { title, description, complexity } = req.body;
+  const {
+    title,
+    description,
+    complexity,
+    goal,
+    category,
+    expectedImpact,
+    effort,
+    timeHorizon,
+  } = req.body;
 
-  const draft = await createDraft(title, description, complexity);
+  const draft = await createDraft(
+    title,
+    description,
+    complexity,
+    goal,
+    category,
+    expectedImpact,
+    effort,
+    timeHorizon
+  );
+
   res.status(201).json({ success: true, idea: draft });
 };
 
@@ -98,9 +118,28 @@ export const publishDraftHandler = async (
 };
 
 export const postIdea = async (req: Request, res: Response): Promise<void> => {
-  const { title, description, complexity } = req.body;
+  const {
+    title,
+    description,
+    complexity,
+    goal,
+    category,
+    expectedImpact,
+    effort,
+    timeHorizon,
+  } = req.body;
 
-  const idea = await createIdea(title, description, complexity);
+  const idea = await createIdea(
+    title,
+    description,
+    complexity,
+    goal,
+    category,
+    expectedImpact,
+    effort,
+    timeHorizon
+  );
+
   res.status(201).json({ success: true, idea });
 };
 
