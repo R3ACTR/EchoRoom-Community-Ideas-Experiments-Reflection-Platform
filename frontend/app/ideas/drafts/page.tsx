@@ -56,18 +56,14 @@ export default function DraftsPage() {
     try {
       setDeleting(true);
 
-      const res = await fetch(
-        `${API_BASE_URL}/ideas/${deleteDraft.id}`,
-        { method: "DELETE" }
+      await apiFetch(`/ideas/${deleteDraft.id}`, {
+        method: "DELETE",
+      });
+
+      setDrafts((prev) =>
+          prev.filter((i) => i.id !== deleteDraft.id)
       );
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "Delete failed");
-      }
-
-      setDrafts((prev) => prev.filter((i) => i.id !== deleteDraft.id));
       setDeleteDraft(null);
     } catch (err: any) {
       alert(err.message || "Failed to delete draft");
@@ -266,6 +262,42 @@ export default function DraftsPage() {
           </div>
         )}
       </div>
+      {deleteDraft && (
+          <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
+              onClick={() => !deleting && setDeleteDraft(null)}
+          >
+            <div onClick={(e) => e.stopPropagation()}>
+              <MagicCard className="p-[1px] rounded-2xl">
+                <div className="bg-white/10 dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl px-6 py-6 w-[90vw] sm:w-[380px]">
+                  <h2 className="text-xl font-bold text-black dark:text-white mb-4">
+                    Delete Draft
+                  </h2>
+
+                  <p className="text-slate-600 dark:text-slate-200 text-sm mb-6">
+                    "{deleteDraft.title}" will be permanently removed.
+                  </p>
+
+                  <div className="flex gap-4">
+                    <Button
+                        className="w-full"
+                        onClick={() => setDeleteDraft(null)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                        className="w-full"
+                        onClick={handleDelete}
+                    >
+                      {deleting ? "Deleting..." : "Delete"}
+                    </Button>
+                  </div>
+                </div>
+              </MagicCard>
+            </div>
+          </div>
+      )}
     </PageLayout>
+
   );
 }
