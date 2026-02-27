@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { PageLayout } from "../../../community/PageLayout";
 import LoadingState from "../../../components/LoadingState";
 import ErrorState from "../../../components/ErrorState";
-import Button from "@/app/components/ui/Button"; // Aligning with CreateIdeaPage import
+import Button from "@/app/components/ui/Button";
 import { RetroGrid } from "@/components/ui/retro-grid";
 import { MagicCard } from "@/components/ui/magic-card";
 
@@ -19,6 +19,7 @@ interface Idea {
   title: string;
   description: string;
   status: string;
+  version: number;
   complexity?: string;
   goal?: string;
   category?: string;
@@ -45,7 +46,6 @@ export default function DraftDetailPage() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
-  // States
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [complexity, setComplexity] = useState("MEDIUM");
@@ -54,6 +54,7 @@ export default function DraftDetailPage() {
   const [expectedImpact, setExpectedImpact] = useState("");
   const [effort, setEffort] = useState("");
   const [timeHorizon, setTimeHorizon] = useState("");
+  const [version, setVersion] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -62,7 +63,6 @@ export default function DraftDetailPage() {
   useEffect(() => {
     const fetchDraft = async () => {
       try {
-        setFetching(true);
         const res = await fetch(`${API_BASE_URL}/ideas/${id}`);
         const data = await res.json();
 
@@ -77,7 +77,6 @@ export default function DraftDetailPage() {
           return;
         }
 
-        // Populate all fields
         setTitle(draft.title || "");
         setDescription(draft.description || "");
         setComplexity(draft.complexity || "MEDIUM");
@@ -86,6 +85,7 @@ export default function DraftDetailPage() {
         setExpectedImpact(draft.expectedImpact || "");
         setEffort(draft.effort || "");
         setTimeHorizon(draft.timeHorizon || "");
+        setVersion(draft.version);
       } catch (err: any) {
         setError(err.message || "Failed to load draft");
       } finally {
@@ -93,12 +93,10 @@ export default function DraftDetailPage() {
       }
     };
 
-    if (id) {
-      fetchDraft();
-    }
+    if (id) fetchDraft();
   }, [id, router]);
 
-  const payload = {
+  const buildPayload = () => ({
     title,
     description,
     complexity,
@@ -107,12 +105,11 @@ export default function DraftDetailPage() {
     expectedImpact,
     effort,
     timeHorizon,
-  };
+    version,
+  });
 
-  const handleSave = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-
-    if (!title.trim() || !description.trim()) {
+  const handleSave = async () => {
+    if (!title.trim() || !description.trim() || version === null) {
       setError("Title and description are required");
       return;
     }
@@ -123,10 +120,8 @@ export default function DraftDetailPage() {
 
       const res = await fetch(`${API_BASE_URL}/ideas/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildPayload()),
       });
 
       const data = await res.json();
@@ -135,6 +130,7 @@ export default function DraftDetailPage() {
         throw new Error(data.message || "Failed to save draft");
       }
 
+      setVersion(data.idea.version);
       router.push("/ideas/drafts");
     } catch (err: any) {
       setError(err.message || "Something went wrong");
@@ -143,10 +139,8 @@ export default function DraftDetailPage() {
     }
   };
 
-  const handlePublish = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!title.trim() || !description.trim()) {
+  const handlePublish = async () => {
+    if (!title.trim() || !description.trim() || version === null) {
       setError("Title and description are required");
       return;
     }
@@ -155,24 +149,28 @@ export default function DraftDetailPage() {
       setLoading(true);
       setError(null);
 
-      // 1. Save the latest changes first
-      await fetch(`${API_BASE_URL}/ideas/${id}`, {
+      const saveRes = await fetch(`${API_BASE_URL}/ideas/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildPayload()),
       });
 
-      // 2. Publish the draft
-      const res = await fetch(`${API_BASE_URL}/ideas/${id}/publish`, {
+      const saveData = await saveRes.json();
+
+      if (!saveRes.ok || !saveData.success) {
+        throw new Error(saveData.message || "Failed to save draft");
+      }
+
+      const publishRes = await fetch(`${API_BASE_URL}/ideas/${id}/publish`, {
         method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ version: saveData.idea.version }),
       });
 
-      const data = await res.json();
+      const publishData = await publishRes.json();
 
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "Failed to publish draft");
+      if (!publishRes.ok || !publishData.success) {
+        throw new Error(publishData.message || "Failed to publish draft");
       }
 
       router.push("/ideas");
@@ -195,10 +193,6 @@ export default function DraftDetailPage() {
   const selectStyle = `
     ${baseInputStyle}
     appearance-none cursor-pointer
-    bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')]
-    bg-[length:1.25rem_1.25rem]
-    bg-[position:right_1rem_center]
-    bg-no-repeat
     pr-10
   `;
 
@@ -220,13 +214,11 @@ export default function DraftDetailPage() {
 
   return (
     <PageLayout>
-      {/* Retro background */}
       <div className="fixed inset-0 z-0 pointer-events-none opacity-80">
         <RetroGrid />
       </div>
 
       <div className="section max-w-3xl mx-auto relative z-10 pb-20">
-        {/* Header */}
         <div className="mb-8 mt-4">
           <Button onClick={() => router.push("/ideas/drafts")} className="primary mb-6">
             ← Back to Drafts
@@ -241,14 +233,7 @@ export default function DraftDetailPage() {
 
         <MagicCard
           gradientColor="rgba(99,102,241,0.15)"
-          className="
-            p-8 sm:p-10
-            rounded-[2rem]
-            bg-white/70 dark:bg-zinc-900/60
-            backdrop-blur-2xl
-            border border-white/40 dark:border-white/10
-            shadow-2xl shadow-blue-900/5
-          "
+          className="p-8 sm:p-10 rounded-[2rem] bg-white/70 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/40 dark:border-white/10 shadow-2xl shadow-blue-900/5"
         >
           <form className="space-y-8">
             {error && (
@@ -257,7 +242,6 @@ export default function DraftDetailPage() {
               </div>
             )}
 
-            {/* Core Idea Section */}
             <div className="space-y-6">
               <div>
                 <FormLabel text="Title" required />
@@ -265,7 +249,6 @@ export default function DraftDetailPage() {
                   type="text"
                   maxLength={TITLE_LIMIT}
                   className={baseInputStyle}
-                  placeholder="Give your idea a catchy name..."
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                 />
@@ -281,42 +264,35 @@ export default function DraftDetailPage() {
                   rows={5}
                   maxLength={DESC_LIMIT}
                   className={`${baseInputStyle} resize-none`}
-                  placeholder="Describe the core concept, how it works, and why it matters..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
                 <div className="flex justify-between text-[11px] font-medium mt-2 text-gray-500">
-                  <span>
-                    {description.trim() === "" ? 0 : description.trim().split(/\s+/).length} words
-                  </span>
+                  <span>{description.trim() === "" ? 0 : description.trim().split(/\s+/).length} words</span>
                   <span>{description.length}/{DESC_LIMIT} chars</span>
                 </div>
               </div>
 
               <div>
                 <FormLabel text="Complexity" required />
-                <div className="flex gap-3 sm:gap-4">
+                <div className="flex gap-4">
                   {["LOW", "MEDIUM", "HIGH"].map((level) => (
-                    <label key={level} className="flex-1 cursor-pointer group relative">
+                    <label key={level} className="flex-1 cursor-pointer">
                       <input
                         type="radio"
-                        name="complexity"
                         value={level}
                         checked={complexity === level}
                         onChange={(e) => setComplexity(e.target.value)}
                         className="sr-only"
                       />
                       <div
-                        className={`
-                          p-4 rounded-xl text-center border-2 transition-all duration-300
-                          ${
-                            complexity === level
-                              ? "bg-blue-600/10 border-blue-600 text-blue-700 dark:text-blue-400 shadow-md"
-                              : "bg-white/50 dark:bg-zinc-950/50 border-transparent text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-zinc-700 hover:bg-white dark:hover:bg-zinc-900"
-                          }
-                        `}
+                        className={`p-4 rounded-xl border-2 text-center ${
+                          complexity === level
+                            ? "bg-blue-600/10 border-blue-600 text-blue-700 dark:text-blue-400"
+                            : "bg-white/50 dark:bg-zinc-950/50 border-transparent"
+                        }`}
                       >
-                        <span className="text-sm font-bold tracking-wider">{level}</span>
+                        {level}
                       </div>
                     </label>
                   ))}
@@ -324,106 +300,58 @@ export default function DraftDetailPage() {
               </div>
             </div>
 
-            {/* Strategic Details Divider */}
-            <div className="pt-8 mt-8 border-t border-gray-200 dark:border-white/10">
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Strategic Details</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Add context to help others evaluate and understand the scope of your idea.
-                </p>
+            <div className="pt-8 border-t border-gray-200 dark:border-white/10 space-y-6">
+              <div>
+                <FormLabel text="Goal / Purpose" />
+                <input className={baseInputStyle} value={goal} onChange={(e) => setGoal(e.target.value)} />
               </div>
 
-              <div className="space-y-6">
+              <div>
+                <FormLabel text="Category / Domain" />
+                <input className={baseInputStyle} value={category} onChange={(e) => setCategory(e.target.value)} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div>
-                  <FormLabel text="Goal / Purpose" />
-                  <input
-                    type="text"
-                    className={baseInputStyle}
-                    placeholder="e.g., Automate repetitive data entry tasks"
-                    value={goal}
-                    onChange={(e) => setGoal(e.target.value)}
-                  />
+                  <FormLabel text="Expected Impact" />
+                  <select className={selectStyle} value={expectedImpact} onChange={(e) => setExpectedImpact(e.target.value)}>
+                    <option value="">Select impact...</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Game-Changing">Game-Changing</option>
+                  </select>
                 </div>
 
                 <div>
-                  <FormLabel text="Category / Domain" />
-                  <input
-                    type="text"
-                    className={baseInputStyle}
-                    placeholder="e.g., Productivity, Machine Learning, HealthTech"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                  />
+                  <FormLabel text="Effort Estimate" />
+                  <select className={selectStyle} value={effort} onChange={(e) => setEffort(e.target.value)}>
+                    <option value="">Select effort...</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </select>
                 </div>
 
-                {/* The 3-Column Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  <div>
-                    <FormLabel text="Expected Impact" />
-                    <select
-                      className={selectStyle}
-                      value={expectedImpact}
-                      onChange={(e) => setExpectedImpact(e.target.value)}
-                    >
-                      <option value="">Select impact...</option>
-                      <option value="Low">Low</option>
-                      <option value="Medium">Medium</option>
-                      <option value="High">High</option>
-                      <option value="Game-Changing">Game-Changing</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <FormLabel text="Effort Estimate" />
-                    <select
-                      className={selectStyle}
-                      value={effort}
-                      onChange={(e) => setEffort(e.target.value)}
-                    >
-                      <option value="">Select effort...</option>
-                      <option value="Low">Low</option>
-                      <option value="Medium">Medium</option>
-                      <option value="High">High</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <FormLabel text="Time Horizon" />
-                    <select
-                      className={selectStyle}
-                      value={timeHorizon}
-                      onChange={(e) => setTimeHorizon(e.target.value)}
-                    >
-                      <option value="">Select timeframe...</option>
-                      <option value="Short-term">Short-term</option>
-                      <option value="Mid-term">Mid-term</option>
-                      <option value="Long-term">Long-term</option>
-                    </select>
-                  </div>
+                <div>
+                  <FormLabel text="Time Horizon" />
+                  <select className={selectStyle} value={timeHorizon} onChange={(e) => setTimeHorizon(e.target.value)}>
+                    <option value="">Select timeframe...</option>
+                    <option value="Short-term">Short-term</option>
+                    <option value="Mid-term">Mid-term</option>
+                    <option value="Long-term">Long-term</option>
+                  </select>
                 </div>
               </div>
             </div>
 
-            {/* Submit Actions */}
             <div className="pt-6 mt-8 border-t border-gray-200 dark:border-white/10 flex flex-col sm:flex-row gap-4">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => handleSave()}
-                disabled={loading}
-                className="flex-1 rounded-2xl px-6 py-4 text-base font-semibold transition-transform hover:scale-[1.02] active:scale-[0.98] bg-gray-100 dark:bg-zinc-800 text-black border-0"
-              >
+              <Button onClick={handleSave} disabled={loading} className="flex-1">
                 {loading ? "Saving..." : "Save Draft"}
               </Button>
 
-              <Button
-                type="button"
-                variant="primary"
-                onClick={(e) => handlePublish(e)}
-                disabled={loading}
-                className="flex-[2] rounded-2xl px-6 py-4 text-base font-semibold shadow-lg shadow-blue-500/25 transition-transform hover:scale-[1.02] active:scale-[0.98]"
-              >
-                {loading ? "Publishing..." : "Publish Now ✨"}
+              <Button onClick={handlePublish} disabled={loading} className="flex-[2]">
+                {loading ? "Publishing..." : "Publish Now "}
               </Button>
             </div>
           </form>

@@ -261,8 +261,6 @@ export default function DraftsPage() {
           </div>
         )}
       </div>
-
-      {/* DELETE MODAL remains same as yours */}
     </PageLayout>
   );
 }

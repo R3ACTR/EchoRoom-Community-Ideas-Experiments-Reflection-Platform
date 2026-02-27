@@ -37,6 +37,34 @@ const experimentStatusSchema = z.enum([
 ]);
 
 /* ============================= */
+/* 🔹 Shared Idea Base Schema */
+/* ============================= */
+
+const ideaBaseSchema = z.object({
+  title: nonEmptyString,
+  description: nonEmptyString,
+  complexity: ideaComplexitySchema.optional(),
+
+  goal: optionalString,
+  category: optionalString,
+
+  expectedImpact: optionalEnum([
+    "Low",
+    "Medium",
+    "High",
+    "Game-Changing",
+  ]),
+
+  effort: optionalEnum(["Low", "Medium", "High"]),
+
+  timeHorizon: optionalEnum([
+    "Short-term",
+    "Mid-term",
+    "Long-term",
+  ]),
+});
+
+/* ============================= */
 /* 🔹 Ideas */
 /* ============================= */
 
@@ -50,78 +78,30 @@ export const ideasSchemas = {
   },
 
   postIdea: {
-    body: z.object({
-      title: nonEmptyString,
-      description: nonEmptyString,
-      complexity: ideaComplexitySchema.optional(),
-
-      goal: optionalString,
-      category: optionalString,
-
-      expectedImpact: optionalEnum([
-        "Low",
-        "Medium",
-        "High",
-        "Game-Changing",
-      ]),
-
-      effort: optionalEnum(["Low", "Medium", "High"]),
-
-      timeHorizon: optionalEnum([
-        "Short-term",
-        "Mid-term",
-        "Long-term",
-      ]),
-    }),
+    body: ideaBaseSchema,
   },
 
   postDraft: {
-    body: z.object({
-      title: nonEmptyString,
-      description: nonEmptyString,
-      complexity: ideaComplexitySchema.optional(),
-
-      goal: optionalString,
-      category: optionalString,
-
-      expectedImpact: optionalEnum([
-        "Low",
-        "Medium",
-        "High",
-        "Game-Changing",
-      ]),
-
-      effort: optionalEnum(["Low", "Medium", "High"]),
-
-      timeHorizon: optionalEnum([
-        "Short-term",
-        "Mid-term",
-        "Long-term",
-      ]),
-    }),
+    body: ideaBaseSchema,
   },
 
   putDraft: {
     params: objectIdParamSchema("id"),
-    body: z.object({
-      title: nonEmptyString,
-      description: nonEmptyString,
-      version: z.number(),
+    body: ideaBaseSchema.extend({
+      version: z.number().optional(), // optional unless you're enforcing OCC
     }),
   },
 
   publishDraft: {
     params: objectIdParamSchema("id"),
-    body: z.object({
-      version: z.number(),
-    }),
+    // No body required anymore
   },
 
   patchIdeaStatus: {
     params: objectIdParamSchema("id"),
     body: z.object({
       status: ideaStatusSchema,
-      version: z.number(),
+      version: z.number().optional(),
     }),
   },
 };
