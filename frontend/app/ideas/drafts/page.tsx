@@ -165,6 +165,8 @@ export default function DraftsPage() {
                       setDeleteDraft(draft);
                     }}
                     className="absolute top-5 right-5 p-2 text-red-400 hover:text-red-600"
+                    title="Discard Draft"
+                    aria-label="Discard Draft"
                   >
                     <TrashIcon className="w-6 h-6" />
                   </button>
@@ -202,11 +204,11 @@ export default function DraftsPage() {
 
                 <div className="mb-6">
                   <h2 className="text-xl font-bold text-black dark:text-white">
-                    Delete Draft
+                    Discard Draft
                   </h2>
 
                   <p className="text-slate-600 dark:text-slate-200 text-sm mt-2 leading-relaxed">
-                    "{deleteDraft.title}" will be permanently removed.
+                    "{deleteDraft.title}" will be permanently discarded.
                   </p>
                 </div>
 
@@ -222,7 +224,7 @@ export default function DraftsPage() {
                     className={`w-full ${deleting ? "opacity-50 pointer-events-none" : ""}`}
                     onClick={handleDelete}
                   >
-                    {deleting ? "Deleting..." : "Delete"}
+                    {deleting ? "Discarding..." : "Discard"}
                   </Button>
                 </div>
               </div>
