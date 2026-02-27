@@ -1,131 +1,201 @@
 # EchoRoom 🌱
-**Community Ideas, Experiments & Reflection Platform**
 
-EchoRoom is an open-source platform where communities share ideas, run small
-experiments, document outcomes, and reflect on what they learn — openly and
-collaboratively.
+### Structured Experimentation & Community Learning Platform
 
-Unlike typical idea platforms, EchoRoom focuses on **learning loops**, not just
-discussion or voting.
+EchoRoom is an open-source platform that transforms community ideas into **structured experiments, measurable outcomes, and documented reflections**.
 
-This project is part of **Open Source Quest (OSQ)** and is designed to support
-contributors from diverse skill backgrounds.
+It is not an idea board.
+It is a **learning system**.
 
----
+Instead of stopping at discussion or voting, EchoRoom enforces a lifecycle:
 
-## 🧠 Core Idea
+> **Idea → Experiment → Outcome → Reflection → Shared Knowledge**
 
-Every idea in EchoRoom follows a simple loop:\
-*Idea → Experiment → Outcome → Reflection → Shared Learning*
-
-The goal is not to “win” ideas, but to **learn from trying them**.
+Every step exists to ensure communities don’t just propose — they **test, measure, and learn**.
 
 ---
 
-## 🎯 Why EchoRoom?
+## 🚀 What Makes EchoRoom Different
 
-Communities often:
-- Share ideas without follow-up
-- Forget why decisions were made
-- Learn little from failed attempts
+Most platforms:
 
-EchoRoom helps communities:
-- Turn ideas into experiments
-- Record what actually happened
-- Reflect on successes and failures
-- Build shared knowledge over time
+* Collect ideas
+* Allow discussion
+* Maybe allow voting
+* Stop there
 
----
+EchoRoom enforces:
 
-## ✨ Key Features
+* 🔁 Structured state transitions (no skipping steps)
+* 📊 Measurable experimentation
+* 🧠 Mandatory reflection before closure
+* 🧾 Documented learning archive
+* ⚙️ Domain validation & lifecycle control
 
-- 💡 Idea submission & discussion
-- 🧪 Experiment tracking (time-bound trials)
-- 📊 Outcome recording (success / failure / mixed)
-- 🧠 Reflection & learning notes
-- 🏷️ Tags & categories
-- 📖 Public knowledge archive
+This makes EchoRoom suitable for:
 
----
-
-## 🏗️ Tech Stack (Reference)
-
-> ⚠️ This is a **reference stack**, not a strict requirement.
-
-### Frontend
-- Next.js
-- Tailwind CSS
-
-### Backend
-- Node.js
-- REST APIs
-
-### Database
-- MongoDB or PostgreSQL
+* Campus initiatives
+* Open-source communities
+* Startup experimentation logs
+* Civic innovation groups
+* Product validation workflows
 
 ---
 
-## 🧩 Contribution Areas
+## 🧠 The Learning Lifecycle
 
-EchoRoom is intentionally designed so **all contribution types matter equally**:
-
-- 🎨 Frontend (UI, dashboards, forms)
-- ⚙️ Backend (logic, APIs, state transitions)
-- 📚 Documentation (guides, workflows, examples)
-- 🧠 UI/UX (readability, accessibility, safety)
-- 🧪 Testing & QA (edge cases, state validation)
-- 🧭 Community & moderation guidelines
-
----
-
-## 📁 Repository Structure
+Every idea progresses through a controlled state chain:
 
 ```
+draft → proposed → experiment → outcome → reflection
+```
 
+Each transition is intentional.
+
+* **Idea** – A structured proposal
+* **Experiment** – A time-bound, testable implementation
+* **Outcome** – Recorded results (success / failure / mixed)
+* **Reflection** – Structured analysis of what was learned
+* **Shared Knowledge** – Public documentation for future reuse
+
+See full walkthrough:
+📄 `docs/workflow.md`
+
+---
+
+## 🛡 System Guarantees
+
+EchoRoom is built with domain constraints, not just CRUD forms.
+
+### Backend Guarantees
+
+* Enforced state transitions
+* Optimistic locking (version-based updates)
+* Experiment progress derived from status
+* Deletion constraints (experiments cannot be removed if outcomes exist)
+* Structured reflection validation (required fields, bounded score ranges)
+* JWT authentication (access + persisted refresh tokens)
+* Health endpoint for service observability (`GET /health`)
+
+See:
+
+* 📄 `docs/architecture.md`
+* 📄 `docs/health.md`
+* 📄 API documentation inside `/docs`
+
+---
+
+## 🏗 Architecture Overview
+
+### Frontend
+
+* Next.js 16
+* Tailwind CSS
+* Radix UI
+* Framer Motion
+* TypeScript
+
+### Backend
+
+* Express + TypeScript
+* REST API architecture
+* Prisma (MongoDB persistence for auth)
+* JWT authentication (access + refresh tokens)
+
+### Current Persistence Model
+
+* Persistent: Users, refresh tokens (MongoDB via Prisma)
+* Domain entities (ideas, experiments, outcomes, reflections): in-memory (planned migration to full persistence)
+
+This design allows rapid iteration while domain rules stabilize.
+
+---
+
+## 📂 Repository Structure
+
+```
 echoroom/
-├── frontend/
-├── backend/
-├── docs/
-│ ├── setup.md
-│ ├── architecture.md
-│ ├── workflow.md
-│ ├── moderation.md
-│ └── README.md
-├── OSQ.md
+├── frontend/          # Next.js application
+├── backend/           # Express API (TypeScript)
+├── docs/              # System documentation
+│   ├── architecture.md
+│   ├── workflow.md
+│   ├── moderation.md
+│   ├── user-roles.md
+│   ├── health.md
+│   └── README.md
 ├── ROADMAP.md
 ├── CONTRIBUTING.md
 └── README.md
-
-````
+```
 
 ---
 
-## ⚙️ Setup Instructions
+## 🔌 API Overview
 
-### 1. Clone the repository
+Base URL (local):
+
+```
+http://localhost:5000
+```
+
+Core route groups:
+
+* `/auth`
+* `/ideas`
+* `/experiments`
+* `/outcomes`
+* `/reflections`
+* `/ideas/:ideaId/comments`
+* `/health`
+
+Full endpoint documentation:
+📄 See `/docs` folder
+
+---
+
+## ⚙️ Local Development Setup
+
+### 1️⃣ Clone Repository
 
 ```bash
-git clone https://github.com/<org>/echoroom.git
+git clone https://github.com/R3ACTR/EchoRoom-Community-Ideas-Experiments-Reflection-Platform.git
 cd echoroom
-````
+```
 
-### 2. Setup frontend
+---
+
+### 2️⃣ Backend Setup
 
 ```bash
-cd frontend
+cd backend
 npm install
 npm run dev
 ```
 
-### 3. Setup backend
+If using Prisma:
 
 ```bash
-cd ../backend
+npm run prisma:push
+```
+
+Backend runs at:
+
+```
+http://localhost:5000
+```
+
+---
+
+### 3️⃣ Frontend Setup
+
+```bash
+cd ../frontend
 npm install
 npm run dev
 ```
 
-### 4. Open in browser
+Frontend runs at:
 
 ```
 http://localhost:3000
@@ -133,26 +203,93 @@ http://localhost:3000
 
 ---
 
+## 🔐 Authentication
+
+* JWT access token (short-lived)
+* Refresh token persisted in database
+* Auth middleware available
+* Role/permission system scaffolded (expansion planned)
+
+---
+
+## 📚 Documentation
+
+Documentation is a **first-class contribution area**.
+
+Key documents:
+
+* 🏗 `docs/architecture.md` – Backend design & layering
+* 🔄 `docs/workflow.md` – Idea → Reflection lifecycle
+* 🧠 `docs/data-structures.md` – Experiment & reflection schemas
+* 🛡 `docs/moderation.md` – Community safety guidelines
+* 👥 `docs/user-roles.md` – Role design
+* ❤️ `docs/health.md` – Health endpoint details
+
+---
+
+## 🧭 Roadmap
+
+Upcoming milestones:
+
+* Full domain persistence via Prisma
+* Consistent authentication enforcement across all domain routes
+* Role-based access control
+* Insights engine activation
+* Version history for experiments
+* Moderation tooling
+* Experiment templates
+* Analytics & replication metrics
+
+See `ROADMAP.md` for details.
+
+---
+
 ## 🤝 Contributing
 
-We welcome contributors of all experience levels.
+EchoRoom welcomes:
+
+* Frontend engineers
+* Backend engineers
+* System designers
+* Documentation writers
+* UX thinkers
+* Moderation designers
+* QA testers
 
 Before contributing:
 
-* Read [CONTRIBUTING.md](CONTRIBUTING.md)
-* Follow [OSQ.md](OSQ.md) for OSQ-specific rules
-* Respect our [Code of Conduct](CODE_OF_CONDUCT.md)
+* Read `CONTRIBUTING.md`
+* Review `ROADMAP.md`
+* Follow Code of Conduct
 
-For help, contact:
-📧 **[osq@r3actr.work](mailto:osq@r3actr.work)**
-
----
-
-## 🌟 Final Note
-
-EchoRoom is about **learning in public**.
-Small, thoughtful contributions are more valuable than large, rushed ones.
+For OSQ-specific rules:
+See `OSQ.md`
 
 ---
 
-## Happy contributing 🚀
+## 🌍 Philosophy
+
+EchoRoom is built on a simple belief:
+
+> Communities improve when they document not just what worked — but what didn’t.
+
+Failure is not hidden.
+It is structured, analyzed, and shared.
+
+Small experiments + honest reflection = lasting collective intelligence.
+
+---
+
+## Status
+
+Active development
+Open to contributors
+Designed for iteration
+
+---
+
+## Built For Open Source Quest (OSQ)
+
+EchoRoom is part of OSQ and structured to allow meaningful contributions across engineering, documentation, UX, and moderation domains.
+
+---
