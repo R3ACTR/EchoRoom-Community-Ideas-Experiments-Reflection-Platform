@@ -46,6 +46,32 @@ export const getIdeaByIdHandler = async (
   res.json({ success: true, idea });
 };
 
+export const postIdea = async (req: Request, res: Response): Promise<void> => {
+  const {
+    title,
+    description,
+    complexity,
+    goal,
+    category,
+    expectedImpact,
+    effort,
+    timeHorizon,
+  } = req.body;
+
+  const idea = await createIdea(
+    title,
+    description,
+    complexity,
+    goal,
+    category,
+    expectedImpact,
+    effort,
+    timeHorizon
+  );
+
+  res.status(201).json({ success: true, idea });
+};
+
 export const postDraft = async (req: Request, res: Response): Promise<void> => {
   const {
     title,
@@ -117,38 +143,13 @@ export const publishDraftHandler = async (
   }
 };
 
-export const postIdea = async (req: Request, res: Response): Promise<void> => {
-  const {
-    title,
-    description,
-    complexity,
-    goal,
-    category,
-    expectedImpact,
-    effort,
-    timeHorizon,
-  } = req.body;
-
-  const idea = await createIdea(
-    title,
-    description,
-    complexity,
-    goal,
-    category,
-    expectedImpact,
-    effort,
-    timeHorizon
-  );
-
-  res.status(201).json({ success: true, idea });
-};
-
 export const patchIdeaStatus = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   const { id } = req.params;
   const { status, version } = req.body;
+
   const normalizedStatus = normalizeIdeaStatus(status);
 
   if (!normalizedStatus) {

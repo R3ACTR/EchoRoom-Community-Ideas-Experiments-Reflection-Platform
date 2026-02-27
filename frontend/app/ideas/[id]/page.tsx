@@ -20,7 +20,11 @@ import {
   Facebook, 
   Check,
   ArrowLeft, 
-  SendIcon
+  SendIcon,
+  Target,
+  TrendingUp,
+  Zap,
+  Clock
 } from "lucide-react";
 import CopyIcon from "@/components/ui/copy-icon";
 
@@ -29,7 +33,13 @@ interface Idea {
   title: string;
   description: string;
   status: string;
-  complexity?: "LOW" | "MEDIUM" | "HIGH"; // Added for consistency with your ideas list
+  complexity?: "LOW" | "MEDIUM" | "HIGH";
+  // New optional fields
+  goal?: string;
+  category?: string;
+  expectedImpact?: string;
+  effort?: string;
+  timeHorizon?: string;
 }
 
 interface LikeData {
@@ -162,7 +172,6 @@ export default function IdeaDetailPage() {
           onClick={() => router.push('/ideas')}
           className="primary"
         >
-         
          ← Back to Ideas
         </Button>
 
@@ -190,6 +199,13 @@ export default function IdeaDetailPage() {
                   {idea.complexity} COMPLEXITY
                 </span>
               )}
+
+              {/* NEW: Category Badge */}
+              {idea.category && (
+                <span className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-500/20">
+                  {idea.category}
+                </span>
+              )}
             </div>
 
             {/* Title & Description */}
@@ -202,9 +218,56 @@ export default function IdeaDetailPage() {
               </div>
             </div>
 
-            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-10">
+            <p className={`text-lg text-slate-600 dark:text-slate-300 leading-relaxed ${(idea.goal || idea.expectedImpact || idea.effort || idea.timeHorizon) ? 'mb-8' : 'mb-10'}`}>
               {idea.description}
             </p>
+
+            {/* NEW: Core Goal Section */}
+            {idea.goal && (
+              <div className="mb-8 p-5 sm:p-6 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-white/5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Target className="w-5 h-5 text-blue-500" />
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Goal / Purpose
+                  </h3>
+                </div>
+                <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+                  {idea.goal}
+                </p>
+              </div>
+            )}
+
+            {/* NEW: Strategic Details Grid */}
+            {(idea.expectedImpact || idea.effort || idea.timeHorizon) && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+                {idea.expectedImpact && (
+                  <div className="p-4 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-800/30">
+                    <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                      <TrendingUp className="w-4 h-4 text-emerald-500" /> Expected Impact
+                    </span>
+                    <span className="block text-base font-medium text-slate-900 dark:text-white">{idea.expectedImpact}</span>
+                  </div>
+                )}
+                
+                {idea.effort && (
+                  <div className="p-4 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-800/30">
+                    <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                      <Zap className="w-4 h-4 text-amber-500" /> Effort Estimate
+                    </span>
+                    <span className="block text-base font-medium text-slate-900 dark:text-white">{idea.effort}</span>
+                  </div>
+                )}
+
+                {idea.timeHorizon && (
+                  <div className="p-4 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-800/30">
+                    <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                      <Clock className="w-4 h-4 text-blue-500" /> Time Horizon
+                    </span>
+                    <span className="block text-base font-medium text-slate-900 dark:text-white">{idea.timeHorizon}</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Actions: Like */}
             <div className="flex items-center pt-6 border-t border-gray-100 dark:border-white/10">
