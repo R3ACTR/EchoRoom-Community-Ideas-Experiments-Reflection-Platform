@@ -1,5 +1,8 @@
 import prisma from "../lib/prisma";
-import { Idea as PrismaIdea, IdeaComplexity as PrismaIdeaComplexity } from "@prisma/client";
+import {
+  Idea as PrismaIdea,
+  IdeaComplexity as PrismaIdeaComplexity,
+} from "@prisma/client";
 import { StateMachine } from "../lib/statemachine";
 import { ConflictError } from "../lib/conflictError";
 
@@ -70,11 +73,10 @@ const toIdea = (idea: PrismaIdea): Idea => ({
   timeHorizon: idea.timeHorizon ?? undefined,
 });
 
-export const normalizeIdeaStatus = (status: unknown): IdeaStatus | null => {
-  if (typeof status !== "string") {
-    return null;
-  }
-
+export const normalizeIdeaStatus = (
+  status: unknown
+): IdeaStatus | null => {
+  if (typeof status !== "string") return null;
   return IDEA_STATUS_ALIASES[status.trim().toLowerCase()] ?? null;
 };
 
@@ -104,7 +106,9 @@ export const getDraftIdeas = async (): Promise<Idea[]> => {
   return ideas.map(toIdea);
 };
 
-export const getIdeaById = async (id: string): Promise<Idea | null> => {
+export const getIdeaById = async (
+  id: string
+): Promise<Idea | null> => {
   const idea = await prisma.idea.findUnique({ where: { id } });
   return idea ? toIdea(idea) : null;
 };
@@ -113,11 +117,10 @@ export const getAvailableTransitions = async (
   id: string
 ): Promise<IdeaStatus[] | null> => {
   const idea = await prisma.idea.findUnique({ where: { id } });
-  if (!idea) {
-    return null;
-  }
-
-  return ideaStateMachine.getAllowedTransitions(idea.status as IdeaStatus);
+  if (!idea) return null;
+  return ideaStateMachine.getAllowedTransitions(
+    idea.status as IdeaStatus
+  );
 };
 
 export const createIdea = async (
@@ -136,11 +139,11 @@ export const createIdea = async (
       description,
       complexity,
       status: "proposed",
-      goal,
-      category,
-      expectedImpact,
-      effort,
-      timeHorizon,
+      goal: goal || null,
+      category: category || null,
+      expectedImpact: expectedImpact || null,
+      effort: effort || null,
+      timeHorizon: timeHorizon || null,
     },
   });
 
@@ -163,11 +166,11 @@ export const createDraft = async (
       description,
       complexity,
       status: "draft",
-      goal,
-      category,
-      expectedImpact,
-      effort,
-      timeHorizon,
+      goal: goal || null,
+      category: category || null,
+      expectedImpact: expectedImpact || null,
+      effort: effort || null,
+      timeHorizon: timeHorizon || null,
     },
   });
 
@@ -181,9 +184,7 @@ export const updateDraft = async (
   version: number
 ): Promise<Idea | null> => {
   const existing = await prisma.idea.findUnique({ where: { id } });
-  if (!existing) {
-    return null;
-  }
+  if (!existing) return null;
 
   if (existing.version !== version) {
     throw new ConflictError("Idea has been modified by another user");
@@ -214,9 +215,7 @@ export const updateIdeaStatus = async (
   version: number
 ): Promise<Idea | null> => {
   const existing = await prisma.idea.findUnique({ where: { id } });
-  if (!existing) {
-    return null;
-  }
+  if (!existing) return null;
 
   if (existing.version !== version) {
     throw new ConflictError("Idea has been modified by another user");

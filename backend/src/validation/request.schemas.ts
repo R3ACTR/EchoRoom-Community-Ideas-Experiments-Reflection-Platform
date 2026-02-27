@@ -1,8 +1,27 @@
 import { z } from "zod";
 import { objectIdParamSchema } from "../middleware/validate.middleware";
 
+/* ============================= */
+/* 🔹 Common Helpers */
+/* ============================= */
+
 const nonEmptyString = z.string().trim().min(1, "Field is required");
+
+const optionalString = z
+  .string()
+  .trim()
+  .transform((val) => (val === "" ? undefined : val))
+  .optional();
+
+const optionalEnum = <T extends [string, ...string[]]>(values: T) =>
+  z
+    .enum(values)
+    .optional()
+    .or(z.literal(""))
+    .transform((val) => (val === "" ? undefined : val));
+
 const ideaComplexitySchema = z.enum(["LOW", "MEDIUM", "HIGH"]);
+
 const ideaStatusSchema = z.enum([
   "draft",
   "proposed",
@@ -10,39 +29,78 @@ const ideaStatusSchema = z.enum([
   "outcome",
   "reflection",
 ]);
-const experimentStatusSchema = z.enum(["planned", "in-progress", "completed"]);
+
+const experimentStatusSchema = z.enum([
+  "planned",
+  "in-progress",
+  "completed",
+]);
+
+/* ============================= */
+/* 🔹 Ideas */
+/* ============================= */
 
 export const ideasSchemas = {
   getIdeaById: {
     params: objectIdParamSchema("id"),
   },
+
   deleteIdeaById: {
     params: objectIdParamSchema("id"),
   },
+
   postIdea: {
     body: z.object({
       title: nonEmptyString,
       description: nonEmptyString,
       complexity: ideaComplexitySchema.optional(),
-      goal: z.string().optional(),
-      category: z.string().optional(),
-      expectedImpact: z.enum(["Low", "Medium", "High", "Game-Changing"]).optional(),
-      effort: z.enum(["Low", "Medium", "High"]).optional(),
-      timeHorizon: z.enum(["Short-term", "Mid-term", "Long-term"]).optional(),
+
+      goal: optionalString,
+      category: optionalString,
+
+      expectedImpact: optionalEnum([
+        "Low",
+        "Medium",
+        "High",
+        "Game-Changing",
+      ]),
+
+      effort: optionalEnum(["Low", "Medium", "High"]),
+
+      timeHorizon: optionalEnum([
+        "Short-term",
+        "Mid-term",
+        "Long-term",
+      ]),
     }),
   },
+
   postDraft: {
     body: z.object({
       title: nonEmptyString,
       description: nonEmptyString,
       complexity: ideaComplexitySchema.optional(),
-      goal: z.string().optional(),
-      category: z.string().optional(),
-      expectedImpact: z.enum(["Low", "Medium", "High", "Game-Changing"]).optional(),
-      effort: z.enum(["Low", "Medium", "High"]).optional(),
-      timeHorizon: z.enum(["Short-term", "Mid-term", "Long-term"]).optional(),
+
+      goal: optionalString,
+      category: optionalString,
+
+      expectedImpact: optionalEnum([
+        "Low",
+        "Medium",
+        "High",
+        "Game-Changing",
+      ]),
+
+      effort: optionalEnum(["Low", "Medium", "High"]),
+
+      timeHorizon: optionalEnum([
+        "Short-term",
+        "Mid-term",
+        "Long-term",
+      ]),
     }),
   },
+
   putDraft: {
     params: objectIdParamSchema("id"),
     body: z.object({
@@ -51,12 +109,14 @@ export const ideasSchemas = {
       version: z.number(),
     }),
   },
+
   publishDraft: {
     params: objectIdParamSchema("id"),
     body: z.object({
       version: z.number(),
     }),
   },
+
   patchIdeaStatus: {
     params: objectIdParamSchema("id"),
     body: z.object({
@@ -66,10 +126,15 @@ export const ideasSchemas = {
   },
 };
 
+/* ============================= */
+/* 🔹 Comments */
+/* ============================= */
+
 export const commentsSchemas = {
   list: {
     params: objectIdParamSchema("ideaId"),
   },
+
   create: {
     params: objectIdParamSchema("ideaId"),
     body: z.object({
@@ -78,10 +143,15 @@ export const commentsSchemas = {
   },
 };
 
+/* ============================= */
+/* 🔹 Experiments */
+/* ============================= */
+
 export const experimentsSchemas = {
   getById: {
     params: objectIdParamSchema("id"),
   },
+
   create: {
     body: z.object({
       title: nonEmptyString,
@@ -94,6 +164,7 @@ export const experimentsSchemas = {
       linkedIdeaId: z.string().regex(/^[a-fA-F0-9]{24}$/).optional(),
     }),
   },
+
   update: {
     params: objectIdParamSchema("id"),
     body: z
@@ -111,10 +182,15 @@ export const experimentsSchemas = {
       })
       .strict(),
   },
+
   remove: {
     params: objectIdParamSchema("id"),
   },
 };
+
+/* ============================= */
+/* 🔹 Insights */
+/* ============================= */
 
 export const insightsSchemas = {
   suggestPatterns: {
@@ -125,39 +201,54 @@ export const insightsSchemas = {
   },
 };
 
+/* ============================= */
+/* 🔹 Reflections */
+/* ============================= */
+
 export const reflectionsSchemas = {
   getById: {
     params: objectIdParamSchema("id"),
   },
+
   listByOutcome: {
     params: objectIdParamSchema("outcomeId"),
   },
+
   create: {
     body: z.object({
       outcomeId: z.string().regex(/^[a-fA-F0-9]{24}$/),
+
       context: z.object({
         emotionBefore: z.number().min(1).max(5),
         confidenceBefore: z.number().min(1).max(10),
       }),
+
       breakdown: z.object({
         whatHappened: nonEmptyString,
         whatWorked: nonEmptyString,
         whatDidntWork: nonEmptyString,
       }),
+
       growth: z.object({
         lessonLearned: nonEmptyString,
         nextAction: nonEmptyString,
       }),
+
       result: z.object({
         emotionAfter: z.number().min(1).max(5),
         confidenceAfter: z.number().min(1).max(10),
       }),
+
       tags: z.array(nonEmptyString).optional(),
       evidenceLink: z.string().optional(),
       visibility: z.enum(["private", "public"]),
     }),
   },
 };
+
+/* ============================= */
+/* 🔹 Outcomes */
+/* ============================= */
 
 export const outcomesSchemas = {
   create: {
@@ -191,6 +282,10 @@ export const outcomesSchemas = {
   },
 };
 
+/* ============================= */
+/* 🔹 Auth */
+/* ============================= */
+
 export const authSchemas = {
   register: {
     body: z.object({
@@ -199,17 +294,20 @@ export const authSchemas = {
       password: z.string().min(8, "Password must be at least 8 characters"),
     }),
   },
+
   login: {
     body: z.object({
       email: z.string().email("Valid email is required"),
       password: nonEmptyString,
     }),
   },
+
   refresh: {
     body: z.object({
       refreshToken: nonEmptyString,
     }),
   },
+
   logout: {
     body: z
       .object({

@@ -24,6 +24,7 @@ import {
   XCircle,
   Heart,
   Copy,
+  Target
 } from "lucide-react";
 import { PageLayout } from "../community/PageLayout";
 import LoadingState from "../components/LoadingState";
@@ -39,6 +40,12 @@ interface Idea {
   description: string;
   status: string;
   complexity: "LOW" | "MEDIUM" | "HIGH";
+  // New Strategic Fields
+  goal?: string;
+  category?: string;
+  expectedImpact?: string;
+  effort?: string;
+  timeHorizon?: string;
 }
 
 interface LikeData {
@@ -59,6 +66,7 @@ const STATUS_OPTIONS = [
   { value: "Implemented", label: "Implemented" },
   { value: "Discarded", label: "Discarded" },
 ];
+
 const getStatusIcon = (status: string, isActive: boolean) => {
   const colorClass = isActive ? "text-blue-500" : "text-gray-400";
   const size = 16;
@@ -106,18 +114,17 @@ export default function IdeasPage() {
   const [bookmarks, setBookmarks] = useState<BookmarkData>({});
   const [bookmarkingId, setBookmarkingId] = useState<string | null>(null);
 
-  // Load likes from localStorage on mount
+  // Load likes & bookmarks from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem("echoroom_likes");
-    if (stored) {
+    const storedLikes = localStorage.getItem("echoroom_likes");
+    if (storedLikes) {
       try {
-        setLikes(JSON.parse(stored));
+        setLikes(JSON.parse(storedLikes));
       } catch (e) {
         console.error("Failed to parse likes", e);
       }
     }
     
-    // Load bookmarks from localStorage
     const storedBookmarks = localStorage.getItem("echoroom_bookmarks");
     if (storedBookmarks) {
       try {
@@ -128,46 +135,33 @@ export default function IdeasPage() {
     }
   }, []);
 
-  // Save likes to localStorage when they change
+  // Save changes to localStorage
   const saveLikes = useCallback((newLikes: LikeData) => {
     setLikes(newLikes);
     localStorage.setItem("echoroom_likes", JSON.stringify(newLikes));
   }, []);
 
-  // Save bookmarks to localStorage when they change
   const saveBookmarks = useCallback((newBookmarks: BookmarkData) => {
     setBookmarks(newBookmarks);
     localStorage.setItem("echoroom_bookmarks", JSON.stringify(newBookmarks));
   }, []);
 
-  // Toggle like for an idea
+  // Toggle handlers
   const handleLike = (ideaId: string) => {
     setLikingId(ideaId);
     const currentLike = likes[ideaId] || { count: 0, liked: false };
     const newLikeState = !currentLike.liked;
     const newCount = newLikeState ? currentLike.count + 1 : Math.max(0, currentLike.count - 1);
     
-    const newLikes = {
-      ...likes,
-      [ideaId]: {
-        count: newCount,
-        liked: newLikeState,
-      },
-    };
+    const newLikes = { ...likes, [ideaId]: { count: newCount, liked: newLikeState } };
     saveLikes(newLikes);
     setLikingId(null);
   };
 
-  // Toggle bookmark for an idea
   const handleBookmark = (ideaId: string) => {
     setBookmarkingId(ideaId);
     const currentBookmark = bookmarks[ideaId] || false;
-    const newBookmarkState = !currentBookmark;
-    
-    const newBookmarks = {
-      ...bookmarks,
-      [ideaId]: newBookmarkState,
-    };
+    const newBookmarks = { ...bookmarks, [ideaId]: !currentBookmark };
     saveBookmarks(newBookmarks);
     setBookmarkingId(null);
   };
@@ -177,27 +171,6 @@ export default function IdeasPage() {
     navigator.clipboard.writeText(url);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
-  };
-
-  const handleShareTwitter = (idea: Idea) => {
-    const text = encodeURIComponent(`Check out this idea on EchoRoom: ${idea.title}`);
-    const url = encodeURIComponent(`${window.location.origin}/ideas/${idea.id}`);
-    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank");
-  };
-
-  const handleShareLinkedIn = (idea: Idea) => {
-    const url = encodeURIComponent(`${window.location.origin}/ideas/${idea.id}`);
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, "_blank");
-  };
-
-  const handleShareWhatsApp = (idea: Idea) => {
-    const text = encodeURIComponent(`Check out this idea on EchoRoom: ${idea.title} - ${window.location.origin}/ideas/${idea.id}`);
-    window.open(`https://wa.me/?text=${text}`, "_blank");
-  };
-
-  const handleShareFacebook = (idea: Idea) => {
-    const url = encodeURIComponent(`${window.location.origin}/ideas/${idea.id}`);
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, "_blank");
   };
 
   // Search and Filter State
@@ -223,18 +196,22 @@ export default function IdeasPage() {
 
   const filteredIdeas = ideas.filter((idea) => {
     const normalizedStatus = normalizeIdeaStatus(idea.status);
+    const query = searchQuery.toLowerCase();
+    
+    // Search now intelligently checks category and goal too
     const matchesSearch =
-      idea.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      idea.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
+      idea.title.toLowerCase().includes(query) ||
+      idea.description.toLowerCase().includes(query) ||
+      (idea.category && idea.category.toLowerCase().includes(query)) ||
+      (idea.goal && idea.goal.toLowerCase().includes(query));
 
+    const matchesStatus =
       statusFilter === "All" ||
       (statusFilter === "New" && normalizedStatus === "proposed") ||
       (statusFilter === "In Progress" &&
       (normalizedStatus === "experiment" || normalizedStatus === "outcome")) ||
       (statusFilter === "Implemented" && normalizedStatus === "reflection") ||
       (statusFilter === "Discarded" && normalizedStatus === "discarded");
-
 
     return matchesSearch && matchesStatus;
   });
@@ -370,12 +347,15 @@ export default function IdeasPage() {
             {filteredIdeas.map((idea) => (
               <MagicCard
                 key={idea.id}
-                className="p-[1px] rounded-xl relative group"
+                className="p-[1px] rounded-xl relative group cursor-pointer"
                 gradientColor="rgba(59,130,246,0.6)"
               >
-                <div className="relative p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 h-full flex flex-col">
+                <div 
+                  className="relative p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 h-full flex flex-col transition-colors hover:bg-white/20 dark:hover:bg-slate-900/60"
+                  onClick={() => router.push(`/ideas/${idea.id}`)}
+                >
 
-                  {/* Icons */}
+                  {/* Top Right Quick Actions */}
                   <div className="absolute top-4 right-4 flex items-center gap-1 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => {
@@ -421,12 +401,13 @@ export default function IdeasPage() {
                     </button>
                   </div>
 
-                  <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white pr-10 mb-1">
+                  {/* Title */}
+                  <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white pr-20 mb-2 line-clamp-2">
                     {idea.title}
                   </h3>
 
-                  {/* Add the Complexity Badge here */}
-                  <div className="mb-3">
+                  {/* Badges */}
+                  <div className="mb-3 flex flex-wrap gap-2">
                     <span 
                       className={`inline-flex items-center text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-semibold border ${
                         idea.complexity === 'HIGH' 
@@ -436,16 +417,53 @@ export default function IdeasPage() {
                           : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
                       }`}
                     >
-                      {idea.complexity} COMPLEXITY
+                      {idea.complexity}
                     </span>
+                    {idea.category && (
+                      <span className="inline-flex items-center text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-semibold border bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20">
+                        {idea.category}
+                      </span>
+                    )}
                   </div>
 
-                  <p className="text-slate-600 dark:text-slate-100 text-sm mb-4 flex-grow">
+                  {/* Main Description */}
+                  <p className="text-slate-600 dark:text-slate-200 text-sm mb-3 flex-grow line-clamp-3">
                     {idea.description}
                   </p>
 
-                  <div className="text-sm text-gray-400 mt-auto pt-4 border-t border-white/10 flex items-center justify-between">
-                    <span>Status: {idea.status}</span>
+                  {/* Goal Snippet (NEW) */}
+                  {idea.goal && (
+                    <div className="mb-4 text-xs text-slate-500 dark:text-slate-400 border-l-2 border-blue-500/40 pl-2 py-0.5">
+                      <span className="font-semibold text-slate-700 dark:text-slate-300">Goal:</span> <span className="line-clamp-1 inline">{idea.goal}</span>
+                    </div>
+                  )}
+
+                  <div className="flex-grow" />
+
+                  {/* Strategic Attributes Footer (NEW) */}
+                  {(idea.expectedImpact || idea.effort || idea.timeHorizon) && (
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      {idea.expectedImpact && (
+                        <span className="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
+                          Impact: <strong className="ml-1 text-slate-700 dark:text-slate-200">{idea.expectedImpact}</strong>
+                        </span>
+                      )}
+                      {idea.effort && (
+                        <span className="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
+                          Effort: <strong className="ml-1 text-slate-700 dark:text-slate-200">{idea.effort}</strong>
+                        </span>
+                      )}
+                      {idea.timeHorizon && (
+                        <span className="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
+                          Time: <strong className="ml-1 text-slate-700 dark:text-slate-200">{idea.timeHorizon}</strong>
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Footer Stats & Status */}
+                  <div className="text-sm text-gray-400 mt-auto pt-4 border-t border-black/5 dark:border-white/10 flex items-center justify-between">
+                    <span className="font-medium text-slate-700 dark:text-slate-400">{idea.status}</span>
                     <button
                       onClick={(e) => { e.stopPropagation(); handleLike(idea.id); }}
                       disabled={likingId === idea.id}
@@ -460,7 +478,7 @@ export default function IdeasPage() {
                         filled={(likes[idea.id]?.liked ?? false)} 
                         className="w-4 h-4" 
                       />
-                      <span className="text-xs font-medium">
+                      <span className="text-xs font-bold">
                         {(likes[idea.id]?.count ?? 0)}
                       </span>
                     </button>
