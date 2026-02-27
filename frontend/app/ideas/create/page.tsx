@@ -126,6 +126,7 @@ export default function CreateIdeaPage() {
 
               <input
                 type="text"
+                required
                 maxLength={TITLE_LIMIT}
                 className="
                   w-full p-3 rounded-xl
