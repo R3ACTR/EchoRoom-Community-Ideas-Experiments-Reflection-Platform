@@ -191,7 +191,7 @@ export default function OutcomesPage() {
         {/* Header Area */}
         <div className="mb-8">
           <div className="mb-6">
-            <Button onClick={() => router.push("/experiments")} variant="secondary" className="text-sm">
+            <Button onClick={() => router.push("/experiments")} variant="primary" className="text-sm">
               ← Back to experiments
             </Button>
           </div>
