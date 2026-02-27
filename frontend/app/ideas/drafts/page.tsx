@@ -56,18 +56,14 @@ export default function DraftsPage() {
     try {
       setDeleting(true);
 
-      const res = await fetch(
-        `${API_BASE_URL}/ideas/${deleteDraft.id}`,
-        { method: "DELETE" }
+      await apiFetch(`/ideas/${deleteDraft.id}`, {
+        method: "DELETE",
+      });
+
+      setDrafts((prev) =>
+          prev.filter((i) => i.id !== deleteDraft.id)
       );
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "Delete failed");
-      }
-
-      setDrafts((prev) => prev.filter((i) => i.id !== deleteDraft.id));
       setDeleteDraft(null);
     } catch (err: any) {
       alert(err.message || "Failed to delete draft");
@@ -155,7 +151,7 @@ export default function DraftsPage() {
                 gradientColor="rgba(59,130,246,0.6)"
               >
                 <div
-                  className="relative h-[340px] p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 flex flex-col transition-colors hover:bg-white/20 dark:hover:bg-slate-900/60"
+                  className="relative h-[300px] p-5 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl border border-white/10 flex flex-col transition-colors hover:bg-white/20 dark:hover:bg-slate-900/60"
                   onClick={() => router.push(`/ideas/drafts/${draft.id}`)}
                 >
                   {/* Delete */}
@@ -203,50 +199,55 @@ export default function DraftsPage() {
                       </p>
                     </div>
 
-                    {(draft.goal ||
-                      draft.expectedImpact ||
-                      draft.effort ||
-                      draft.timeHorizon) && (
-                      <div className="mt-auto flex flex-col gap-2 pt-2">
-                        {draft.goal && (
+                    <div className="mt-auto flex flex-col gap-2 pt-2 min-h-[70px]">
+
+                      {draft.goal ? (
                           <div className="text-xs text-slate-500 dark:text-slate-400 border-l-2 border-blue-500/40 pl-2 py-0.5">
                             <span className="font-semibold text-slate-700 dark:text-slate-300">
                               Goal:
                             </span>
-                            <span className="ml-1 line-clamp-1">
-                              {draft.goal}
-                            </span>
+                            <span className="ml-1 line-clamp-1">{draft.goal}</span>
                           </div>
-                        )}
+                      ) : (
+                          <div className="text-xs text-slate-400/60 pl-2 py-0.5">
+                            No goal specified
+                          </div>
+                      )}
 
-                        <div className="flex flex-wrap gap-1.5">
-                          {draft.expectedImpact && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
-                              Impact:
-                              <strong className="ml-1 text-slate-700 dark:text-slate-200">
-                                {draft.expectedImpact}
-                              </strong>
-                            </span>
-                          )}
-                          {draft.effort && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
-                              Effort:
-                              <strong className="ml-1 text-slate-700 dark:text-slate-200">
-                                {draft.effort}
-                              </strong>
-                            </span>
-                          )}
-                          {draft.timeHorizon && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
-                              Time:
-                              <strong className="ml-1 text-slate-700 dark:text-slate-200">
-                                {draft.timeHorizon}
-                              </strong>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                      {(draft.expectedImpact || draft.effort || draft.timeHorizon) ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {draft.expectedImpact && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
+                            Impact:
+                            <strong className="ml-1 text-slate-700 dark:text-slate-200">
+                              {draft.expectedImpact}
+                            </strong>
+                          </span>
+                            )}
+                            {draft.effort && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
+                            Effort:
+                            <strong className="ml-1 text-slate-700 dark:text-slate-200">
+                              {draft.effort}
+                            </strong>
+                          </span>
+                            )}
+                            {draft.timeHorizon && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
+                            Time:
+                            <strong className="ml-1 text-slate-700 dark:text-slate-200">
+                              {draft.timeHorizon}
+                            </strong>
+                          </span>
+                            )}
+                          </div>
+                      ) : (
+                          <div className="text-[10px] text-slate-400/60">
+                            No additional metadata
+                          </div>
+                      )}
+
+                    </div>
                   </div>
 
                   {/* FOOTER */}
@@ -261,6 +262,42 @@ export default function DraftsPage() {
           </div>
         )}
       </div>
+      {deleteDraft && (
+          <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
+              onClick={() => !deleting && setDeleteDraft(null)}
+          >
+            <div onClick={(e) => e.stopPropagation()}>
+              <MagicCard className="p-[1px] rounded-2xl">
+                <div className="bg-white/10 dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl px-6 py-6 w-[90vw] sm:w-[380px]">
+                  <h2 className="text-xl font-bold text-black dark:text-white mb-4">
+                    Delete Draft
+                  </h2>
+
+                  <p className="text-slate-600 dark:text-slate-200 text-sm mb-6">
+                    "{deleteDraft.title}" will be permanently removed.
+                  </p>
+
+                  <div className="flex gap-4">
+                    <Button
+                        className="w-full"
+                        onClick={() => setDeleteDraft(null)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                        className="w-full"
+                        onClick={handleDelete}
+                    >
+                      {deleting ? "Deleting..." : "Delete"}
+                    </Button>
+                  </div>
+                </div>
+              </MagicCard>
+            </div>
+          </div>
+      )}
     </PageLayout>
+
   );
 }

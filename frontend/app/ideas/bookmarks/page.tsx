@@ -205,12 +205,23 @@ export default function BookmarksPage() {
                       {idea.description}
                     </p>
 
-                    {(idea.goal || idea.category) && (
-                      <div className="text-xs text-gray-400 space-y-1 mb-4">
-                        {idea.goal && <div>Goal: {idea.goal}</div>}
-                        {idea.category && <div>Category: {idea.category}</div>}
-                      </div>
-                    )}
+                    <div className="text-xs text-gray-400 space-y-1 mb-4 min-h-[40px]">
+                      {idea.goal ? (
+                          <div>
+                            <span className="text-gray-500">Goal:</span> {idea.goal}
+                          </div>
+                      ) : (
+                          <div className="text-gray-500/60">No goal specified</div>
+                      )}
+
+                      {idea.category ? (
+                          <div>
+                            <span className="text-gray-500">Category:</span> {idea.category}
+                          </div>
+                      ) : (
+                          <div className="text-gray-500/60">No category</div>
+                      )}
+                    </div>
 
                     <div className="text-sm text-gray-400 mt-auto pt-4 border-t border-white/10">
                       Status: {idea.status}
