@@ -410,33 +410,34 @@ export default function HomePage() {
         </section>
 
         {/* TECH STACK */}
-        <section className="py-16 md:py-24 bg-blue-50 dark:bg-slate-900 border-t border-blue-100 dark:border-slate-800 transition-colors">
+        <section className="py-16 md:py-24 bg-blue-50/30 dark:bg-slate-900 border-t border-blue-100 dark:border-slate-800 transition-colors">
           <div className="max-w-5xl mx-auto px-4 md:px-6 text-center">
-            <p className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400 mb-8 md:mb-12">
+            <p className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400 mb-10 md:mb-14 font-semibold">
               Built With Modern Technologies
             </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
-              <img
-                  src="/react.svg"
-                  alt="React"
-                  className="w-8 h-8 md:w-12 md:h-12 opacity-60 grayscale dark:invert dark:opacity-70 dark:grayscale-0 hover:opacity-100 hover:scale-110 hover:invert-0 hover:grayscale-0 transition-all duration-300"
-              />
-              <img
-                  src="/nextdotjs.svg"
-                  alt="Next.js"
-                  className="w-8 h-8 md:w-12 md:h-12 opacity-60 grayscale dark:invert dark:opacity-70 dark:grayscale-0 hover:opacity-100 hover:scale-110 hover:invert-0 hover:grayscale-0 transition-all duration-300"
-              />
-              <img
-                  src="/nodedotjs.svg"
-                  alt="Node.js"
-                  className="w-8 h-8 md:w-12 md:h-12 opacity-60 grayscale dark:invert dark:opacity-70 dark:grayscale-0 hover:opacity-100 hover:scale-110 hover:invert-0 hover:grayscale-0 transition-all duration-300"
-              />
-              <img
-                  src="/tailwindcss.svg"
-                  alt="Tailwind CSS"
-                  className="w-8 h-8 md:w-12 md:h-12 opacity-60 grayscale dark:invert dark:opacity-70 dark:grayscale-0 hover:opacity-100 hover:scale-110 hover:invert-0 hover:grayscale-0 transition-all duration-300"
-              />
+            <div className="flex flex-wrap items-center justify-center gap-10 md:gap-14 lg:gap-16">
+              {[
+                { name: "React", src: "/react.svg" },
+                { name: "Next.js", src: "/nextdotjs.svg" },
+                { name: "Node.js", src: "/nodedotjs.svg" },
+                { name: "Express", src: "/express.svg" },
+                { name: "MongoDB", src: "/mongodb.svg" },
+                { name: "Prisma", src: "/prisma.svg" },
+                { name: "Tailwind CSS", src: "/tailwindcss.svg" },
+              ].map((tech) => (
+                <div key={tech.name} className="group relative flex flex-col items-center justify-center">
+                  <img
+                    src={tech.src}
+                    alt={tech.name}
+                    className="w-9 h-9 md:w-12 md:h-12 object-contain opacity-50 grayscale dark:invert dark:opacity-60 transition-all duration-300 group-hover:opacity-100 group-hover:scale-110 group-hover:grayscale-0 dark:group-hover:opacity-100"
+                  />
+                  {/* Subtle hover tooltip */}
+                  <span className="absolute -bottom-8 opacity-0 group-hover:opacity-100 transition-all duration-300 text-[10px] md:text-xs font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap translate-y-1 group-hover:translate-y-0 pointer-events-none">
+                    {tech.name}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </section>
