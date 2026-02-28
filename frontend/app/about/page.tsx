@@ -139,12 +139,12 @@ export default function AboutPage() {
                   description="Basic idea, experiment, outcome, and reflection management system."
                 />
                 <RoadmapItem
-                  status="in-progress"
+                  status="completed"
                   title="Enhanced UI/UX"
                   description="Improved page layouts, premium styling, and dark mode support across all pages."
                 />
                 <RoadmapItem
-                  status="planned"
+                  status="completed"
                   title="User Authentication"
                   description="User profiles, authentication system, and personalized dashboards."
                 />
