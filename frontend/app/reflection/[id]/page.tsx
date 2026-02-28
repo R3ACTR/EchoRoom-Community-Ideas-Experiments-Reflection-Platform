@@ -153,6 +153,16 @@ export default function ReflectionDetailPage() {
                 View Demo/Evidence <ExternalLink className="w-4 h-4" />
               </a>
             )}
+            <Button
+  onClick={() =>
+    window.open(
+      `http://localhost:5000/reflections/export/${reflection.id}`,
+      "_blank"
+    )
+  }
+>
+  Export as PDF
+</Button>
           </div>
         </div>
 

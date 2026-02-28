@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "../lib/api";
 import { PageLayout } from "../community/PageLayout";
@@ -10,6 +10,7 @@ import BackButton from "../components/BackButton";
 import Button from "@/app/components/ui/Button";
 import RefreshIcon from "@/components/ui/refresh-icon";
 import LibraryIcon from "@/components/ui/library-icon";
+import ActionSearchBar from "@/components/ui/action-search-bar";
 import { MagicCard } from "@/components/ui/magic-card";
 import { 
   TrendingUp, 
@@ -18,7 +19,12 @@ import {
   ArrowRight, 
   CalendarDays,
   Target,
-  Sparkles
+  Sparkles,
+  Search,
+  Layers,
+  CheckCircle2,
+  Activity,
+  ShieldAlert
 } from "lucide-react";
 
 interface ReflectionApiResponse {
@@ -64,15 +70,11 @@ interface ReflectionViewModel {
   date: string;
   createdAt: string;
 }
-
-// Sleek aesthetic badge colors
 const outcomeColors: Record<string, string> = {
   Success: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20",
   Mixed: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20",
   Failed: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/20",
 };
-
-// Helper to convert emotion scores (1-5) back to emojis for quick visual scanning
 const getEmotionEmoji = (value: number) => {
   switch (value) {
     case 1: return "😞";
@@ -121,6 +123,11 @@ export default function ReflectionPage() {
   const [reflections, setReflections] = useState<ReflectionViewModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // --- Search & Filter State ---
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("All");
+  
   const router = useRouter();
 
   useEffect(() => {
@@ -153,14 +160,35 @@ export default function ReflectionPage() {
 
     fetchData();
   }, []);
+
+  // --- Filtering Logic ---
+  const filteredReflections = useMemo(() => {
+    return reflections.filter((ref) => {
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch =
+        ref.title.toLowerCase().includes(searchLower) ||
+        ref.lesson.toLowerCase().includes(searchLower) ||
+        ref.outcome.toLowerCase().includes(searchLower);
+
+      const matchesStatus =
+        statusFilter === "All" ||
+        (statusFilter === "Success" && ref.outcome.trim().toLowerCase() === "success") ||
+        (statusFilter === "Mixed" && ref.outcome.trim().toLowerCase() === "mixed") ||
+        (statusFilter === "Failed" && ref.outcome.trim().toLowerCase() === "failed");
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [reflections, searchQuery, statusFilter]);
+
+  // --- Quick Stats ---
   const totalReflections = reflections.length;
   const successRate = totalReflections > 0 
-  ? Math.round(
-      (reflections.filter(r => 
-        r.outcome?.trim().toLowerCase() === 'success'
-      ).length / totalReflections) * 100
-    ) 
-  : 0;
+    ? Math.round(
+        (reflections.filter(r => 
+          r.outcome?.trim().toLowerCase() === 'success'
+        ).length / totalReflections) * 100
+      ) 
+    : 0;
   
   const totalConfidenceShift = reflections.reduce((sum, r) => sum + r.confidenceDelta, 0);
   const avgConfidence = totalReflections > 0
@@ -168,6 +196,30 @@ export default function ReflectionPage() {
     : "0.0";
     
   const moodImprovedCount = reflections.filter(r => r.emotionAfter > r.emotionBefore).length;
+
+  // --- Action Search Bar Configurations ---
+  const getFilterIcon = (status: string, isActive: boolean) => {
+    const colorClass = isActive ? "text-blue-500" : "text-gray-400";
+    switch (status) {
+      case "All": return <Layers size={16} className={colorClass} />;
+      case "Success": return <CheckCircle2 size={16} className={isActive ? "text-emerald-500" : "text-emerald-400"} />;
+      case "Mixed": return <Activity size={16} className={isActive ? "text-amber-500" : "text-amber-400"} />;
+      case "Failed": return <ShieldAlert size={16} className={isActive ? "text-rose-500" : "text-rose-400"} />;
+      default: return <Layers size={16} className={colorClass} />;
+    }
+  };
+
+  const searchActions = [
+    { value: "All", label: "All Status" },
+    { value: "Success", label: "Success" },
+    { value: "Mixed", label: "Mixed" },
+    { value: "Failed", label: "Failed" },
+  ].map((opt) => ({
+    id: `status-${opt.value}`,
+    label: `Filter: ${opt.label}`,
+    icon: getFilterIcon(opt.value, statusFilter === opt.value),
+    onClick: () => setStatusFilter(opt.value),
+  }));
 
   if (loading) {
     return (
@@ -216,70 +268,94 @@ export default function ReflectionPage() {
           </div>
         </div>
 
-        {/* Overview Stats Panel */}
+        {/* Dashboard Area */}
         {reflections.length > 0 && (
-          <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <MagicCard 
-              className="p-[1px] rounded-2xl w-full" 
-              gradientColor="rgba(59,130,246,0.25)"
-            >
-              <div className="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl rounded-2xl p-6 md:p-8">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-4 divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-white/10">
-                  
-                  {/* Stat 1: Total Insights */}
-                  <div className="flex flex-col items-center justify-center px-4 pt-4 md:pt-0 border-t-0">
-                    <span className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2 flex items-center gap-2">
-                      <LibraryIcon className="w-4 h-4 text-blue-500" /> Total Insights
-                    </span>
-                    <span className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-                      {totalReflections}
-                    </span>
-                  </div>
+          <div className="mb-10 space-y-6">
+            {/* Overview Stats Panel */}
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <MagicCard 
+                className="p-[1px] rounded-2xl w-full" 
+                gradientColor="rgba(59,130,246,0.25)"
+              >
+                <div className="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl rounded-2xl p-6 md:p-8">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-4 divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-white/10">
+                    
+                    {/* Stat 1: Total Insights */}
+                    <div 
+                      onClick={() => setStatusFilter("All")}
+                      className="flex flex-col items-center justify-center px-4 pt-4 md:pt-0 border-t-0 cursor-pointer group"
+                    >
+                      <span className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2 flex items-center gap-2 group-hover:text-blue-500 transition-colors">
+                        <LibraryIcon className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" /> Total Insights
+                      </span>
+                      <span className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+                        {totalReflections}
+                      </span>
+                    </div>
 
-                  {/* Stat 2: Success Rate */}
-                  <div className="flex flex-col items-center justify-center px-4 pt-4 md:pt-0 border-t-0">
-                    <span className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2 flex items-center gap-2">
-                      <Target className="w-4 h-4 text-emerald-500" /> Success Rate
-                    </span>
-                    <span className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-                      {successRate}%
-                    </span>
-                  </div>
+                    {/* Stat 2: Success Rate */}
+                    <div 
+                      onClick={() => setStatusFilter("Success")}
+                      className="flex flex-col items-center justify-center px-4 pt-4 md:pt-0 border-t-0 cursor-pointer group"
+                    >
+                      <span className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2 flex items-center gap-2 group-hover:text-emerald-500 transition-colors">
+                        <Target className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" /> Success Rate
+                      </span>
+                      <span className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+                        {successRate}%
+                      </span>
+                    </div>
 
-                  {/* Stat 3: Avg Confidence */}
-                  <div className="flex flex-col items-center justify-center px-4 pt-8 md:pt-0">
-                    <span className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2 flex items-center gap-2">
-                      {parseFloat(avgConfidence) > 0 ? (
-                        <TrendingUp className="w-4 h-4 text-blue-500" />
-                      ) : (
-                        <TrendingDown className="w-4 h-4 text-rose-500" />
-                      )}
-                      Avg Confidence
-                    </span>
-                    <span className={`text-3xl md:text-4xl font-bold ${
-                      parseFloat(avgConfidence) > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-white'
-                    }`}>
-                      {parseFloat(avgConfidence) > 0 ? `+${avgConfidence}` : avgConfidence}
-                    </span>
-                  </div>
+                    {/* Stat 3: Avg Confidence */}
+                    <div className="flex flex-col items-center justify-center px-4 pt-8 md:pt-0">
+                      <span className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2 flex items-center gap-2">
+                        {parseFloat(avgConfidence) > 0 ? (
+                          <TrendingUp className="w-4 h-4 text-blue-500" />
+                        ) : (
+                          <TrendingDown className="w-4 h-4 text-rose-500" />
+                        )}
+                        Avg Confidence
+                      </span>
+                      <span className={`text-3xl md:text-4xl font-bold ${
+                        parseFloat(avgConfidence) > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-white'
+                      }`}>
+                        {parseFloat(avgConfidence) > 0 ? `+${avgConfidence}` : avgConfidence}
+                      </span>
+                    </div>
 
-                  {/* Stat 4: Mood Boosts */}
-                  <div className="flex flex-col items-center justify-center px-4 pt-8 md:pt-0">
-                    <span className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-amber-500" /> Mood Boosts
-                    </span>
-                    <span className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-                      {moodImprovedCount}
-                    </span>
-                  </div>
+                    {/* Stat 4: Mood Boosts */}
+                    <div className="flex flex-col items-center justify-center px-4 pt-8 md:pt-0">
+                      <span className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-500" /> Mood Boosts
+                      </span>
+                      <span className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+                        {moodImprovedCount}
+                      </span>
+                    </div>
 
+                  </div>
                 </div>
+              </MagicCard>
+            </div>
+
+            {/* Action Search Bar */}
+            <MagicCard
+              className="p-[1px] rounded-2xl w-full relative z-40 shadow-sm"
+              gradientColor="rgba(59,130,246,0.6)"
+            >
+              <div className="w-full p-2 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-white/10">
+                <ActionSearchBar
+                  placeholder={`Search reflections... (Viewing: ${statusFilter})`}
+                  value={searchQuery}
+                  onChange={(e: any) => setSearchQuery(e.target.value)}
+                  actions={searchActions}
+                />
               </div>
             </MagicCard>
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Empty States */}
         {reflections.length === 0 ? (
           <div className="flex justify-center mt-14">
             <MagicCard className="p-[1px] rounded-2xl w-full" gradientColor="rgba(59,130,246,0.3)">
@@ -299,10 +375,24 @@ export default function ReflectionPage() {
               </div>
             </MagicCard>
           </div>
+        ) : filteredReflections.length === 0 ? (
+          <div className="py-20 text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-zinc-800 mb-4">
+              <Search className="w-6 h-6 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">No matches found</h3>
+            <p className="text-gray-500 dark:text-gray-400">Try adjusting your filters or search query.</p>
+            <button 
+              onClick={() => { setSearchQuery(""); setStatusFilter("All"); }}
+              className="mt-4 text-blue-500 hover:text-blue-600 font-medium text-sm"
+            >
+              Clear all filters
+            </button>
+          </div>
         ) : (
           /* Responsive Grid Layout */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {reflections.map((ref) => (
+            {filteredReflections.map((ref) => (
               <div
                 key={ref.id}
                 onClick={() => router.push(`/reflection/${ref.id}`)}
@@ -334,7 +424,7 @@ export default function ReflectionPage() {
                       {ref.title}
                     </h3>
 
-                    {/* Lesson Snippet (Takes up available space) */}
+                    {/* Lesson Snippet */}
                     <div className="flex-grow mb-6">
                       <p className="text-sm text-gray-600 dark:text-gray-300/90 leading-relaxed italic line-clamp-3 relative pl-4">
                         <span className="absolute left-0 top-1 bottom-1 w-[3px] bg-blue-500/40 rounded-full"></span>

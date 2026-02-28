@@ -103,3 +103,13 @@ export const getReflectionById = async (
   const reflection = await prisma.reflection.findUnique({ where: { id } });
   return reflection ? toReflection(reflection) : undefined;
 };
+
+export const getReflectionByIdForExport = async (
+  id: string
+): Promise<Reflection | undefined> => {
+  const reflection = await prisma.reflection.findUnique({
+    where: { id },
+  });
+
+  return reflection ? toReflection(reflection) : undefined;
+};
