@@ -3,7 +3,8 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import "dotenv/config";
-
+//pdf path
+import path from "path";
 // Route modules
 import ideasRoutes from "./routes/ideas.routes";
 import experimentsRoutes from "./routes/experiments.routes";
@@ -36,6 +37,10 @@ app.use(express.json());
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ success: true, message: "Backend is running" });
 });
+app.use(
+  "/public",
+  express.static(path.join(__dirname, "../public"))
+);
 
 /* =========================
    Route Registration

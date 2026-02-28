@@ -6,6 +6,7 @@ import {
   getReflectionsByOutcome,
   postReflection,
   getReflectionByIdController,
+  exportReflectionPDFController,
 } from "../controllers/reflections.controller";
 
 const router = Router();
@@ -16,6 +17,10 @@ router.get(
   "/id/:id",
   validateRequest(reflectionsSchemas.getById),
   getReflectionByIdController
+);
+router.get(
+  "/export/:id",
+  exportReflectionPDFController
 );
 router.get(
   "/:outcomeId",
