@@ -6,12 +6,17 @@ datasource db {
   provider = "mongodb"
   url      = "mongodb://localhost:27017/echoroom?authSource=admin"
 }
-
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+}
 model User {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   email        String   @unique
   username     String   @unique
-  passwordHash String
+  passwordHash String?  // make optional
+  avatar       String?  // add
+  provider AuthProvider @default(LOCAL)
   role         UserRole @default(MEMBER)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

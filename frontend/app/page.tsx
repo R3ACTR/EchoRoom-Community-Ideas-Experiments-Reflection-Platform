@@ -25,6 +25,7 @@ import ContributorAvatars from "@/app/components/ContributorAvatars";
 export default function HomePage() {
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:5000/health")
@@ -32,7 +33,11 @@ export default function HomePage() {
         .catch(() => setBackendOnline(false));
   }, []);
 
-  const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
+  const [user, setUser] = useState<{
+  name?: string;
+  email?: string;
+  avatar?: string | null;
+} | null>(null);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
@@ -44,13 +49,31 @@ export default function HomePage() {
     }
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+  try {
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    if (refreshToken) {
+      await fetch("http://localhost:5000/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+    }
+  } catch (error) {
+    console.error("Logout failed:", error);
+  } finally {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+
     setUser(null);
     router.push("/");
     router.refresh();
-  };
-
+  }
+};
   const faqs = [
     {
       question: "What is EchoRoom?",
@@ -105,20 +128,30 @@ export default function HomePage() {
               {/* Desktop Auth Buttons */}
               <div className="hidden sm:flex items-center gap-4">
                 {user ? (
-                    <>
-                      <Button
-                          onClick={() => router.push("/ideas")}
-                          variant="outline"
-                      >
-                        Dashboard
-                      </Button>
-                      <Button
-                          onClick={handleLogout}
-                          className="primary"
-                      >
-                        Logout
-                      </Button>
-                    </>
+  <>
+    <div className="flex items-center gap-3">
+     {user.avatar && user.avatar.trim() !== "" ? (
+        <img
+    src={user.avatar}
+    alt="avatar"
+    onError={() => setImageError(true)}
+    className="w-9 h-9 rounded-full object-cover border border-slate-300 dark:border-slate-600"
+  />
+      ) : (
+        <div className="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold">
+          {user.name?.[0]?.toUpperCase() || "U"}
+        </div>
+      )}
+
+      <Button onClick={() => router.push("/ideas")} variant="outline">
+        Dashboard
+      </Button>
+
+      <Button onClick={handleLogout} className="primary">
+        Logout
+      </Button>
+    </div>
+  </>
                 ) : (
                     <>
                       <Link href="/signup">
