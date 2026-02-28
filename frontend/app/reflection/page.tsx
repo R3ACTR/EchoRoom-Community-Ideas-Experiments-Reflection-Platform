@@ -16,7 +16,9 @@ import {
   TrendingDown, 
   Minus, 
   ArrowRight, 
-  CalendarDays 
+  CalendarDays,
+  Target,
+  Sparkles
 } from "lucide-react";
 
 interface ReflectionApiResponse {
@@ -98,11 +100,13 @@ const mapReflection = (
   outcomeMap: Map<string, OutcomeApiResponse>
 ): ReflectionViewModel => {
   const outcome = outcomeMap.get(reflection.outcomeId);
+  
+  if (!outcome) console.warn(`No outcome found for ID: ${reflection.outcomeId}`);
 
   return {
     id: reflection.id,
     title: outcome?.experimentTitle || "Unknown Experiment",
-    outcome: outcome?.result || "Unknown",
+    outcome: outcome?.result || "Unknown", 
     lesson: reflection.growth.lessonLearned,
     confidenceDelta:
       reflection.result.confidenceAfter - reflection.context.confidenceBefore,
@@ -149,6 +153,21 @@ export default function ReflectionPage() {
 
     fetchData();
   }, []);
+  const totalReflections = reflections.length;
+  const successRate = totalReflections > 0 
+  ? Math.round(
+      (reflections.filter(r => 
+        r.outcome?.trim().toLowerCase() === 'success'
+      ).length / totalReflections) * 100
+    ) 
+  : 0;
+  
+  const totalConfidenceShift = reflections.reduce((sum, r) => sum + r.confidenceDelta, 0);
+  const avgConfidence = totalReflections > 0
+    ? (totalConfidenceShift / totalReflections).toFixed(1)
+    : "0.0";
+    
+  const moodImprovedCount = reflections.filter(r => r.emotionAfter > r.emotionBefore).length;
 
   if (loading) {
     return (
@@ -170,7 +189,7 @@ export default function ReflectionPage() {
     <PageLayout>
       <div className="section max-w-6xl mx-auto">
         {/* Header Section */}
-        <div className="mb-10">
+        <div className="mb-8">
           <div className="mb-6">
             <BackButton />
           </div>
@@ -197,10 +216,73 @@ export default function ReflectionPage() {
           </div>
         </div>
 
+        {/* Overview Stats Panel */}
+        {reflections.length > 0 && (
+          <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <MagicCard 
+              className="p-[1px] rounded-2xl w-full" 
+              gradientColor="rgba(59,130,246,0.25)"
+            >
+              <div className="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl rounded-2xl p-6 md:p-8">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-4 divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-white/10">
+                  
+                  {/* Stat 1: Total Insights */}
+                  <div className="flex flex-col items-center justify-center px-4 pt-4 md:pt-0 border-t-0">
+                    <span className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2 flex items-center gap-2">
+                      <LibraryIcon className="w-4 h-4 text-blue-500" /> Total Insights
+                    </span>
+                    <span className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+                      {totalReflections}
+                    </span>
+                  </div>
+
+                  {/* Stat 2: Success Rate */}
+                  <div className="flex flex-col items-center justify-center px-4 pt-4 md:pt-0 border-t-0">
+                    <span className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2 flex items-center gap-2">
+                      <Target className="w-4 h-4 text-emerald-500" /> Success Rate
+                    </span>
+                    <span className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+                      {successRate}%
+                    </span>
+                  </div>
+
+                  {/* Stat 3: Avg Confidence */}
+                  <div className="flex flex-col items-center justify-center px-4 pt-8 md:pt-0">
+                    <span className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2 flex items-center gap-2">
+                      {parseFloat(avgConfidence) > 0 ? (
+                        <TrendingUp className="w-4 h-4 text-blue-500" />
+                      ) : (
+                        <TrendingDown className="w-4 h-4 text-rose-500" />
+                      )}
+                      Avg Confidence
+                    </span>
+                    <span className={`text-3xl md:text-4xl font-bold ${
+                      parseFloat(avgConfidence) > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-white'
+                    }`}>
+                      {parseFloat(avgConfidence) > 0 ? `+${avgConfidence}` : avgConfidence}
+                    </span>
+                  </div>
+
+                  {/* Stat 4: Mood Boosts */}
+                  <div className="flex flex-col items-center justify-center px-4 pt-8 md:pt-0">
+                    <span className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-500" /> Mood Boosts
+                    </span>
+                    <span className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+                      {moodImprovedCount}
+                    </span>
+                  </div>
+
+                </div>
+              </div>
+            </MagicCard>
+          </div>
+        )}
+
         {/* Empty State */}
         {reflections.length === 0 ? (
           <div className="flex justify-center mt-14">
-            <MagicCard className="p-[1px] rounded-2xl w-full " gradientColor="rgba(59,130,246,0.3)">
+            <MagicCard className="p-[1px] rounded-2xl w-full" gradientColor="rgba(59,130,246,0.3)">
               <div className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-2xl px-10 py-16 text-center">
                 <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <LibraryIcon className="w-10 h-10 text-blue-400" />
@@ -224,7 +306,7 @@ export default function ReflectionPage() {
               <div
                 key={ref.id}
                 onClick={() => router.push(`/reflection/${ref.id}`)}
-                className="group cursor-pointer h-full"
+                className="group cursor-pointer h-full animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
               >
                 <MagicCard
                   className="p-[1px] rounded-2xl h-full transition-transform duration-300 group-hover:-translate-y-1"
