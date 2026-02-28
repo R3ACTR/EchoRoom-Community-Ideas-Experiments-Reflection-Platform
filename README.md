@@ -1,6 +1,20 @@
-# EchoRoom 🌱
+<p align="center">
+  <img src="/docs/assets/echo.png" alt="EchoRoom Logo" width="300" />
+</p>
+<p align="center">
+  <b>Structured Experimentation & Community Learning Platform</b>
+</p>
 
-### Structured Experimentation & Community Learning Platform
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs" />
+  <img src="https://img.shields.io/badge/Express.js-Backend-lightgrey?logo=express" />
+  <img src="https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma" />
+  <img src="https://img.shields.io/badge/MongoDB-Database-47A248?logo=mongodb" />
+  <img src="https://img.shields.io/badge/TailwindCSS-UI-38B2AC?logo=tailwindcss" />
+  <img src="https://img.shields.io/badge/License-MIT-green" />
+</p>
+
+---
 
 EchoRoom is an open-source platform that transforms community ideas into **structured experiments, measurable outcomes, and documented reflections**.
 
