@@ -20,7 +20,24 @@ body {
 /* ========================= */
 /* GLOBAL DESIGN SYSTEM */
 /* ========================= */
+@keyframes flipAnimation {
+  0% {
+    transform: rotateX(90deg);
+    opacity: 0;
+  }
+  50% {
+    transform: rotateX(-10deg);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateX(0deg);
+    opacity: 1;
+  }
+}
 
+.flip-char {
+  transform-origin: bottom;
+}
 @layer components {
 
   .page-title {

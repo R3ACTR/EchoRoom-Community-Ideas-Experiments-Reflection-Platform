@@ -9,6 +9,7 @@ import Link from "next/link";
 import HomeIcon from "@/components/ui/arrow-narrow-left-icon";
 import { HyperText } from "@/components/ui/hyper-text";
 import { MagicCard } from "@/components/ui/magic-card";
+import FlipText from "@/components/ui/flip-text";
 
 
 
@@ -45,12 +46,16 @@ export default function AboutPage() {
                 About EchoRoom
               </div>
 
-              <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight mb-6">
-                A Platform for{" "}
-                <HyperText className="text-5xl md:text-6xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight leading-tight mb-6 text-slate-900 dark:text-white">
+  A Platform for{" "}
+  <FlipText
+    className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"
+    loop={true}
+    duration={1.6}
+  >
     Collaborative Learning
-  </HyperText>
-              </h1>
+  </FlipText>
+</h1>
 
               <p className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed">
                 EchoRoom is designed to help individuals and communities explore ideas,

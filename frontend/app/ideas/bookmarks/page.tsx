@@ -101,8 +101,14 @@ export default function BookmarksPage() {
       <div className="section px-4 sm:px-0">
         <div className="mb-8">
           <div className="mb-4">
-            <BackButton />
+            <Button
+              onClick={() => router.push("/ideas")}
+              className="rounded-full px-6 py-2"
+            >
+              ← Back to Ideas
+            </Button>
           </div>
+          
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
             <div className="flex items-center gap-3">
