@@ -14,6 +14,7 @@ import authRoutes from "./routes/auth.routes";
 import commentsRoutes from "./routes/comments.routes";
 import likesRoutes from "./routes/likes.routes";
 import insightsRoutes from "./routes/insights.routes";
+import communityRoutes from "./routes/community.routes";
 
 // Global error handlers
 import { errorMiddleware, notFoundMiddleware } from "./middleware/error.middleware";
@@ -54,6 +55,7 @@ app.use("/reflections", reflectionsRoutes);
 app.use("/insights", insightsRoutes);
 app.use("/ideas/:ideaId/comments", commentsRoutes);
 app.use("/likes", likesRoutes);
+app.use("/community", communityRoutes);
 
 /* =========================
    Fallback & Error Handling
