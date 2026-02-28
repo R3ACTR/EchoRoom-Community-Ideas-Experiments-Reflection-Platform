@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { apiFetch } from "../lib/api";
 import { normalizeIdeaStatus } from "../../lib/validation";
 import BackButton from "../components/BackButton";
@@ -24,7 +24,8 @@ import {
   XCircle,
   Heart,
   Copy,
-  Target
+  Target,
+  Activity
 } from "lucide-react";
 import { PageLayout } from "../community/PageLayout";
 import LoadingState from "../components/LoadingState";
@@ -113,7 +114,6 @@ export default function IdeasPage() {
   const [bookmarks, setBookmarks] = useState<BookmarkData>({});
   const [bookmarkingId, setBookmarkingId] = useState<string | null>(null);
 
-  // Load likes & bookmarks from localStorage on mount
   useEffect(() => {
     const storedLikes = localStorage.getItem("echoroom_likes");
     if (storedLikes) {
@@ -133,6 +133,7 @@ export default function IdeasPage() {
       }
     }
   }, []);
+
   const saveLikes = useCallback((newLikes: LikeData) => {
     setLikes(newLikes);
     localStorage.setItem("echoroom_likes", JSON.stringify(newLikes));
@@ -190,6 +191,20 @@ export default function IdeasPage() {
 
     fetchIdeas();
   }, []);
+
+  // --- Quick Stats ---
+  const stats = useMemo(() => {
+    return {
+      total: ideas.length,
+      new: ideas.filter((i) => normalizeIdeaStatus(i.status) === "proposed").length,
+      inProgress: ideas.filter((i) => {
+        const status = normalizeIdeaStatus(i.status);
+        return status === "experiment" || status === "outcome";
+      }).length,
+      implemented: ideas.filter((i) => normalizeIdeaStatus(i.status) === "reflection").length,
+      discarded: ideas.filter((i) => normalizeIdeaStatus(i.status) === "discarded").length,
+    };
+  }, [ideas]);
 
   const filteredIdeas = ideas.filter((idea) => {
     const normalizedStatus = normalizeIdeaStatus(idea.status);
@@ -292,20 +307,103 @@ export default function IdeasPage() {
             Ideas are the starting point of learning.
           </p>
 
-          {/* Search */}
-          <MagicCard
-            className="p-[1px] rounded-2xl mb-8 w-full relative z-50"
-            gradientColor="rgba(59,130,246,0.6)"
-          >
-            <div className="w-full p-2 bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-white/10">
-              <ActionSearchBar
-                placeholder={`Search ideas... (Viewing: ${statusFilter})`}
-                value={searchQuery}
-                onChange={(e: any) => setSearchQuery(e.target.value)}
-                actions={searchActions}
-              />
+          {ideas.length > 0 && (
+            <div className="mb-10 space-y-6">
+              {/* Overview Stats Panel */}
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <MagicCard 
+                  className="p-[1px] rounded-2xl w-full" 
+                  gradientColor="rgba(59,130,246,0.25)"
+                >
+                  <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl p-6 md:p-8">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-y-8 gap-x-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-white/10">
+                      
+                      {/* Stat 1: Total Ideas */}
+                      <div 
+                        onClick={() => setStatusFilter("All")}
+                        className="flex flex-col items-center justify-center px-4 pt-4 md:pt-0 border-t-0 cursor-pointer group"
+                      >
+                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2 flex items-center gap-2 group-hover:text-blue-500 transition-colors">
+                          <Activity className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" /> Total
+                        </span>
+                        <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+                          {stats.total}
+                        </span>
+                      </div>
+
+                      {/* Stat 2: New */}
+                      <div 
+                        onClick={() => setStatusFilter("New")}
+                        className="flex flex-col items-center justify-center px-4 pt-4 md:pt-0 border-t-0 cursor-pointer group"
+                      >
+                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2 flex items-center gap-2 group-hover:text-amber-500 transition-colors">
+                          <Sparkles className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" /> New
+                        </span>
+                        <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+                          {stats.new}
+                        </span>
+                      </div>
+
+                      {/* Stat 3: Active / In Progress */}
+                      <div 
+                        onClick={() => setStatusFilter("In Progress")}
+                        className="flex flex-col items-center justify-center px-4 pt-8 md:pt-0 cursor-pointer group"
+                      >
+                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2 flex items-center gap-2 group-hover:text-blue-500 transition-colors">
+                          <Clock className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" /> Active
+                        </span>
+                        <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+                          {stats.inProgress}
+                        </span>
+                      </div>
+
+                      {/* Stat 4: Implemented */}
+                      <div 
+                        onClick={() => setStatusFilter("Implemented")}
+                        className="flex flex-col items-center justify-center px-4 pt-8 md:pt-0 cursor-pointer group"
+                      >
+                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2 flex items-center gap-2 group-hover:text-emerald-500 transition-colors">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" /> Implemented
+                        </span>
+                        <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+                          {stats.implemented}
+                        </span>
+                      </div>
+
+                      {/* Stat 5: Discarded */}
+                      <div 
+                        onClick={() => setStatusFilter("Discarded")}
+                        className="flex flex-col items-center justify-center px-4 pt-8 md:pt-0 cursor-pointer group col-span-2 md:col-span-1"
+                      >
+                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2 flex items-center gap-2 group-hover:text-rose-500 transition-colors">
+                          <XCircle className="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform" /> Discarded
+                        </span>
+                        <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+                          {stats.discarded}
+                        </span>
+                      </div>
+
+                    </div>
+                  </div>
+                </MagicCard>
+              </div>
+
+              {/* Search Panel */}
+              <MagicCard
+                className="p-[1px] rounded-2xl w-full relative z-40 shadow-sm"
+                gradientColor="rgba(59,130,246,0.6)"
+              >
+                <div className="w-full p-2 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-white/10">
+                  <ActionSearchBar
+                    placeholder={`Search ideas... (Viewing: ${statusFilter})`}
+                    value={searchQuery}
+                    onChange={(e: any) => setSearchQuery(e.target.value)}
+                    actions={searchActions}
+                  />
+                </div>
+              </MagicCard>
             </div>
-          </MagicCard>
+          )}
         </div>
 
         {/* EMPTY STATE */}
@@ -431,9 +529,9 @@ export default function IdeasPage() {
 
                       {idea.goal ? (
                           <div className="text-xs text-slate-500 dark:text-slate-400 border-l-2 border-blue-500/40 pl-2 py-0.5">
-      <span className="font-semibold text-slate-700 dark:text-slate-300">
-        Goal:
-      </span>
+                            <span className="font-semibold text-slate-700 dark:text-slate-300">
+                              Goal:
+                            </span>
                             <span className="ml-1 line-clamp-1">{idea.goal}</span>
                           </div>
                       ) : (
@@ -446,27 +544,27 @@ export default function IdeasPage() {
                           <div className="flex flex-wrap gap-1.5">
                             {idea.expectedImpact && (
                                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
-          Impact:
-          <strong className="ml-1 text-slate-700 dark:text-slate-200">
-            {idea.expectedImpact}
-          </strong>
-        </span>
+                                  Impact:
+                                  <strong className="ml-1 text-slate-700 dark:text-slate-200">
+                                    {idea.expectedImpact}
+                                  </strong>
+                                </span>
                             )}
                             {idea.effort && (
                                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
-          Effort:
-          <strong className="ml-1 text-slate-700 dark:text-slate-200">
-            {idea.effort}
-          </strong>
-        </span>
+                                  Effort:
+                                  <strong className="ml-1 text-slate-700 dark:text-slate-200">
+                                    {idea.effort}
+                                  </strong>
+                                </span>
                             )}
                             {idea.timeHorizon && (
                                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
-          Time:
-          <strong className="ml-1 text-slate-700 dark:text-slate-200">
-            {idea.timeHorizon}
-          </strong>
-        </span>
+                                  Time:
+                                  <strong className="ml-1 text-slate-700 dark:text-slate-200">
+                                    {idea.timeHorizon}
+                                  </strong>
+                                </span>
                             )}
                           </div>
                       ) : (
