@@ -20,6 +20,7 @@ import { MagicCard } from "@/components/ui/magic-card";
 import GithubIcon from "@/components/ui/github-icon";
 import UsersGroupIcon from "@/components/ui/users-group-icon";
 import InfoCircleIcon from "@/components/ui/info-circle-icon";
+import ContributorAvatars from "@/app/components/ContributorAvatars";
 
 export default function HomePage() {
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
@@ -406,6 +407,7 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+        <ContributorAvatars />
 
         {/* FOOTER */}
         <footer className="border-t border-slate-200 dark:border-slate-700 py-10 pb-10 md:pb-10">
