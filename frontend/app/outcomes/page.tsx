@@ -80,14 +80,12 @@ export default function OutcomesPage() {
       });
   }, [outcomes, searchQuery, filterResult, filterImpact, sortBy]);
 
-  // --- Quick Stats ---
-  const stats = useMemo(() => {
-    return {
-      total: outcomes.length,
-      successes: outcomes.filter(o => o.result === "SUCCESS").length,
-      breakthroughs: outcomes.filter(o => o.impactLevel === "BREAKTHROUGH").length,
-    };
-  }, [outcomes]);
+  // --- Quick Stats Calculations ---
+  const totalOutcomes = outcomes.length;
+  const successCount = outcomes.filter(o => o.result === "SUCCESS").length;
+  const successRate = totalOutcomes > 0 ? Math.round((successCount / totalOutcomes) * 100) : 0;
+  const breakthroughsCount = outcomes.filter(o => o.impactLevel === "BREAKTHROUGH").length;
+  const risingMomentumCount = outcomes.filter(o => o.momentum === "RISING").length;
 
   const getResultStyle = (result?: string) => {
     switch(result) {
@@ -118,7 +116,7 @@ export default function OutcomesPage() {
 
   // --- Action Search Bar Configurations ---
   const getResultFilterIcon = (result: string, isActive: boolean) => {
-    const colorClass = isActive ? "text-blue-500" : "text-gray-400";
+    const colorClass = isActive ? "text-blue-500" : "text-slate-400";
     switch (result) {
       case "ALL": return <Layers size={16} className={colorClass} />;
       case "SUCCESS": return <CheckCircle size={16} className={isActive ? "text-blue-500" : "text-emerald-500"} />;
@@ -129,7 +127,7 @@ export default function OutcomesPage() {
   };
 
   const getImpactFilterIcon = (impact: string, isActive: boolean) => {
-    const colorClass = isActive ? "text-blue-500" : "text-gray-400";
+    const colorClass = isActive ? "text-blue-500" : "text-slate-400";
     switch (impact) {
       case "ALL": return <Layers size={16} className={colorClass} />;
       case "BREAKTHROUGH": return <Zap size={16} className={isActive ? "text-blue-500" : "text-purple-500"} />;
@@ -141,7 +139,6 @@ export default function OutcomesPage() {
   };
 
   const searchActions = [
-    // Results
     ...[
       { value: "ALL", label: "All Results" },
       { value: "SUCCESS", label: "Success" },
@@ -153,7 +150,6 @@ export default function OutcomesPage() {
       icon: getResultFilterIcon(opt.value, filterResult === opt.value),
       onClick: () => setFilterResult(opt.value),
     })),
-    // Impacts
     ...[
       { value: "ALL", label: "All Impacts" },
       { value: "BREAKTHROUGH", label: "Breakthrough" },
@@ -166,7 +162,6 @@ export default function OutcomesPage() {
       icon: getImpactFilterIcon(opt.value, filterImpact === opt.value),
       onClick: () => setFilterImpact(opt.value),
     })),
-    // Sorting
     {
       id: "sort-newest",
       label: "Sort: Newest First",
@@ -186,7 +181,7 @@ export default function OutcomesPage() {
 
   return (
     <PageLayout>
-      <div className="section animate-in fade-in duration-500">
+      <div className="section animate-in fade-in duration-500 max-w-6xl mx-auto">
         
         {/* Header Area */}
         <div className="mb-8">
@@ -206,41 +201,65 @@ export default function OutcomesPage() {
 
         {/* Dashboard/Controls Area */}
         {outcomes.length > 0 && (
-          <div className="mb-8 space-y-6">
-            {/* Quick Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
-                <div>
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Experiments</p>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
+          <div className="mb-10 space-y-6">
+            
+            {/* Overview Stats Panel (Matches Reflection Page) */}
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <MagicCard 
+                className="p-[1px] rounded-2xl w-full" 
+                gradientColor="rgba(59,130,246,0.25)"
+              >
+                <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl p-6 md:p-8">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-white/10">
+                    
+                    {/* Stat 1: Total Outcomes */}
+                    <div className="flex flex-col items-center justify-center px-4 pt-4 md:pt-0 border-t-0">
+                      <span className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2 flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-blue-500" /> Total Outcomes
+                      </span>
+                      <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+                        {totalOutcomes}
+                      </span>
+                    </div>
+
+                    {/* Stat 2: Success Rate */}
+                    <div className="flex flex-col items-center justify-center px-4 pt-4 md:pt-0 border-t-0">
+                      <span className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2 flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-emerald-500" /> Success Rate
+                      </span>
+                      <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+                        {successRate}%
+                      </span>
+                    </div>
+
+                    {/* Stat 3: Breakthroughs */}
+                    <div className="flex flex-col items-center justify-center px-4 pt-8 md:pt-0">
+                      <span className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2 flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-purple-500" /> Breakthroughs
+                      </span>
+                      <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+                        {breakthroughsCount}
+                      </span>
+                    </div>
+
+                    {/* Stat 4: Rising Momentum */}
+                    <div className="flex flex-col items-center justify-center px-4 pt-8 md:pt-0">
+                      <span className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2 flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-amber-500" /> Rising Momentum
+                      </span>
+                      <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+                        {risingMomentumCount}
+                      </span>
+                    </div>
+
+                  </div>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <Activity className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-                </div>
-              </div>
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
-                <div>
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Successes</p>
-                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{stats.successes}</p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                </div>
-              </div>
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
-                <div>
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Breakthroughs</p>
-                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.breakthroughs}</p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                </div>
-              </div>
+              </MagicCard>
             </div>
 
             {/* Action Search Bar */}
             <MagicCard
-              className="p-[1px] rounded-2xl w-full relative z-50 shadow-sm"
+              className="p-[1px] rounded-2xl w-full relative z-40 shadow-sm"
               gradientColor="rgba(59,130,246,0.6)"
             >
               <div className="w-full p-2 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-white/10">
@@ -259,6 +278,7 @@ export default function OutcomesPage() {
           </div>
         )}
 
+        {/*(Empty States & Grids)*/}
         {outcomes.length === 0 ? (
           <div className="flex justify-center mt-14">
             <MagicCard className="p-[1px] rounded-2xl w-full" gradientColor="rgba(59,130,246,0.5)">
@@ -296,7 +316,7 @@ export default function OutcomesPage() {
               const momStyle = getMomentumConfig(outcome.momentum);
               
               return (
-                <div key={outcome.id} onClick={() => setSelectedOutcome(outcome)} className="cursor-pointer group h-full flex flex-col">
+                <div key={outcome.id} onClick={() => setSelectedOutcome(outcome)} className="cursor-pointer group h-full flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both">
                   <MagicCard className="p-[1px] rounded-2xl relative h-full flex-grow transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-blue-500/10" gradientColor="rgba(59,130,246,0.3)">
                     <div className={`p-6 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-white/20 dark:border-white/5 h-full flex flex-col overflow-hidden ${momStyle.border}`}>
                       
@@ -342,7 +362,7 @@ export default function OutcomesPage() {
           </div>
         )}
 
-        {/* ... Outcome Modal ... */}
+        {/* Outcome Modal */}
         {selectedOutcome && (
           <div className="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 sm:p-6" onClick={() => setSelectedOutcome(null)}>
             <div onClick={(e) => e.stopPropagation()} className="w-full max-w-2xl animate-in zoom-in-95 fade-in duration-200">

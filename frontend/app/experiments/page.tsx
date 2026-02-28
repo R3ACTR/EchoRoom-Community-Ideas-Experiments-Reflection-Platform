@@ -169,10 +169,12 @@ export default function ExperimentsPage() {
   const stats = useMemo(() => {
     return {
       total: experiments.length,
+      planned: experiments.filter(e => e.status === "planned").length,
       inProgress: experiments.filter(e => e.status === "in-progress").length,
       completed: experiments.filter(e => e.status === "completed").length,
     };
   }, [experiments]);
+  
   const filteredExperiments = useMemo(() => {
     return experiments.filter((exp) => {
       const matchesSearch =
@@ -232,7 +234,7 @@ export default function ExperimentsPage() {
 
   return (
     <PageLayout>
-      <div className="section">
+      <div className="section max-w-6xl mx-auto">
 
         {/* Header */}
         <div className="mb-8">
@@ -274,38 +276,72 @@ export default function ExperimentsPage() {
 
           {/* Dashboard/Controls Area */}
           {experiments.length > 0 && (
-            <div className="mb-8 space-y-6">
-              {/* Quick Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Experiments</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                    <Activity className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-                  </div>
-                </div>
-                
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => setStatusFilter("In Progress")}>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">In Progress</p>
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.inProgress}</p>
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                    <PlayCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                </div>
+            <div className="mb-10 space-y-6">
+              
+              {/* Overview Stats Panel (Matches Reflection & Outcomes Pages) */}
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <MagicCard 
+                  className="p-[1px] rounded-2xl w-full" 
+                  gradientColor="rgba(59,130,246,0.25)"
+                >
+                  <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl p-6 md:p-8">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8 gap-x-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-white/10">
+                      
+                      {/* Stat 1: Total Experiments */}
+                      <div 
+                        onClick={() => setStatusFilter("All")}
+                        className="flex flex-col items-center justify-center px-4 pt-4 md:pt-0 border-t-0 cursor-pointer group"
+                      >
+                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2 flex items-center gap-2 group-hover:text-blue-500 transition-colors">
+                          <Activity className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" /> Total
+                        </span>
+                        <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+                          {stats.total}
+                        </span>
+                      </div>
 
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => setStatusFilter("Completed")}>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Completed</p>
-                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{stats.completed}</p>
+                      {/* Stat 2: Planned */}
+                      <div 
+                        onClick={() => setStatusFilter("Planned")}
+                        className="flex flex-col items-center justify-center px-4 pt-4 md:pt-0 border-t-0 cursor-pointer group"
+                      >
+                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2 flex items-center gap-2 group-hover:text-amber-500 transition-colors">
+                          <Calendar className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" /> Planned
+                        </span>
+                        <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+                          {stats.planned}
+                        </span>
+                      </div>
+
+                      {/* Stat 3: Active / In Progress */}
+                      <div 
+                        onClick={() => setStatusFilter("In Progress")}
+                        className="flex flex-col items-center justify-center px-4 pt-8 md:pt-0 cursor-pointer group"
+                      >
+                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2 flex items-center gap-2 group-hover:text-blue-500 transition-colors">
+                          <PlayCircle className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" /> Active
+                        </span>
+                        <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+                          {stats.inProgress}
+                        </span>
+                      </div>
+
+                      {/* Stat 4: Completed */}
+                      <div 
+                        onClick={() => setStatusFilter("Completed")}
+                        className="flex flex-col items-center justify-center px-4 pt-8 md:pt-0 cursor-pointer group"
+                      >
+                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2 flex items-center gap-2 group-hover:text-emerald-500 transition-colors">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" /> Completed
+                        </span>
+                        <span className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
+                          {stats.completed}
+                        </span>
+                      </div>
+
+                    </div>
                   </div>
-                  <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                </div>
+                </MagicCard>
               </div>
 
               {/* Action Search Bar */}
@@ -375,7 +411,7 @@ export default function ExperimentsPage() {
               <div
                 key={exp.id}
                 onClick={() => router.push(`/experiments/${exp.id}`)}
-                className="cursor-pointer group h-full flex flex-col"
+                className="cursor-pointer group h-full flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
               >
                 <MagicCard
                   className="flex flex-col w-full p-[1px] rounded-2xl relative h-full flex-grow transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10"
@@ -474,8 +510,6 @@ export default function ExperimentsPage() {
                             style={{ width: `${exp.progress}%` }}
                         />
                       </div>
-
-                      {/* REPLACED: Real content for active items, Invisible Spacer for completed items */}
                       {exp.endDate && exp.status !== "completed" ? (
                           <div className="flex items-center justify-between mt-2">
                             <div className="flex items-center gap-1.5 text-xs">
