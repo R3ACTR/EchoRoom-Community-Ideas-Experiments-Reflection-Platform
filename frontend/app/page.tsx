@@ -25,6 +25,7 @@ import ContributorAvatars from "@/app/components/ContributorAvatars";
 export default function HomePage() {
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:5000/health")
@@ -32,7 +33,11 @@ export default function HomePage() {
         .catch(() => setBackendOnline(false));
   }, []);
 
-  const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
+  const [user, setUser] = useState<{
+  name?: string;
+  email?: string;
+  avatar?: string | null;
+} | null>(null);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
@@ -44,13 +49,31 @@ export default function HomePage() {
     }
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+  try {
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    if (refreshToken) {
+      await fetch("http://localhost:5000/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+    }
+  } catch (error) {
+    console.error("Logout failed:", error);
+  } finally {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+
     setUser(null);
     router.push("/");
     router.refresh();
-  };
-
+  }
+};
   const faqs = [
     {
       question: "What is EchoRoom?",
@@ -105,20 +128,30 @@ export default function HomePage() {
               {/* Desktop Auth Buttons */}
               <div className="hidden sm:flex items-center gap-4">
                 {user ? (
-                    <>
-                      <Button
-                          onClick={() => router.push("/ideas")}
-                          variant="outline"
-                      >
-                        Dashboard
-                      </Button>
-                      <Button
-                          onClick={handleLogout}
-                          className="primary"
-                      >
-                        Logout
-                      </Button>
-                    </>
+  <>
+    <div className="flex items-center gap-3">
+     {user.avatar && user.avatar.trim() !== "" ? (
+        <img
+    src={user.avatar}
+    alt="avatar"
+    onError={() => setImageError(true)}
+    className="w-9 h-9 rounded-full object-cover border border-slate-300 dark:border-slate-600"
+  />
+      ) : (
+        <div className="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold">
+          {user.name?.[0]?.toUpperCase() || "U"}
+        </div>
+      )}
+
+      <Button onClick={() => router.push("/ideas")} variant="outline">
+        Dashboard
+      </Button>
+
+      <Button onClick={handleLogout} className="primary">
+        Logout
+      </Button>
+    </div>
+  </>
                 ) : (
                     <>
                       <Link href="/signup">
@@ -377,33 +410,34 @@ export default function HomePage() {
         </section>
 
         {/* TECH STACK */}
-        <section className="py-16 md:py-24 bg-blue-50 dark:bg-slate-900 border-t border-blue-100 dark:border-slate-800 transition-colors">
+        <section className="py-16 md:py-24 bg-blue-50/30 dark:bg-slate-900 border-t border-blue-100 dark:border-slate-800 transition-colors">
           <div className="max-w-5xl mx-auto px-4 md:px-6 text-center">
-            <p className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400 mb-8 md:mb-12">
+            <p className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400 mb-10 md:mb-14 font-semibold">
               Built With Modern Technologies
             </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
-              <img
-                  src="/react.svg"
-                  alt="React"
-                  className="w-8 h-8 md:w-12 md:h-12 opacity-60 grayscale dark:invert dark:opacity-70 dark:grayscale-0 hover:opacity-100 hover:scale-110 hover:invert-0 hover:grayscale-0 transition-all duration-300"
-              />
-              <img
-                  src="/nextdotjs.svg"
-                  alt="Next.js"
-                  className="w-8 h-8 md:w-12 md:h-12 opacity-60 grayscale dark:invert dark:opacity-70 dark:grayscale-0 hover:opacity-100 hover:scale-110 hover:invert-0 hover:grayscale-0 transition-all duration-300"
-              />
-              <img
-                  src="/nodedotjs.svg"
-                  alt="Node.js"
-                  className="w-8 h-8 md:w-12 md:h-12 opacity-60 grayscale dark:invert dark:opacity-70 dark:grayscale-0 hover:opacity-100 hover:scale-110 hover:invert-0 hover:grayscale-0 transition-all duration-300"
-              />
-              <img
-                  src="/tailwindcss.svg"
-                  alt="Tailwind CSS"
-                  className="w-8 h-8 md:w-12 md:h-12 opacity-60 grayscale dark:invert dark:opacity-70 dark:grayscale-0 hover:opacity-100 hover:scale-110 hover:invert-0 hover:grayscale-0 transition-all duration-300"
-              />
+            <div className="flex flex-wrap items-center justify-center gap-10 md:gap-14 lg:gap-16">
+              {[
+                { name: "React", src: "/react.svg" },
+                { name: "Next.js", src: "/nextdotjs.svg" },
+                { name: "Node.js", src: "/nodedotjs.svg" },
+                { name: "Express", src: "/express.svg" },
+                { name: "MongoDB", src: "/mongodb.svg" },
+                { name: "Prisma", src: "/prisma.svg" },
+                { name: "Tailwind CSS", src: "/tailwindcss.svg" },
+              ].map((tech) => (
+                <div key={tech.name} className="group relative flex flex-col items-center justify-center">
+                  <img
+                    src={tech.src}
+                    alt={tech.name}
+                    className="w-9 h-9 md:w-12 md:h-12 object-contain opacity-50 grayscale dark:invert dark:opacity-60 transition-all duration-300 group-hover:opacity-100 group-hover:scale-110 group-hover:grayscale-0 dark:group-hover:opacity-100"
+                  />
+                  {/* Subtle hover tooltip */}
+                  <span className="absolute -bottom-8 opacity-0 group-hover:opacity-100 transition-all duration-300 text-[10px] md:text-xs font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap translate-y-1 group-hover:translate-y-0 pointer-events-none">
+                    {tech.name}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </section>

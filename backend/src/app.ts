@@ -11,11 +11,11 @@ import experimentsRoutes from "./routes/experiments.routes";
 import outcomesRoutes from "./routes/outcomes.routes";
 import reflectionsRoutes from "./routes/reflections.routes";
 import authRoutes from "./routes/auth.routes";
-import commentsRoutes from "./routes/comments.routes";
+// import commentsRoutes from "./routes/comments.routes";
 import likesRoutes from "./routes/likes.routes";
 import insightsRoutes from "./routes/insights.routes";
 import communityRoutes from "./routes/community.routes";
-
+import passport from "./config/passport";
 // Global error handlers
 import { errorMiddleware, notFoundMiddleware } from "./middleware/error.middleware";
 
@@ -31,6 +31,7 @@ app.use(cors({ origin: ["http://localhost:3000", "http://localhost:3001"] }));
 // Parse JSON request bodies
 app.use(express.json());
 
+app.use(passport.initialize());
 /* =========================
    Health Check Endpoint
 ========================= */
@@ -53,7 +54,7 @@ app.use("/experiments", experimentsRoutes);
 app.use("/outcomes", outcomesRoutes);
 app.use("/reflections", reflectionsRoutes);
 app.use("/insights", insightsRoutes);
-app.use("/ideas/:ideaId/comments", commentsRoutes);
+// app.use("/ideas/:ideaId/comments", commentsRoutes);
 app.use("/likes", likesRoutes);
 app.use("/community", communityRoutes);
 

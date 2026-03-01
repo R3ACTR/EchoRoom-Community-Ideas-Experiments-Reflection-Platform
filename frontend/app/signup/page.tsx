@@ -50,7 +50,8 @@ export default function SignupPage() {
         email: user.email, 
         name: user.username, 
         role: user.role,
-        id: user.id
+        id: user.id,
+        avatar: user.avatar || null,
       }));
 
       router.push("/ideas");
@@ -139,6 +140,14 @@ export default function SignupPage() {
                 {loading ? "Creating account..." : "Sign Up"}
               </ShinyButton>
             </form>
+            <div className="mt-4">
+              <a
+                href="http://localhost:5000/auth/google"
+                className="block text-center py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-sm font-medium"
+              >
+                Continue with Google
+              </a>
+            </div>
 
             <p className="text-sm text-slate-600 dark:text-slate-400 text-center mt-6">
               Already have an account?{" "}

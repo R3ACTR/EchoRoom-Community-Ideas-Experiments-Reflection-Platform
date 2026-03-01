@@ -113,9 +113,19 @@ const CommunityPage = () => {
               </h1>
             </div>
 
-            <p className="text-lg text-muted-foreground mb-10">
-              A space where ideas evolve into experiments, outcomes, and reflections.
-            </p>
+            <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+  EchoRoom is a collaborative experimentation ecosystem where communities
+  don’t just share ideas — they validate them. Every idea moves through a
+  structured lifecycle: from proposal, to experiment, to measurable outcome,
+  and finally to reflection.
+</p>
+
+<p className="text-base text-muted-foreground/90 mb-10 leading-relaxed">
+  This community dashboard gives you a living map of collective learning —
+  showing how concepts evolve, what experiments were conducted, what worked,
+  what failed, and the insights that emerged. It’s not just discussion.
+  It’s documented progress and shared intelligence.
+</p>
 
             {/* Learning Graph */}
             <div className="mb-16">
